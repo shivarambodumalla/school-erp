@@ -20,15 +20,16 @@ import { SwitchDemo } from "@/components/switch-demo";
 export default async function Home() {
   let apiMessage = "API not connected";
   try {
-    const res = await fetch("http://localhost:3001/api/health", {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/health`, {
       cache: "no-store",
     });
     if (res.ok) {
       const data = await res.json();
       apiMessage = data.message;
     }
-  } catch (error) {
-    console.error("API Fetch Error", error);
+  } catch {
+    // API not reachable
   }
 
   return (

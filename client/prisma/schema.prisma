@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Institution {
+  id           String    @id @default(cuid())
+  name         String
+  subdomain    String    @unique
+  primaryColor String    @default("#1d4ed8")
+  logoUrl      String?
+  planTier     PlanTier  @default(STARTER)
+  board        Board     @default(CBSE)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  users        User[]
+  students     Student[]
+}
+
+model User {
+  id             String      @id @default(cuid())
+  institutionId  String
+  institution    Institution @relation(fields: [institutionId], references: [id])
+  email          String
+  hashedPassword String
+  portalType     PortalType
+  isActive       Boolean     @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime    @default(now())
+  @@unique([institutionId, email])
+}
+
+model Student {
+  id            String        @id @default(cuid())
+  institutionId String
+  institution   Institution   @relation(fields: [institutionId], references: [id])
+  userId        String?       @unique
+  admissionNo   String
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime
+  gender        Gender
+  classId       String
+  sectionId     String
+  photoUrl      String?
+  guardianName  String
+  guardianPhone String
+  status        StudentStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  @@unique([institutionId, admissionNo])
+}
+
+model AcademicYear {
+  id            String   @id @default(cuid())
+  institutionId String
+  name          String
+  startDate     DateTime
+  endDate       DateTime
+  isCurrent     Boolean  @default(false)
+}
+
+model Class {
+  id             String @id @default(cuid())
+  institutionId  String
+  academicYearId String
+  name           String
+  gradeLevel     Int
+}
+
+model Section {
+  id             String  @id @default(cuid())
+  classId        String
+  name           String
+  classTeacherId String?
+}
+
+model Attendance {
+  id            String           @id @default(cuid())
+  institutionId String
+  studentId     String
+  date          DateTime         @db.Date
+  status        AttendanceStatus
+  markedById    String
+  markedAt      DateTime         @default(now())
+  @@unique([studentId, date])
+}
+
+model FeePayment {
+  id              String        @id @default(cuid())
+  institutionId   String
+  studentId       String
+  amount          Decimal       @db.Decimal(10, 2)
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  razorpayOrderId String?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  institutionId String
+  userId        String
+  action        String
+  tableName     String
+  recordId      String
+  before        Json?
+  after         Json?
+  createdAt     DateTime @default(now())
+}
+
+enum PlanTier { STARTER GROWTH PRO }
+enum Board { CBSE ICSE STATE }
+enum PortalType { ADMIN TEACHER STUDENT PARENT INSTRUCTOR }
+enum Gender { MALE FEMALE OTHER }
+enum StudentStatus { ACTIVE INACTIVE TRANSFERRED }
+enum AttendanceStatus { PRESENT ABSENT LATE HALF_DAY EXCUSED }
+enum PaymentMethod { UPI CARD NETBANKING WALLET CASH CHEQUE EMI }
+enum PaymentStatus { PENDING PAID FAILED REFUNDED }

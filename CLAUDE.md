@@ -1,99 +1,31 @@
-# SCHOOL ERP — Living Context Document
+# SCHOOL ERP — PROJECT CONTEXT
 
-> **This file is the single source of truth.** Read it completely before starting any task.
-> Updated: 2026-03-04
+## Current State
+Phase: Week 1 — Foundation complete
+Status: Structure fixed, auth next
 
----
+## Structure
+- client/ — Next.js 14 App Router (everything lives here)
+- server/ — deleted, all backend inside client/src/server/
+- Python AI service — not needed until Phase 10
 
-## Current Phase
+## Stack
+Next.js 14, TypeScript strict, Tailwind, shadcn,
+tRPC, NextAuth v5, PostgreSQL, Prisma
 
-Phase: **Project Setup / Foundation**
-Week: 1
-
----
-
-## Project Overview
-
-Multi-tenant School ERP serving 5 portal roles: Admin, Teacher, Student, Parent, Instructor.
-Each school is identified by `institutionId` — every DB query must scope to it.
-
----
-
-## Tech Stack
-
-See `.agent/tech-stack.md` for the complete list. Key choices:
-- **Next.js 14** (App Router) + **TypeScript strict** + **Tailwind v3** + **shadcn/ui**
-- **tRPC v11** + **Zod v3** for API
-- **NextAuth v5** for auth (role + institutionId in JWT)
-- **Prisma v5** + **PostgreSQL 15** (AWS RDS Mumbai)
-- **Razorpay** for payments (UPI-first, India market)
-
----
-
-## Folder Structure
-
-See `.agent/folder-structure.md` for the full tree. Key conventions:
-- `apps/web/server/services/` — business logic only
-- `apps/web/server/repositories/` — DB queries only (always with institutionId)
-- `apps/web/server/trpc/routers/` — tRPC procedures
-- `packages/db/` — Prisma schema, seed, client
-- `packages/shared/` — TS types, constants, utils
-
----
-
-## Coding Standards
-
-See `.agent/coding-standards.md` for the complete rules. Critical rules:
-- **ZERO `any` types** — use `unknown` and narrow
-- **ZERO non-null assertions** — check and throw
-- **Service/Repository pattern** — always
-- **institutionId on every query** — always
-- **Server components by default** — `'use client'` only when needed
-- **No console.log** — use console.warn/error
-- **44px minimum** touch targets on all interactive elements
-- **Skeleton loading** on all data-fetching components
-
----
-
-## Portal Themes
-
-| Portal | Theme Color | Navigation |
-|---|---|---|
-| Admin | Blue | Sidebar |
-| Teacher | Indigo | Sidebar |
-| Student | Violet | Bottom tabs |
-| Parent | Emerald | Bottom tabs |
-| Instructor | Amber | Sidebar |
-
----
+## Architecture Rules
+- route → service → repository (never skip layers)
+- institutionId on EVERY DB query (multi-tenant)
+- Never query DB from components
+- No secrets in Git
 
 ## Guardian Rules
+- RULE-001: No any TypeScript types
+- RULE-002: Always include institutionId in DB queries
+- RULE-003: Never query DB from components
+- RULE-004: No secrets in Git
+- RULE-005: service/repository pattern always
+- RULE-006: Mobile first — 44px minimum tap targets
 
-These rules can NEVER be broken, regardless of convenience:
-
-1. **Every DB query must include `institutionId`** — no exceptions
-2. **No secrets in code** — always environment variables
-3. **No `any` types** — zero tolerance
-4. **No data fetching in useEffect** — use tRPC hooks
-5. **No querying Prisma from components** — components → tRPC → services → repos
-
----
-
-## Decisions Log
-
-| Date | Decision | Reasoning |
-|---|---|---|
-| 2026-03-03 | Custom warm theme (terracotta primary, rose secondary) | User-specified hex palette |
-| 2026-03-03 | Monorepo: client/ + server/ under starter-app/ | Clean separation |
-| 2026-03-04 | Added success/warning/error color tokens | User-specified per-theme values |
-| 2026-03-04 | Coding standards saved to .agent/coding-standards.md | Enforced on every task |
-
----
-
-## What To Do When Starting a New Session
-
-1. Read this file completely
-2. Read `.agent/preferences.md` for enforced rules
-3. Read `.agent/coding-standards.md` for code quality rules
-4. Check which phase/week we are in
-5. Check `.agent/folder-structure.md` before creating any file
+## Next Session Starts At
+Week 2 — NextAuth v5 login for all 5 portals
