@@ -6,25 +6,43 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:seed": "npx tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^7.4.2",
+    "@prisma/client": "^5.22.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@tanstack/react-query": "^5.90.21",
+    "@trpc/client": "^11.11.0",
+    "@trpc/react-query": "^11.11.0",
+    "@trpc/server": "^11.11.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.3.1",
+    "framer-motion": "^12.35.0",
     "lucide-react": "^0.576.0",
     "next": "14.2.35",
+    "next-auth": "^5.0.0-beta.30",
     "next-themes": "^0.4.6",
+    "prisma": "^5.22.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-swipeable": "^7.0.2",
+    "recharts": "^3.7.0",
+    "superjson": "^2.2.6",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.21.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -34,7 +52,6 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8",
-    "prisma": "^7.4.2",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

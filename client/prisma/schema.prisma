@@ -114,11 +114,59 @@ model AuditLog {
   createdAt     DateTime @default(now())
 }
 
-enum PlanTier { STARTER GROWTH PRO }
-enum Board { CBSE ICSE STATE }
-enum PortalType { ADMIN TEACHER STUDENT PARENT INSTRUCTOR }
-enum Gender { MALE FEMALE OTHER }
-enum StudentStatus { ACTIVE INACTIVE TRANSFERRED }
-enum AttendanceStatus { PRESENT ABSENT LATE HALF_DAY EXCUSED }
-enum PaymentMethod { UPI CARD NETBANKING WALLET CASH CHEQUE EMI }
-enum PaymentStatus { PENDING PAID FAILED REFUNDED }
+enum PlanTier {
+  STARTER
+  GROWTH
+  PRO
+}
+
+enum Board {
+  CBSE
+  ICSE
+  STATE
+}
+
+enum PortalType {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+  INSTRUCTOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  TRANSFERRED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  EXCUSED
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  NETBANKING
+  WALLET
+  CASH
+  CHEQUE
+  EMI
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}

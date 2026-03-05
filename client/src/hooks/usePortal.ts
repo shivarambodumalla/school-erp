@@ -1,17 +1,43 @@
-"use client"
+'use client'
 
-import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import {
+    hasPermission,
+    hasAnyPermission,
+    isConsumerPortal,
+    type Permission,
+} from '@/lib/permissions'
 
-type PortalType = 'admin' | 'teacher' | 'student' | 'parent' | 'instructor' | null
+interface PortalInfo {
+    portalType: string
+    isManagement: boolean
+    isConsumer: boolean
+    isAdmin: boolean
+    isTeacher: boolean
+    isStudent: boolean
+    isParent: boolean
+    isInstructor: boolean
+    permissions: Permission[]
+    can: (permission: Permission) => boolean
+    canAny: (perms: Permission[]) => boolean
+}
 
-export function usePortal(): PortalType {
-    const pathname = usePathname()
+export function usePortal(): PortalInfo {
+    const { data: session } = useSession()
+    const permissions = session?.user.permissions ?? []
+    const portalType = session?.user.portalType ?? ''
 
-    if (pathname.startsWith('/admin')) return 'admin'
-    if (pathname.startsWith('/teacher')) return 'teacher'
-    if (pathname.startsWith('/student')) return 'student'
-    if (pathname.startsWith('/parent')) return 'parent'
-    if (pathname.startsWith('/instructor')) return 'instructor'
-
-    return null
+    return {
+        portalType,
+        isManagement: !isConsumerPortal(portalType),
+        isConsumer: isConsumerPortal(portalType),
+        isAdmin: portalType === 'ADMIN',
+        isTeacher: portalType === 'TEACHER',
+        isStudent: portalType === 'STUDENT',
+        isParent: portalType === 'PARENT',
+        isInstructor: portalType === 'INSTRUCTOR',
+        permissions,
+        can: (permission: Permission): boolean => hasPermission(permissions, permission),
+        canAny: (perms: Permission[]): boolean => hasAnyPermission(permissions, perms),
+    }
 }

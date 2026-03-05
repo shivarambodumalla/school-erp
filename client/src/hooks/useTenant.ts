@@ -1,28 +1,22 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 interface TenantInfo {
-    institutionId: string | null
-    subdomain: string | null
+    institutionId: string
+    institutionName: string
+    subdomain: string
+    primaryColor: string
+    logoUrl: string | undefined
 }
 
 export function useTenant(): TenantInfo {
-    const [tenant, setTenant] = useState<TenantInfo>({
-        institutionId: null,
-        subdomain: null,
-    })
-
-    useEffect(() => {
-        const hostname = window.location.hostname
-        const parts = hostname.split('.')
-        if (parts.length > 1) {
-            setTenant({
-                institutionId: null,
-                subdomain: parts[0],
-            })
-        }
-    }, [])
-
-    return tenant
+    const { data: session } = useSession()
+    return {
+        institutionId: session?.user.institutionId ?? '',
+        institutionName: session?.user.institutionName ?? '',
+        subdomain: session?.user.institutionSubdomain ?? '',
+        primaryColor: session?.user.primaryColor ?? '#1d4ed8',
+        logoUrl: session?.user.logoUrl,
+    }
 }

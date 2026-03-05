@@ -1,6 +1,8 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,22 +10,37 @@ import { Label } from '@/components/ui/label'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function LoginPage(): JSX.Element {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard'
+
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+    async function handleLogin(event: React.FormEvent<HTMLFormElement>): Promise<void> {
         event.preventDefault()
 
         if (!email || !password) return
 
         setIsLoading(true)
+        setError('')
 
-        // NextAuth integration will replace this in Week 2
-        // After login, redirect based on user.portalType from DB
-        setTimeout(() => {
+        const result = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+        })
+
+        if (result?.error) {
+            setError('Invalid email or password. Please try again.')
             setIsLoading(false)
-        }, 1000)
+            return
+        }
+
+        router.push(callbackUrl)
+        router.refresh()
     }
 
     return (
@@ -55,7 +72,13 @@ export default function LoginPage(): JSX.Element {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            {error ? (
+                                <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
+                                    <p className="text-sm text-destructive">{error}</p>
+                                </div>
+                            ) : null}
+
                             <div className="space-y-2">
                                 <Label htmlFor="login-email">Email</Label>
                                 <Input

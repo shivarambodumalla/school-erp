@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/server/auth";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -15,28 +17,32 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Starter App",
-  description: "Next.js 14 + Node.js API + PostgreSQL + shadcn/ui",
+  title: "School ERP",
+  description: "Multi-tenant School ERP — Admin, Teacher, Student, Parent, Instructor",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <SessionProvider session={session}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
