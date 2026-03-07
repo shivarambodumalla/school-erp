@@ -62,6 +62,7 @@ export const MANAGEMENT_NAV: NavGroup[] = [
     {
         label: 'Admin',
         items: [
+            { label: 'All Users', path: '/management/admin/users', icon: Users, permission: PERMISSIONS.ROLES_MANAGE },
             { label: 'Roles', path: '/roles', icon: ShieldCheck, permission: PERMISSIONS.ROLES_VIEW },
             { label: 'Settings', path: '/settings', icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },
         ],
