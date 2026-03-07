@@ -37,18 +37,18 @@ interface AdminUsersTableProps {
 type SortField = 'email' | 'portalType' | 'institution' | 'createdAt' | 'lastLoginAt'
 type SortDir = 'asc' | 'desc'
 
-const ROLE_COLORS: Record<string, string> = {
-    ADMIN: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    TEACHER: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-    STUDENT: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
-    PARENT: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-    INSTRUCTOR: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+const ROLE_STYLES: Record<string, { bg: string; text: string }> = {
+    ADMIN: { bg: '#DBEAFE', text: '#1D4ED8' },
+    TEACHER: { bg: '#E0E7FF', text: '#4338CA' },
+    STUDENT: { bg: '#EDE9FE', text: '#6D28D9' },
+    PARENT: { bg: '#D1FAE5', text: '#047857' },
+    INSTRUCTOR: { bg: '#FEF3C7', text: '#B45309' },
 }
 
-const PLAN_COLORS: Record<string, string> = {
-    STARTER: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
-    GROWTH: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300',
-    PRO: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300',
+const PLAN_STYLES: Record<string, { bg: string; text: string }> = {
+    STARTER: { bg: '#F3F4F6', text: '#4B5563' },
+    GROWTH: { bg: '#DBEAFE', text: '#1D4ED8' },
+    PRO: { bg: '#EDE9FE', text: '#7C3AED' },
 }
 
 function formatDate(iso: string | null): string {
@@ -58,13 +58,26 @@ function formatDate(iso: string | null): string {
     })
 }
 
+function getInitials(email: string): string {
+    const name = email.split('@')[0] ?? ''
+    return name.substring(0, 2).toUpperCase()
+}
+
+const AVATAR_COLORS: Record<string, string> = {
+    ADMIN: '#3B82F6',
+    TEACHER: '#6366F1',
+    STUDENT: '#8B5CF6',
+    PARENT: '#10B981',
+    INSTRUCTOR: '#F59E0B',
+}
+
 function SortIcon({ field, sortField, sortDir }: {
     field: SortField
     sortField: SortField
     sortDir: SortDir
 }): JSX.Element {
     if (sortField !== field) {
-        return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-40" />
+        return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-30" />
     }
     if (sortDir === 'asc') {
         return <ArrowUp className="h-3.5 w-3.5 ml-1" />
@@ -121,36 +134,45 @@ export function AdminUsersTable({ users }: AdminUsersTableProps): JSX.Element {
     const roles = ['ALL', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT', 'INSTRUCTOR']
 
     return (
-        <div className="space-y-4">
-            {/* Search + Role Filter */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1 max-w-sm">
+        <div className="space-y-5">
+            {/* Filters Row */}
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search email, school, role..."
+                        placeholder="Search by email, school or role..."
                         value={search}
                         onChange={(e): void => setSearch(e.target.value)}
-                        className="pl-9"
+                        className="pl-9 h-10"
                     />
                 </div>
 
-                {/* Role filter pills */}
-                <div className="flex gap-2 flex-wrap">
-                    {roles.map(role => (
-                        <button
-                            key={role}
-                            type="button"
-                            onClick={(): void => setRoleFilter(role)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium
-                transition-colors border
-                ${roleFilter === role
-                                    ? 'bg-primary text-primary-foreground border-primary'
-                                    : 'bg-background text-muted-foreground border-border hover:bg-muted'
-                                }`}
-                        >
-                            {role}
-                        </button>
-                    ))}
+                <div className="flex gap-1.5 flex-wrap">
+                    {roles.map(role => {
+                        const isActive = roleFilter === role
+                        const roleStyle = role !== 'ALL' ? ROLE_STYLES[role] : null
+                        return (
+                            <button
+                                key={role}
+                                type="button"
+                                onClick={(): void => setRoleFilter(role)}
+                                style={isActive && roleStyle ? {
+                                    backgroundColor: roleStyle.bg,
+                                    color: roleStyle.text,
+                                    borderColor: roleStyle.text + '40',
+                                } : undefined}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border
+                                    ${isActive && !roleStyle
+                                        ? 'bg-foreground text-background border-foreground'
+                                        : !isActive
+                                            ? 'bg-transparent text-muted-foreground border-border hover:bg-muted'
+                                            : ''
+                                    }`}
+                            >
+                                {role}
+                            </button>
+                        )
+                    })}
                 </div>
             </div>
 
@@ -160,93 +182,130 @@ export function AdminUsersTable({ users }: AdminUsersTableProps): JSX.Element {
             </p>
 
             {/* Table */}
-            <div className="rounded-md border">
+            <div className="rounded-lg border overflow-hidden">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead className="cursor-pointer select-none" onClick={(): void => handleSort('email')}>
-                                <span className="flex items-center">
-                                    Email <SortIcon field="email" sortField={sortField} sortDir={sortDir} />
+                        <TableRow className="bg-muted/30 hover:bg-muted/30">
+                            <TableHead className="cursor-pointer select-none w-[280px]" onClick={(): void => handleSort('email')}>
+                                <span className="flex items-center font-semibold text-xs uppercase tracking-wider">
+                                    User <SortIcon field="email" sortField={sortField} sortDir={sortDir} />
                                 </span>
                             </TableHead>
                             <TableHead className="cursor-pointer select-none" onClick={(): void => handleSort('portalType')}>
-                                <span className="flex items-center">
+                                <span className="flex items-center font-semibold text-xs uppercase tracking-wider">
                                     Role <SortIcon field="portalType" sortField={sortField} sortDir={sortDir} />
                                 </span>
                             </TableHead>
                             <TableHead className="cursor-pointer select-none" onClick={(): void => handleSort('institution')}>
-                                <span className="flex items-center">
+                                <span className="flex items-center font-semibold text-xs uppercase tracking-wider">
                                     Institution <SortIcon field="institution" sortField={sortField} sortDir={sortDir} />
                                 </span>
                             </TableHead>
-                            <TableHead>Plan</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>
+                                <span className="font-semibold text-xs uppercase tracking-wider">Plan</span>
+                            </TableHead>
+                            <TableHead>
+                                <span className="font-semibold text-xs uppercase tracking-wider">Status</span>
+                            </TableHead>
                             <TableHead className="cursor-pointer select-none" onClick={(): void => handleSort('lastLoginAt')}>
-                                <span className="flex items-center">
+                                <span className="flex items-center font-semibold text-xs uppercase tracking-wider">
                                     Last Login <SortIcon field="lastLoginAt" sortField={sortField} sortDir={sortDir} />
                                 </span>
                             </TableHead>
                             <TableHead className="cursor-pointer select-none" onClick={(): void => handleSort('createdAt')}>
-                                <span className="flex items-center">
+                                <span className="flex items-center font-semibold text-xs uppercase tracking-wider">
                                     Created <SortIcon field="createdAt" sortField={sortField} sortDir={sortDir} />
                                 </span>
                             </TableHead>
-                            <TableHead />
+                            <TableHead className="w-8" />
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sorted.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
-                                    No users found
+                                <TableCell colSpan={8} className="text-center text-muted-foreground py-16">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Search className="h-8 w-8 opacity-20" />
+                                        <p className="text-sm">No users found</p>
+                                        <p className="text-xs">Try adjusting your search or filters</p>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            sorted.map(user => (
-                                <TableRow
-                                    key={user.id}
-                                    className="cursor-pointer hover:bg-muted/50"
-                                    onClick={(): void => router.push(`/management/admin/users/${user.id}`)}
-                                >
-                                    <TableCell className="font-medium">{user.email}</TableCell>
-                                    <TableCell>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                      ${ROLE_COLORS[user.portalType] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
-                                            {user.portalType}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div>
-                                            <p className="text-sm font-medium">{user.institution.name}</p>
-                                            <p className="text-xs text-muted-foreground">{user.institution.subdomain}.app</p>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                      ${PLAN_COLORS[user.institution.planTier] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}>
-                                            {user.institution.planTier}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                      ${user.isActive
-                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                                            }`}>
-                                            {user.isActive ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-sm">
-                                        {formatDate(user.lastLoginAt)}
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-sm">
-                                        {formatDate(user.createdAt)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            sorted.map(user => {
+                                const roleStyle = ROLE_STYLES[user.portalType]
+                                const planStyle = PLAN_STYLES[user.institution.planTier]
+                                const avatarBg = AVATAR_COLORS[user.portalType] ?? '#6B7280'
+                                return (
+                                    <TableRow
+                                        key={user.id}
+                                        className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                        onClick={(): void => router.push(`/management/admin/users/${user.id}`)}
+                                    >
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <div
+                                                    className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                                    style={{ backgroundColor: avatarBg }}
+                                                >
+                                                    <span className="text-white text-xs font-semibold">
+                                                        {getInitials(user.email)}
+                                                    </span>
+                                                </div>
+                                                <span className="font-medium text-sm truncate">{user.email}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span
+                                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                                style={roleStyle ? {
+                                                    backgroundColor: roleStyle.bg,
+                                                    color: roleStyle.text,
+                                                } : undefined}
+                                            >
+                                                {user.portalType}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div>
+                                                <p className="text-sm font-medium">{user.institution.name}</p>
+                                                <p className="text-xs text-muted-foreground">{user.institution.subdomain}.app</p>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span
+                                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                                style={planStyle ? {
+                                                    backgroundColor: planStyle.bg,
+                                                    color: planStyle.text,
+                                                } : undefined}
+                                            >
+                                                {user.institution.planTier}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5">
+                                                <span
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{ backgroundColor: user.isActive ? '#10B981' : '#EF4444' }}
+                                                />
+                                                <span className="text-sm">
+                                                    {user.isActive ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground text-sm">
+                                            {formatDate(user.lastLoginAt)}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground text-sm">
+                                            {formatDate(user.createdAt)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })
                         )}
                     </TableBody>
                 </Table>
