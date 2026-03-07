@@ -13,6 +13,7 @@ import {
     CheckCircle2, AlertCircle, BadgeCheck,
 } from 'lucide-react'
 import { changePassword } from '@/features/admin/actions/changePassword'
+import { MasqueradeButton } from './MasqueradeButton'
 
 /* ── Types ─────────────────────────────────────────────── */
 
@@ -38,6 +39,7 @@ interface User {
 
 interface UserProfileProps {
     user: User
+    initiatorPortalType: string
 }
 
 interface ResultState {
@@ -105,7 +107,7 @@ function getInitials(email: string): string {
 
 /* ── Component ─────────────────────────────────────────── */
 
-export function UserProfile({ user }: UserProfileProps): JSX.Element {
+export function UserProfile({ user, initiatorPortalType }: UserProfileProps): JSX.Element {
     const router = useRouter()
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
@@ -203,6 +205,15 @@ export function UserProfile({ user }: UserProfileProps): JSX.Element {
                                 >
                                     {user.portalType}
                                 </span>
+
+                                <div className="mt-4 w-full flex justify-center">
+                                    <MasqueradeButton
+                                        targetUserId={user.id}
+                                        targetEmail={user.email}
+                                        targetPortalType={user.portalType}
+                                        initiatorPortalType={initiatorPortalType}
+                                    />
+                                </div>
                             </div>
 
                             <Separator />

@@ -60,6 +60,10 @@ export const PERMISSIONS = {
     // AI Features
     AI_INSIGHTS: 'ai.insights',
     AI_LESSON_PLAN: 'ai.lesson_plan',
+
+    // Masquerade
+    MASQUERADE_READ_ONLY: 'masquerade.read_only',
+    MASQUERADE_FULL_ACCESS: 'masquerade.full_access',
 } as const
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS]
@@ -88,6 +92,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
         PERMISSIONS.ROLES_VIEW, PERMISSIONS.ROLES_MANAGE,
         PERMISSIONS.BUS_VIEW, PERMISSIONS.BUS_MANAGE,
         PERMISSIONS.AI_INSIGHTS, PERMISSIONS.AI_LESSON_PLAN,
+        PERMISSIONS.MASQUERADE_READ_ONLY,
     ],
 
     TEACHER: [

@@ -4,6 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/server/auth";
+import { MasqueradeBar } from "@/components/shared/MasqueradeBar";
+import { MasqueradeFrame } from "@/components/shared/MasqueradeFrame";
+import { MasqueradeReadOnlyOverlay } from "@/components/shared/MasqueradeReadOnlyOverlay";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,6 +44,9 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <MasqueradeFrame />
+            <MasqueradeBar />
+            <MasqueradeReadOnlyOverlay />
           </ThemeProvider>
         </SessionProvider>
       </body>

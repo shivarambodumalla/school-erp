@@ -54,5 +54,5 @@ export default async function UserDetailPage({ params }: Props): Promise<JSX.Ele
         },
     }
 
-    return <UserProfile user={formatted} />
+    return <UserProfile user={formatted} initiatorPortalType={session.user.portalType} />
 }

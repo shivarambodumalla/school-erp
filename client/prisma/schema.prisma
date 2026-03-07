@@ -20,6 +20,7 @@ model Institution {
   updatedAt    DateTime  @updatedAt
   users        User[]
   students     Student[]
+  roles        Role[]
 }
 
 model User {
@@ -112,6 +113,23 @@ model AuditLog {
   before        Json?
   after         Json?
   createdAt     DateTime @default(now())
+}
+
+model Role {
+  id               String          @id @default(cuid())
+  institutionId    String
+  name             String
+  isSystemRole     Boolean         @default(false)
+  permissions      Json            @default("[]")
+  masqueradeMode   MasqueradeMode  @default(READ_ONLY)
+  createdAt        DateTime        @default(now())
+  institution      Institution     @relation(fields: [institutionId], references: [id])
+}
+
+enum MasqueradeMode {
+  READ_ONLY
+  FULL_ACCESS
+  DISABLED
 }
 
 enum PlanTier {
