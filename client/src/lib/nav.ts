@@ -45,6 +45,7 @@ export const MANAGEMENT_NAV: NavGroup[] = [
     {
         label: 'People',
         items: [
+            { label: 'Users', path: '/management/users', icon: Users, permission: PERMISSIONS.STUDENTS_VIEW },
             { label: 'Staff', path: '/staff', icon: Users, permission: PERMISSIONS.STAFF_VIEW },
         ],
     },
