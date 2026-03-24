@@ -16,7 +16,7 @@ export function useTenant(): TenantInfo {
         institutionId: session?.user.institutionId ?? '',
         institutionName: session?.user.institutionName ?? '',
         subdomain: session?.user.institutionSubdomain ?? '',
-        primaryColor: session?.user.primaryColor ?? '#1d4ed8',
+        primaryColor: session?.user.primaryColor ?? 'hsl(221 83% 53%)',
         logoUrl: session?.user.logoUrl,
     }
 }

@@ -24,6 +24,20 @@ export default auth((req) => {
         return NextResponse.redirect(new URL('/dashboard', nextUrl.origin))
     }
 
+    // Super routes — only SUPER_ADMIN allowed
+    if (nextUrl.pathname.startsWith('/super')) {
+        if (!session || session.user.portalType !== 'SUPER_ADMIN') {
+            return NextResponse.redirect(new URL('/dashboard', nextUrl.origin))
+        }
+    }
+
+    // Management routes — SUPER_ADMIN should not be in management shell
+    if (nextUrl.pathname.startsWith('/management')) {
+        if (session?.user.portalType === 'SUPER_ADMIN') {
+            return NextResponse.redirect(new URL('/super/dashboard', nextUrl.origin))
+        }
+    }
+
     return NextResponse.next()
 })
 

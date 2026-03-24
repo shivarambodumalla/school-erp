@@ -3,10 +3,8 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import {
-    DEFAULT_ROLE_PERMISSIONS,
-    type Permission
-} from '@/lib/permissions'
+import { type Permission } from '@/lib/permissions'
+import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/defaultRoles'
 
 const loginSchema = z.object({
     email: z.string().email(),
@@ -81,14 +79,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
 
         async session({ session, token }) {
-            session.user.id = token.id
-            session.user.portalType = token.portalType
-            session.user.institutionId = token.institutionId
-            session.user.institutionName = token.institutionName
-            session.user.institutionSubdomain = token.institutionSubdomain
-            session.user.primaryColor = token.primaryColor
-            session.user.logoUrl = token.logoUrl
-            session.user.permissions = token.permissions
+            session.user.id = token.id as string
+            session.user.portalType = token.portalType as string
+            session.user.institutionId = token.institutionId as string
+            session.user.institutionName = token.institutionName as string
+            session.user.institutionSubdomain = token.institutionSubdomain as string
+            session.user.primaryColor = token.primaryColor as string
+            session.user.logoUrl = token.logoUrl as string | undefined
+            session.user.permissions = token.permissions as Permission[]
             return session
         },
     },

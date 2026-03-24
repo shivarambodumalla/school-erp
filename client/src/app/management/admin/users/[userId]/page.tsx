@@ -15,7 +15,9 @@ interface Props {
 export default async function UserDetailPage({ params }: Props): Promise<JSX.Element> {
     const session = await auth()
     if (!session) redirect('/auth/login')
-    if (session.user.portalType !== 'ADMIN') redirect('/dashboard')
+    if (session.user.portalType !== 'ADMIN' && session.user.portalType !== 'SUPER_ADMIN') {
+        redirect('/dashboard')
+    }
 
     const user: UserWithInstitution | null = await prisma.user.findUnique({
         where: { id: params.userId },
@@ -35,6 +37,14 @@ export default async function UserDetailPage({ params }: Props): Promise<JSX.Ele
     })
 
     if (!user) notFound()
+
+    // Non-super-admin can only view users in their own institution
+    if (
+        session.user.portalType !== 'SUPER_ADMIN' &&
+        user.institutionId !== session.user.institutionId
+    ) {
+        redirect('/dashboard')
+    }
 
     const formatted = {
         id: user.id,

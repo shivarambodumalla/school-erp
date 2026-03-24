@@ -7,7 +7,9 @@ export default async function DashboardPage(): Promise<never> {
     if (!session) redirect('/auth/login')
 
     // Route to correct shell dashboard
-    if (isConsumerPortal(session.user.portalType)) {
+    if (session.user.portalType === 'SUPER_ADMIN') {
+        redirect('/super/dashboard')
+    } else if (isConsumerPortal(session.user.portalType)) {
         redirect('/consumer/dashboard')
     } else {
         redirect('/management/dashboard')

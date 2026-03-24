@@ -33,9 +33,9 @@ interface ChangePasswordResult {
 export async function changePassword(
     formData: ChangePasswordInput
 ): Promise<ChangePasswordResult> {
-    // Only admin can do this
+    // Only admin or super admin can do this
     const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
+    if (!session || (session.user.portalType !== 'ADMIN' && session.user.portalType !== 'SUPER_ADMIN')) {
         return { success: false, error: 'Unauthorised' }
     }
 
@@ -52,6 +52,16 @@ export async function changePassword(
         where: { id: userId },
     })
     if (!user) return { success: false, error: 'User not found' }
+
+    // Verify institution access
+    // Super admin can change any user's password
+    // Admin can only change passwords within their institution
+    if (
+        session.user.portalType !== 'SUPER_ADMIN' &&
+        user.institutionId !== session.user.institutionId
+    ) {
+        return { success: false, error: 'Unauthorised' }
+    }
 
     // Hash and save
     const hashedPassword = await bcrypt.hash(newPassword, HASH_ROUNDS)

@@ -9,10 +9,7 @@ export function MasqueradeFrame() {
 
     return (
         <div
-            className="fixed inset-0 z-[9998] pointer-events-none"
-            style={{
-                boxShadow: 'inset 0 0 0 3px #f59e0b',
-            }}
+            className="fixed inset-0 z-[9998] pointer-events-none ring-4 ring-inset ring-amber-400"
         />
     )
 }

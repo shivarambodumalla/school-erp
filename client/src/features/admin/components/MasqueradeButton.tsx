@@ -55,11 +55,7 @@ export function MasqueradeButton({
                 onClick={handleMasquerade}
                 disabled={loading}
                 variant="outline"
-                className="flex items-center gap-2"
-                style={{
-                    borderColor: '#FCD34D',
-                    color: '#B45309',
-                }}
+                className="flex items-center gap-2 border-amber-300 text-amber-700 hover:bg-amber-50"
             >
                 <Eye className="h-4 w-4" />
                 {loading ? 'Starting...' : `View as ${targetEmail.split('@')[0]}`}

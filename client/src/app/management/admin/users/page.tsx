@@ -12,9 +12,11 @@ export default async function AdminUsersPage(): Promise<JSX.Element> {
     const session = await auth()
     if (!session) redirect('/auth/login')
 
-    // Only ADMIN portal type can access this page
-    if (session.user.portalType !== 'ADMIN') redirect('/dashboard')
+    // Only SUPER_ADMIN can access this cross-institution view
+    if (session.user.portalType !== 'SUPER_ADMIN') redirect('/dashboard')
 
+    // Super admin intentionally queries across all institutions
+    // Access is restricted by the portalType check above
     const users: UserWithInstitution[] = await prisma.user.findMany({
         include: {
             institution: {

@@ -1,0 +1,74 @@
+// Role badge colors
+export const ROLE_COLORS: Record<string, string> = {
+    ADMIN: 'bg-blue-100 text-blue-700',
+    TEACHER: 'bg-indigo-100 text-indigo-700',
+    STUDENT: 'bg-violet-100 text-violet-700',
+    PARENT: 'bg-emerald-100 text-emerald-700',
+    INSTRUCTOR: 'bg-amber-100 text-amber-700',
+    SUPER_ADMIN: 'bg-red-100 text-red-700',
+}
+
+// Plan tier badge colors
+export const PLAN_COLORS: Record<string, string> = {
+    STARTER: 'bg-gray-100 text-gray-600',
+    GROWTH: 'bg-blue-100 text-blue-600',
+    PRO: 'bg-purple-100 text-purple-600',
+}
+
+// Status badge colors
+export const STATUS_COLORS = {
+    active: 'bg-green-100 text-green-700',
+    inactive: 'bg-red-100 text-red-700',
+    pending: 'bg-amber-100 text-amber-700',
+    suspended: 'bg-orange-100 text-orange-700',
+}
+
+// Ticket priority colors
+export const PRIORITY_COLORS: Record<string, string> = {
+    LOW: 'bg-gray-100 text-gray-600',
+    MEDIUM: 'bg-blue-100 text-blue-600',
+    HIGH: 'bg-orange-100 text-orange-600',
+    CRITICAL: 'bg-red-100 text-red-700',
+}
+
+// Ticket status colors
+export const TICKET_STATUS_COLORS: Record<string, string> = {
+    OPEN: 'bg-blue-100 text-blue-700',
+    IN_PROGRESS: 'bg-amber-100 text-amber-700',
+    RESOLVED: 'bg-green-100 text-green-700',
+    CLOSED: 'bg-gray-100 text-gray-600',
+}
+
+// Audit action colors
+export const AUDIT_ACTION_COLORS: Record<string, string> = {
+    created: 'bg-green-100 text-green-700',
+    updated: 'bg-blue-100 text-blue-700',
+    deleted: 'bg-red-100 text-red-700',
+    PASSWORD_CHANGED: 'bg-amber-100 text-amber-700',
+    MASQUERADE_START: 'bg-purple-100 text-purple-700',
+    MASQUERADE_STOP: 'bg-gray-100 text-gray-600',
+}
+
+// Masquerade mode colors
+export const MASQUERADE_MODE_COLORS: Record<string, string> = {
+    FULL_ACCESS: 'bg-green-100 text-green-700',
+    READ_ONLY: 'bg-amber-100 text-amber-700',
+    DISABLED: 'bg-gray-100 text-gray-600',
+}
+
+// Avatar background colors (generated from name hash)
+export const AVATAR_COLORS = [
+    'bg-blue-500',
+    'bg-violet-500',
+    'bg-emerald-500',
+    'bg-amber-500',
+    'bg-red-500',
+    'bg-indigo-500',
+    'bg-pink-500',
+    'bg-teal-500',
+]
+
+export function getAvatarColor(name: string): string {
+    const index = name.charCodeAt(0) % AVATAR_COLORS.length
+    return AVATAR_COLORS[index] ?? 'bg-gray-500'
+}

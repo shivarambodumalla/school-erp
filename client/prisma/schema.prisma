@@ -8,19 +8,28 @@ datasource db {
 }
 
 model Institution {
-  id           String    @id @default(cuid())
-  name         String
-  subdomain    String    @unique
-  primaryColor String    @default("#1d4ed8")
-  logoUrl      String?
-  planTier     PlanTier  @default(STARTER)
-  board        Board     @default(CBSE)
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  users        User[]
-  students     Student[]
-  roles        Role[]
+  id                String                   @id @default(cuid())
+  name              String
+  subdomain         String                   @unique
+  primaryColor      String                   @default("#1d4ed8")
+  logoUrl           String?
+  planTier          PlanTier                 @default(STARTER)
+  board             Board                    @default(CBSE)
+  isActive          Boolean                  @default(true)
+  suspendedAt       DateTime?
+  suspendedReason   String?
+  billingEmail      String?
+  customPricing     Decimal?                 @db.Decimal(10, 2)
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  users             User[]
+  students          Student[]
+  roles             Role[]
+  onboarding        OnboardingStep?
+  documents         Document[]
+  calendarEvents    SchoolCalendarEvent[]
+  tickets           SupportTicket[]
+  communicationLogs ParentCommunicationLog[]
 }
 
 model User {
@@ -66,16 +75,18 @@ model AcademicYear {
 }
 
 model Class {
-  id             String @id @default(cuid())
+  id             String    @id @default(cuid())
   institutionId  String
   academicYearId String
   name           String
   gradeLevel     Int
+  sections       Section[]
 }
 
 model Section {
   id             String  @id @default(cuid())
   classId        String
+  class          Class   @relation(fields: [classId], references: [id])
   name           String
   classTeacherId String?
 }
@@ -145,6 +156,7 @@ enum Board {
 }
 
 enum PortalType {
+  SUPER_ADMIN
   ADMIN
   TEACHER
   STUDENT
@@ -187,4 +199,154 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+enum DocumentType {
+  TRANSFER_CERTIFICATE
+  ADMISSION_FORM
+  MARKSHEET
+  ID_PROOF
+  MEDICAL_RECORD
+  STAFF_CONTRACT
+  OTHER
+}
+
+enum CalendarEventType {
+  HOLIDAY
+  EXAM
+  EVENT
+  MEETING
+  DEADLINE
+  OTHER
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  SMS
+  EMAIL
+  PUSH
+}
+
+enum NotificationStatus {
+  SENT
+  DELIVERED
+  FAILED
+  PENDING
+}
+
+model OnboardingStep {
+  id            String      @id @default(cuid())
+  institutionId String      @unique
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  classesAdded  Boolean     @default(false)
+  staffAdded    Boolean     @default(false)
+  studentsAdded Boolean     @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime    @default(now())
+}
+
+model Document {
+  id            String       @id @default(cuid())
+  institutionId String
+  institution   Institution  @relation(fields: [institutionId], references: [id])
+  studentId     String?
+  staffId       String?
+  uploadedById  String
+  name          String
+  type          DocumentType
+  fileUrl       String
+  fileSize      Int
+  mimeType      String
+  isVerified    Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+}
+
+model SchoolCalendarEvent {
+  id            String            @id @default(cuid())
+  institutionId String
+  institution   Institution       @relation(fields: [institutionId], references: [id])
+  title         String
+  description   String?
+  type          CalendarEventType
+  startDate     DateTime
+  endDate       DateTime
+  isHoliday     Boolean           @default(false)
+  createdById   String
+  createdAt     DateTime          @default(now())
+}
+
+model SupportTicket {
+  id            String          @id @default(cuid())
+  institutionId String
+  institution   Institution     @relation(fields: [institutionId], references: [id])
+  raisedById    String
+  title         String
+  description   String
+  priority      TicketPriority  @default(MEDIUM)
+  status        TicketStatus    @default(OPEN)
+  resolvedById  String?
+  resolvedAt    DateTime?
+  messages      TicketMessage[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model TicketMessage {
+  id         String        @id @default(cuid())
+  ticketId   String
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id])
+  authorId   String
+  body       String
+  isInternal Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+}
+
+model ParentCommunicationLog {
+  id            String              @id @default(cuid())
+  institutionId String
+  institution   Institution         @relation(fields: [institutionId], references: [id])
+  studentId     String
+  sentById      String
+  channel       NotificationChannel
+  subject       String?
+  body          String
+  status        NotificationStatus  @default(SENT)
+  sentAt        DateTime            @default(now())
+}
+
+model PlatformRole {
+  id             String         @id @default(cuid())
+  name           String         @unique
+  description    String?
+  permissions    Json           @default("[]")
+  masqueradeMode MasqueradeMode @default(DISABLED)
+  isSystemRole   Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  users          PlatformUser[]
+}
+
+model PlatformUser {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  hashedPassword String
+  platformRoleId String
+  platformRole   PlatformRole @relation(fields: [platformRoleId], references: [id])
+  isActive       Boolean      @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime     @default(now())
 }
