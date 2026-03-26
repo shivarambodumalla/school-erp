@@ -160,7 +160,7 @@ export function PlatformUsersClient({ users, roles }: Props) {
                                 </select>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                A temporary password <strong>TempPass@123</strong> will be assigned. Share it with the user.
+                                A secure temporary password will be generated. Share it with the user after creation.
                             </p>
                             <div className="flex justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => setShowInvite(false)}>Cancel</Button>

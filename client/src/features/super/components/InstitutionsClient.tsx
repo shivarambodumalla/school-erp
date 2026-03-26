@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 'use client'
 
 import { useState } from 'react'
@@ -11,14 +13,7 @@ import {
 } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { InstitutionRow, type Institution } from './InstitutionRow'
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
+import { AddInstitutionDrawer } from '@/app/super/institutions/_components/AddInstitutionDrawer'
 
 interface Props {
     institutions: Institution[]
@@ -150,50 +145,11 @@ export function InstitutionsClient({ institutions }: Props) {
                         </PopoverContent>
                     </Popover>
 
-                    <Sheet open={isAddOpen} onOpenChange={setIsAddOpen}>
-                        <SheetTrigger asChild>
-                            <Button size="sm" className="h-9">
-                                <Plus className="h-4 w-4 mr-1.5" />
-                                Institution
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
-                            <SheetHeader>
-                                <SheetTitle>Add Institution</SheetTitle>
-                                <SheetDescription>
-                                    Create a new institution and set up their administrative account.
-                                </SheetDescription>
-                            </SheetHeader>
-                            <div className="py-6 space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Institution Name</label>
-                                    <Input placeholder="Enter institution name" className="h-9" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Contact Email</label>
-                                    <Input type="email" placeholder="admin@school.edu" className="h-9" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Board</label>
-                                        <Input placeholder="e.g. CBSE" className="h-9" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Plan Tier</label>
-                                        <Input placeholder="e.g. GROWTH" className="h-9" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-3 mt-4">
-                                <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                                <Button onClick={() => {
-                                    // TODO: Implement actual TRPC mutation here
-                                    // Mock success closure
-                                    setIsAddOpen(false)
-                                }}>Save Institution</Button>
-                            </div>
-                        </SheetContent>
-                    </Sheet>
+                    <Button size="sm" className="h-9" onClick={() => setIsAddOpen(true)}>
+                        <Plus className="h-4 w-4 mr-1.5" />
+                        Institution
+                    </Button>
+                    <AddInstitutionDrawer open={isAddOpen} onOpenChange={setIsAddOpen} />
                 </div>
             </div>
 

@@ -17,10 +17,11 @@ interface CreateDocumentData {
 export async function createDocument(data: CreateDocumentData) {
     const session = await auth()
     if (!session) throw new Error('Unauthorized')
+    if (session.user.portalType !== 'ADMIN') return { error: 'Unauthorised' }
 
     await prisma.document.create({
         data: {
-            institutionId: data.institutionId,
+            institutionId: session.user.institutionId,
             name: data.name,
             type: data.type,
             fileUrl: data.fileUrl,

@@ -20,6 +20,27 @@ model Institution {
   suspendedReason   String?
   billingEmail      String?
   customPricing     Decimal?                 @db.Decimal(10, 2)
+
+  // White labeling
+  secondaryColor    String?
+  themePalette      Json?
+  darkPalette       Json?
+  faviconUrl        String?
+  emailHeader       String?
+  themeAppliedAt    DateTime?
+
+  // Additional details
+  institutionType   InstitutionType          @default(SCHOOL)
+  addressLine1      String?
+  addressLine2      String?
+  city              String?
+  state             String?
+  pinCode           String?
+  phone             String?
+  website           String?
+  establishedYear   Int?
+  studentCapacity   Int?
+
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
   users             User[]
@@ -153,6 +174,13 @@ enum Board {
   CBSE
   ICSE
   STATE
+}
+
+enum InstitutionType {
+  SCHOOL
+  COLLEGE
+  UNIVERSITY
+  TRAINING_CENTER
 }
 
 enum PortalType {

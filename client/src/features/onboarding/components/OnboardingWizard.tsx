@@ -25,12 +25,19 @@ export function OnboardingWizard({ institutionId, institutionName }: Props) {
     const [done, setDone] = useState(false)
 
     function handleComplete() {
+        // Filter out empty/incomplete entries
+        const validClasses = classes.filter(c => c.name.trim())
+        const validStaff = staff.filter(s => s.firstName.trim() && s.email.trim())
+        const validStudents = students.filter(
+            s => s.firstName.trim() && s.admissionNo.trim() && s.dateOfBirth
+        )
+
         startTransition(async () => {
             await completeOnboarding({
                 institutionId,
-                classes,
-                staff,
-                students,
+                classes: validClasses,
+                staff: validStaff,
+                students: validStudents,
                 classId: '',
             })
             setDone(true)

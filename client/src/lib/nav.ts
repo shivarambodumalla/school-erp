@@ -1,9 +1,9 @@
 import {
-    LayoutDashboard, Users, CreditCard,
-    BookOpen, BarChart3, Settings, GraduationCap,
-    Clock, Bus, MessageCircle, ShieldCheck,
-    Rss, Building2, FolderOpen, CalendarDays,
-    Ticket, ClipboardList,
+    LayoutDashboard, LayoutGrid, Clock, CalendarCheck,
+    CalendarDays, GraduationCap, Users, UserCheck,
+    MessageCircle, CreditCard, BookOpen, Rss, Bus,
+    ShieldCheck, FolderOpen, BarChart3, ClipboardList,
+    Ticket, Palette, Settings, AlertTriangle,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PERMISSIONS, type Permission } from './permissions'
@@ -26,22 +26,23 @@ export const MANAGEMENT_NAV: NavGroup[] = [
         label: 'Overview',
         items: [
             { label: 'Dashboard', path: '/management/dashboard', icon: LayoutDashboard, permission: null },
-            { label: 'Institution', path: '/management/institution', icon: Building2, permission: null },
         ],
     },
     {
         label: 'Academic',
         items: [
-            { label: 'Classes', path: '/management/institution/classes', icon: BookOpen, permission: PERMISSIONS.STUDENTS_VIEW },
+            { label: 'Classes', path: '/management/institution/classes', icon: LayoutGrid, permission: PERMISSIONS.STUDENTS_VIEW },
             { label: 'Timetable', path: '/management/timetable', icon: Clock, permission: PERMISSIONS.TIMETABLE_VIEW },
-            { label: 'Calendar', path: '/management/calendar', icon: CalendarDays, permission: PERMISSIONS.CALENDAR_VIEW },
+            { label: 'Attendance', path: '/management/attendance', icon: CalendarCheck, permission: PERMISSIONS.ATTENDANCE_VIEW },
+            { label: 'Grades', path: '/management/grades', icon: GraduationCap, permission: PERMISSIONS.GRADES_VIEW },
+            { label: 'Calendar', path: '/management/calendar', icon: CalendarDays, permission: PERMISSIONS.TIMETABLE_VIEW },
         ],
     },
     {
         label: 'People',
         items: [
-            { label: 'Students', path: '/management/students', icon: GraduationCap, permission: PERMISSIONS.STUDENTS_VIEW },
-            { label: 'Staff', path: '/management/staff', icon: Users, permission: PERMISSIONS.STAFF_VIEW },
+            { label: 'Students', path: '/management/students', icon: Users, permission: PERMISSIONS.STUDENTS_VIEW },
+            { label: 'Staff', path: '/management/staff', icon: UserCheck, permission: PERMISSIONS.STAFF_VIEW },
             { label: 'Communications', path: '/management/communications', icon: MessageCircle, permission: PERMISSIONS.COMMUNICATIONS_VIEW },
         ],
     },
@@ -56,16 +57,19 @@ export const MANAGEMENT_NAV: NavGroup[] = [
         items: [
             { label: 'Courses', path: '/management/courses', icon: BookOpen, permission: PERMISSIONS.COURSES_VIEW },
             { label: 'Vibe', path: '/management/vibe', icon: Rss, permission: PERMISSIONS.VIBE_VIEW },
-            { label: 'Documents', path: '/management/documents', icon: FolderOpen, permission: PERMISSIONS.DOCUMENTS_VIEW },
-            { label: 'Reports', path: '/management/reports', icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
+            { label: 'Bus Tracking', path: '/management/bus', icon: Bus, permission: PERMISSIONS.BUS_VIEW },
         ],
     },
     {
         label: 'Admin',
         items: [
+            { label: 'Roles', path: '/management/staff/roles', icon: ShieldCheck, permission: PERMISSIONS.ROLES_VIEW },
+            { label: 'Documents', path: '/management/documents', icon: FolderOpen, permission: PERMISSIONS.DOCUMENTS_VIEW },
+            { label: 'Reports', path: '/management/reports', icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
             { label: 'Audit Log', path: '/management/audit', icon: ClipboardList, permission: PERMISSIONS.AUDIT_VIEW },
             { label: 'Support', path: '/management/tickets', icon: Ticket, permission: PERMISSIONS.TICKETS_VIEW },
-            { label: 'Roles', path: '/management/admin/users', icon: ShieldCheck, permission: PERMISSIONS.ROLES_VIEW },
+            { label: 'Risk Signals', path: '/management/risk', icon: AlertTriangle, permission: PERMISSIONS.SETTINGS_VIEW },
+            { label: 'Brand & Theme', path: '/management/settings/whitelabel', icon: Palette, permission: PERMISSIONS.SETTINGS_MANAGE },
             { label: 'Settings', path: '/management/settings', icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },
         ],
     },

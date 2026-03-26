@@ -47,6 +47,7 @@ export const AUDIT_ACTION_COLORS: Record<string, string> = {
     PASSWORD_CHANGED: 'bg-amber-100 text-amber-700',
     MASQUERADE_START: 'bg-purple-100 text-purple-700',
     MASQUERADE_STOP: 'bg-gray-100 text-gray-600',
+    THEME_UPDATED: 'bg-violet-100 text-violet-700',
 }
 
 // Masquerade mode colors

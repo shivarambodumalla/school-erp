@@ -31,6 +31,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
+        // Enforce institution boundary for non-super-admins
+        if (
+            session.user.portalType !== 'SUPER_ADMIN' &&
+            targetUser.institutionId !== session.user.institutionId
+        ) {
+            return NextResponse.json(
+                { error: 'Forbidden: target user belongs to a different institution' },
+                { status: 403 },
+            )
+        }
+
         // Enforce hierarchy
         if (!canMasqueradeAs(session.user.portalType, targetUser.portalType)) {
             return NextResponse.json(

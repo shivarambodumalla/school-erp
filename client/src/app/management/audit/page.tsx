@@ -1,27 +1,24 @@
 import { auth } from '@/server/auth'
-import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import { AuditLogClient } from '@/features/audit/components/AuditLogClient'
+import { AuditTab } from
+  '@/app/super/institutions/[institutionId]/_components/tabs/AuditTab'
 
 export default async function AuditPage() {
-    const session = await auth()
-    if (!session) redirect('/auth/login')
+  const session = await auth()
+  if (!session) redirect('/auth/login')
 
-    const logs = await prisma.auditLog.findMany({
-        where: { institutionId: session.user.institutionId },
-        select: {
-            id: true,
-            action: true,
-            tableName: true,
-            recordId: true,
-            before: true,
-            after: true,
-            createdAt: true,
-            userId: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-    })
-
-    return <AuditLogClient logs={logs} />
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Audit Log</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Track all admin actions in your institution
+        </p>
+      </div>
+      <AuditTab
+        institutionId={session.user.institutionId}
+        apiBase="/api/school"
+      />
+    </div>
+  )
 }

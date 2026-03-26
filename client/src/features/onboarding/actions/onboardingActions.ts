@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import bcrypt from 'bcryptjs'
+import { auth } from '@/server/auth'
 
 interface ClassInput {
     name: string
@@ -38,6 +39,9 @@ interface OnboardingData {
 }
 
 export async function completeOnboarding(data: OnboardingData) {
+    const session = await auth()
+    if (!session || session.user.institutionId !== data.institutionId) return { error: 'Unauthorised' }
+
     const defaultYear = await prisma.academicYear.findFirst({
         where: { institutionId: data.institutionId, isCurrent: true },
         select: { id: true },
@@ -57,6 +61,7 @@ export async function completeOnboarding(data: OnboardingData) {
         // Create classes + sections
         const createdClasses: { id: string; sectionId: string }[] = []
         for (const cls of data.classes) {
+            if (!cls.name.trim()) continue
             const created = await tx.class.create({
                 data: {
                     institutionId: data.institutionId,
@@ -73,6 +78,7 @@ export async function completeOnboarding(data: OnboardingData) {
 
         // Create staff users
         for (const member of data.staff) {
+            if (!member.email.trim() || !member.firstName.trim()) continue
             const hashed = await bcrypt.hash(member.password, 12)
             await tx.user.create({
                 data: {
@@ -87,13 +93,17 @@ export async function completeOnboarding(data: OnboardingData) {
         // Create students (assigned to first class + section)
         const firstClass = createdClasses[0]
         for (const student of data.students) {
+            if (!student.firstName.trim() || !student.admissionNo.trim()) continue
+            const dob = new Date(student.dateOfBirth)
+            if (isNaN(dob.getTime())) continue
+
             await tx.student.create({
                 data: {
                     institutionId: data.institutionId,
                     admissionNo: student.admissionNo,
                     firstName: student.firstName,
                     lastName: student.lastName,
-                    dateOfBirth: new Date(student.dateOfBirth),
+                    dateOfBirth: dob,
                     gender: student.gender,
                     classId: firstClass?.id ?? data.classId,
                     sectionId: firstClass?.sectionId ?? '',

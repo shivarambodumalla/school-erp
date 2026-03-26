@@ -2,7 +2,7 @@ import { auth } from '@/server/auth'
 import { redirect } from 'next/navigation'
 import { isConsumerPortal } from '@/lib/permissions'
 import { ConsumerBottomNav } from '@/components/layout/ConsumerBottomNav'
-import { TopBar } from '@/components/layout/TopBar'
+import { ThemeToggle } from '@/components/theme-toggle'
 import type { ReactNode } from 'react'
 
 export default async function ConsumerLayout({
@@ -21,7 +21,9 @@ export default async function ConsumerLayout({
 
     return (
         <div className="flex flex-col min-h-screen">
-            <TopBar title="" />
+            <div className="fixed top-3 right-3 z-30">
+                <ThemeToggle />
+            </div>
             <main className="flex-1 pb-20 p-4">
                 {children}
             </main>

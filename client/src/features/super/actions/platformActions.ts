@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
+import { auth } from '@/server/auth'
 
 interface CreateRoleData {
     name: string
@@ -12,6 +14,9 @@ interface CreateRoleData {
 }
 
 export async function createPlatformRole(data: CreateRoleData) {
+    const session = await auth()
+    if (!session || session.user.portalType !== 'SUPER_ADMIN') return { error: 'Unauthorised' }
+
     await prisma.platformRole.create({
         data: {
             name: data.name,
@@ -24,6 +29,9 @@ export async function createPlatformRole(data: CreateRoleData) {
 }
 
 export async function updatePlatformRole(id: string, data: Partial<CreateRoleData>) {
+    const session = await auth()
+    if (!session || session.user.portalType !== 'SUPER_ADMIN') return { error: 'Unauthorised' }
+
     await prisma.platformRole.update({
         where: { id },
         data: {
@@ -37,6 +45,9 @@ export async function updatePlatformRole(id: string, data: Partial<CreateRoleDat
 }
 
 export async function deletePlatformRole(id: string) {
+    const session = await auth()
+    if (!session || session.user.portalType !== 'SUPER_ADMIN') return { error: 'Unauthorised' }
+
     const role = await prisma.platformRole.findUnique({ where: { id }, select: { isSystemRole: true } })
     if (role?.isSystemRole) throw new Error('Cannot delete system roles')
     await prisma.platformRole.delete({ where: { id } })
@@ -44,7 +55,10 @@ export async function deletePlatformRole(id: string) {
 }
 
 export async function createPlatformUser(email: string, platformRoleId: string) {
-    const tempPassword = 'TempPass@123'
+    const session = await auth()
+    if (!session || session.user.portalType !== 'SUPER_ADMIN') return { error: 'Unauthorised' }
+
+    const tempPassword = crypto.randomBytes(12).toString('base64url').slice(0, 16)
     const hashedPassword = await bcrypt.hash(tempPassword, 12)
     await prisma.platformUser.create({
         data: { email, hashedPassword, platformRoleId },
@@ -54,11 +68,17 @@ export async function createPlatformUser(email: string, platformRoleId: string) 
 }
 
 export async function deactivatePlatformUser(id: string) {
+    const session = await auth()
+    if (!session || session.user.portalType !== 'SUPER_ADMIN') return { error: 'Unauthorised' }
+
     await prisma.platformUser.update({ where: { id }, data: { isActive: false } })
     revalidatePath('/super/users')
 }
 
 export async function changePlatformUserRole(userId: string, roleId: string) {
+    const session = await auth()
+    if (!session || session.user.portalType !== 'SUPER_ADMIN') return { error: 'Unauthorised' }
+
     await prisma.platformUser.update({ where: { id: userId }, data: { platformRoleId: roleId } })
     revalidatePath('/super/users')
 }

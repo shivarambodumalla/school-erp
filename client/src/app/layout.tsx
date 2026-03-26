@@ -7,6 +7,7 @@ import { auth } from "@/server/auth";
 import { MasqueradeBar } from "@/components/shared/MasqueradeBar";
 import { MasqueradeFrame } from "@/components/shared/MasqueradeFrame";
 import { MasqueradeReadOnlyOverlay } from "@/components/shared/MasqueradeReadOnlyOverlay";
+import { Toaster } from 'sonner'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,8 +21,41 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "School ERP",
-  description: "Multi-tenant School ERP — Admin, Teacher, Student, Parent, Instructor",
+  title: {
+    default: 'Onflows',
+    template: '%s | Onflows',
+  },
+  description: 'Your school. In flow.',
+  applicationName: 'Onflows',
+  keywords: [
+    'school management',
+    'ERP',
+    'education',
+    'LMS',
+    'school software',
+    'India',
+  ],
+  authors: [{ name: 'Onflows' }],
+  creator: 'Onflows',
+  metadataBase: new URL('https://onflows.app'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    url: 'https://onflows.app',
+    title: 'Onflows',
+    description: 'Your school. In flow.',
+    siteName: 'Onflows',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Onflows',
+    description: 'Your school. In flow.',
+    creator: '@onflows',
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default async function RootLayout({
@@ -47,6 +81,11 @@ export default async function RootLayout({
             <MasqueradeFrame />
             <MasqueradeBar />
             <MasqueradeReadOnlyOverlay />
+            <Toaster
+              position="top-right"
+              richColors
+              closeButton
+            />
           </ThemeProvider>
         </SessionProvider>
       </body>

@@ -30,7 +30,7 @@ export function SuperSidebar({ userEmail }: { userEmail: string }) {
                         <ShieldCheck className="h-4 w-4 text-primary-foreground" />
                     </div>
                     <div>
-                        <p className="text-sm font-bold leading-none">Platform</p>
+                        <p className="text-sm font-bold leading-none">Onflows</p>
                         <p className="text-xs text-muted-foreground mt-0.5">Super Admin</p>
                     </div>
                 </div>

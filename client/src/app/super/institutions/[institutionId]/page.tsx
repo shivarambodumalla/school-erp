@@ -1,87 +1,149 @@
 import { auth } from '@/server/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
-import { InstitutionDetailClient } from '@/features/super/components/InstitutionDetailClient'
+import { InstitutionHero } from
+  './_components/InstitutionHero'
+import { InstitutionTabs } from
+  './_components/InstitutionTabs'
 
-interface Props {
-    params: { institutionId: string }
-}
+export default async function InstitutionDetailPage({
+  params,
+}: {
+  params: { institutionId: string }
+}) {
+  const session = await auth()
+  if (!session || session.user.portalType !== 'SUPER_ADMIN') {
+    redirect('/auth/login')
+  }
 
-export default async function InstitutionDetailPage({ params }: Props) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'SUPER_ADMIN') {
-        redirect('/auth/login')
-    }
-
-    const institution = await prisma.institution.findUnique({
-        where: { id: params.institutionId },
+  const institution = await prisma.institution.findUnique({
+    where: { id: params.institutionId },
+    select: {
+      id: true,
+      name: true,
+      subdomain: true,
+      institutionType: true,
+      board: true,
+      planTier: true,
+      primaryColor: true,
+      secondaryColor: true,
+      logoUrl: true,
+      isActive: true,
+      suspendedAt: true,
+      suspendedReason: true,
+      createdAt: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      state: true,
+      pinCode: true,
+      phone: true,
+      website: true,
+      billingEmail: true,
+      establishedYear: true,
+      studentCapacity: true,
+      themePalette: true,
+      themeAppliedAt: true,
+      onboarding: {
         select: {
-            id: true,
-            name: true,
-            subdomain: true,
-            board: true,
-            planTier: true,
-            isActive: true,
-            suspendedAt: true,
-            suspendedReason: true,
-            billingEmail: true,
-            customPricing: true,
-            createdAt: true,
-            onboarding: {
-                select: {
-                    classesAdded: true,
-                    staffAdded: true,
-                    studentsAdded: true,
-                    completedAt: true,
-                },
-            },
-            _count: { select: { students: true, users: true } },
-            users: {
-                select: {
-                    id: true,
-                    email: true,
-                    portalType: true,
-                    isActive: true,
-                    lastLoginAt: true,
-                    createdAt: true,
-                },
-                orderBy: { createdAt: 'asc' },
-            },
-            tickets: {
-                select: {
-                    id: true,
-                    title: true,
-                    status: true,
-                    priority: true,
-                    createdAt: true,
-                },
-                orderBy: { createdAt: 'desc' },
-                take: 20,
-            },
+          classesAdded: true,
+          staffAdded: true,
+          studentsAdded: true,
+          completedAt: true,
         },
-    })
-
-    if (!institution) notFound()
-
-    const auditLogs = await prisma.auditLog.findMany({
-        where: { institutionId: params.institutionId },
+      },
+      _count: {
         select: {
-            id: true,
-            action: true,
-            tableName: true,
-            recordId: true,
-            userId: true,
-            createdAt: true,
+          users: true,
+          students: true,
         },
-        orderBy: { createdAt: 'desc' },
-        take: 50,
-    })
+      },
+    },
+  })
 
-    const institutionWithAudit = {
-        ...institution,
-        customPricing: institution.customPricing?.toString() ?? null,
-        auditLogs,
-    }
+  if (!institution) notFound()
 
-    return <InstitutionDetailClient institution={institutionWithAudit} />
+  const lastActivity = await prisma.user.findFirst({
+    where: {
+      institutionId: params.institutionId,
+      lastLoginAt: { not: null },
+    },
+    orderBy: { lastLoginAt: 'desc' },
+    select: {
+      lastLoginAt: true,
+      email: true,
+      portalType: true,
+    },
+  })
+
+  const openTickets = await prisma.supportTicket.count({
+    where: {
+      institutionId: params.institutionId,
+      status: 'OPEN',
+    },
+  })
+
+  return (
+    <div className="space-y-6">
+      <InstitutionHero
+        institution={{
+          ...institution,
+          createdAt: institution.createdAt.toISOString(),
+          suspendedAt: institution.suspendedAt?.toISOString() ?? null,
+          themeAppliedAt: institution.themeAppliedAt?.toISOString() ?? null,
+          onboarding: institution.onboarding
+            ? {
+                ...institution.onboarding,
+                completedAt:
+                  institution.onboarding.completedAt?.toISOString() ?? null,
+              }
+            : null,
+        }}
+        editData={{
+          id: institution.id,
+          name: institution.name,
+          subdomain: institution.subdomain,
+          institutionType: institution.institutionType,
+          board: institution.board,
+          planTier: institution.planTier,
+          addressLine1: institution.addressLine1,
+          addressLine2: institution.addressLine2,
+          city: institution.city,
+          state: institution.state,
+          pinCode: institution.pinCode,
+          phone: institution.phone,
+          website: institution.website,
+          establishedYear: institution.establishedYear,
+          studentCapacity: institution.studentCapacity,
+          billingEmail: institution.billingEmail,
+        }}
+        lastActivity={
+          lastActivity
+            ? {
+                lastLoginAt:
+                  lastActivity.lastLoginAt?.toISOString() ?? null,
+                email: lastActivity.email,
+                portalType: lastActivity.portalType,
+              }
+            : null
+        }
+        openTickets={openTickets}
+      />
+      <InstitutionTabs
+        institutionId={params.institutionId}
+        apiBase={`/api/super/institutions/${params.institutionId}`}
+        institution={{
+          id: institution.id,
+          name: institution.name,
+          primaryColor: institution.primaryColor,
+          secondaryColor: institution.secondaryColor,
+          logoUrl: institution.logoUrl,
+          planTier: institution.planTier,
+          themePalette: institution.themePalette,
+          themeAppliedAt:
+            institution.themeAppliedAt?.toISOString() ?? null,
+        }}
+      />
+    </div>
+  )
 }

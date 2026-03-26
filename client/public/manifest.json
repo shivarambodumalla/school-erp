@@ -1,0 +1,9 @@
+{
+  "name": "Onflows",
+  "short_name": "Onflows",
+  "description": "Your school. In flow.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8"
+}

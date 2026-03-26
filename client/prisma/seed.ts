@@ -3,6 +3,10 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
+// Onflows — Seed Data
+// Subdomains resolve to [subdomain].onflows.app in production
+// and [subdomain].localhost:3000 in development
+
 const HASH_ROUNDS = 12
 
 async function main(): Promise<void> {

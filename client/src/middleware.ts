@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prefer-const */
+
 import { auth } from '@/server/auth'
 import { NextResponse } from 'next/server'
 
@@ -6,6 +9,20 @@ const PUBLIC_ROUTES = ['/', '/auth/login', '/auth/error']
 export default auth((req) => {
     const { nextUrl } = req
     const session = req.auth
+
+    // Subdomain resolution:
+    // Production: stmarys.onflows.app → institutionId
+    // Development: stmarys.localhost:3000 → institutionId
+
+    const hostname = req.headers.get('host') ?? ''
+    const subdomain = hostname
+        .replace('.onflows.app', '')
+        .replace('.localhost:3000', '')
+        .split('.')[0]
+
+    // In development default to 'stmarys' if no subdomain
+    let resolvedSubdomain =
+        hostname === 'localhost:3000' ? 'stmarys' : subdomain
 
     const isPublic =
         PUBLIC_ROUTES.includes(nextUrl.pathname) ||

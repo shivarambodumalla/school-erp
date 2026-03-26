@@ -1,4 +1,10 @@
-# SCHOOL ERP — PROJECT CONTEXT
+# ONFLOWS — PROJECT CONTEXT
+
+## Product
+- Name: Onflows
+- Domain: onflows.app
+- Tagline: Your school. In flow.
+- Description: Multi-tenant School ERP + LMS + Community platform
 
 ## Current State
 Phase: Week 1 — Foundation complete

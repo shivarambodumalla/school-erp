@@ -13,6 +13,7 @@ interface CreateTicketData {
 export async function createTicket(data: CreateTicketData) {
     const session = await auth()
     if (!session) throw new Error('Unauthorized')
+    if (session.user.portalType !== 'ADMIN') return { error: 'Unauthorised' }
 
     await prisma.supportTicket.create({
         data: {
@@ -31,6 +32,14 @@ export async function replyToTicket(ticketId: string, body: string, isInternal =
     const session = await auth()
     if (!session) throw new Error('Unauthorized')
 
+    const ticket = await prisma.supportTicket.findUnique({
+        where: { id: ticketId },
+        select: { institutionId: true },
+    })
+    if (!ticket || (session.user.portalType !== 'SUPER_ADMIN' && ticket.institutionId !== session.user.institutionId)) {
+        return { error: 'Unauthorised' }
+    }
+
     await prisma.ticketMessage.create({
         data: { ticketId, authorId: session.user.id, body, isInternal },
     })
@@ -47,6 +56,14 @@ export async function replyToTicket(ticketId: string, body: string, isInternal =
 export async function updateTicketStatus(ticketId: string, status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED') {
     const session = await auth()
     if (!session) throw new Error('Unauthorized')
+
+    const ticket = await prisma.supportTicket.findUnique({
+        where: { id: ticketId },
+        select: { institutionId: true },
+    })
+    if (!ticket || (session.user.portalType !== 'SUPER_ADMIN' && ticket.institutionId !== session.user.institutionId)) {
+        return { error: 'Unauthorised' }
+    }
 
     await prisma.supportTicket.update({
         where: { id: ticketId },
