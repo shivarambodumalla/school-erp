@@ -1,0 +1,36 @@
+src/app/api/super/institutions/[institutionId]/academic/route.ts(34,14): error TS2339: Property 'timetableSlot' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/super/institutions/[institutionId]/academic/route.ts(42,8): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/app/api/super/institutions/[institutionId]/academic/route.ts(42,13): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/app/api/super/institutions/[institutionId]/academic/route.ts(47,26): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/app/api/super/institutions/[institutionId]/audit/route.ts(19,7): error TS2353: Object literal may only specify known properties, and 'user' does not exist in type 'AuditLogSelect<DefaultArgs>'.
+src/app/super/institutions/[institutionId]/_components/tabs/AcademicTab.tsx(56,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/AcademicTab.tsx(58,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/AcademicTab.tsx(60,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/AcademicTab.tsx(63,11): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/AuditTab.tsx(93,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/app/super/institutions/[institutionId]/_components/tabs/FinanceTab.tsx(57,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/FinanceTab.tsx(60,11): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/FinanceTab.tsx(64,11): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/FinanceTab.tsx(69,11): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/PeopleTab.tsx(109,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/PeopleTab.tsx(111,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/PeopleTab.tsx(113,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/PeopleTab.tsx(115,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/SupportTab.tsx(52,19): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/SupportTab.tsx(57,11): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.
+src/app/super/institutions/[institutionId]/_components/tabs/SupportTab.tsx(63,11): error TS2322: Type '{ label: string; value: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; color: string; }' is not assignable to type 'IntrinsicAttributes & StatCardProps'.
+  Property 'label' does not exist on type 'IntrinsicAttributes & StatCardProps'.

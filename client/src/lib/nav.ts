@@ -3,7 +3,7 @@ import {
     CalendarDays, GraduationCap, Users, UserCheck,
     MessageCircle, CreditCard, BookOpen, Rss, Bus,
     ShieldCheck, FolderOpen, BarChart3, ClipboardList,
-    Ticket, Palette, Settings, AlertTriangle,
+    Ticket, Settings, AlertTriangle,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PERMISSIONS, type Permission } from './permissions'
@@ -35,7 +35,7 @@ export const MANAGEMENT_NAV: NavGroup[] = [
             { label: 'Timetable', path: '/management/timetable', icon: Clock, permission: PERMISSIONS.TIMETABLE_VIEW },
             { label: 'Attendance', path: '/management/attendance', icon: CalendarCheck, permission: PERMISSIONS.ATTENDANCE_VIEW },
             { label: 'Grades', path: '/management/grades', icon: GraduationCap, permission: PERMISSIONS.GRADES_VIEW },
-            { label: 'Calendar', path: '/management/calendar', icon: CalendarDays, permission: PERMISSIONS.TIMETABLE_VIEW },
+            { label: 'Calendar', path: '/management/calendar', icon: CalendarDays, permission: PERMISSIONS.CALENDAR_VIEW },
         ],
     },
     {
@@ -69,7 +69,6 @@ export const MANAGEMENT_NAV: NavGroup[] = [
             { label: 'Audit Log', path: '/management/audit', icon: ClipboardList, permission: PERMISSIONS.AUDIT_VIEW },
             { label: 'Support', path: '/management/tickets', icon: Ticket, permission: PERMISSIONS.TICKETS_VIEW },
             { label: 'Risk Signals', path: '/management/risk', icon: AlertTriangle, permission: PERMISSIONS.SETTINGS_VIEW },
-            { label: 'Brand & Theme', path: '/management/settings/whitelabel', icon: Palette, permission: PERMISSIONS.SETTINGS_MANAGE },
             { label: 'Settings', path: '/management/settings', icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },
         ],
     },

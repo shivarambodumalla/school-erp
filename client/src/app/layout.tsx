@@ -53,8 +53,8 @@ export const metadata: Metadata = {
     creator: '@onflows',
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: '/logo-square.svg',
+    apple: '/logo-square.svg',
   },
 };
 

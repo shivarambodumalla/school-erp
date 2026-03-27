@@ -2,17 +2,29 @@ import { Construction } from 'lucide-react'
 
 export default function ReportsPage() {
   return (
-    <div className="flex flex-col items-center justify-center
-      min-h-[60vh] gap-4">
-      <div className="h-14 w-14 rounded-full bg-muted flex
-        items-center justify-center">
-        <Construction className="h-7 w-7 text-muted-foreground" />
-      </div>
-      <div className="text-center">
-        <h1 className="text-xl font-bold">Reports</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Reports
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Coming soon. This feature is being built.
+          Generate attendance, fee, and student reports
         </p>
+      </div>
+      <div className="rounded-xl border bg-card p-16 flex flex-col
+        items-center justify-center gap-4 text-center">
+        <div className="h-14 w-14 rounded-full bg-muted flex
+          items-center justify-center">
+          <Construction className="h-7 w-7 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="font-semibold">
+            Reports — Coming Week 10 (June 3)
+          </p>
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            Generate printable reports for attendance by class, fee collection summaries, and student enrollment stats.
+          </p>
+        </div>
       </div>
     </div>
   )

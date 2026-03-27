@@ -16,6 +16,7 @@ interface ManagementSidebarProps {
     institutionName: string
     userEmail: string
     portalType: string
+    logoUrl?: string | null
 }
 
 export function ManagementSidebar({
@@ -23,17 +24,22 @@ export function ManagementSidebar({
     institutionName,
     userEmail,
     portalType,
+    logoUrl,
 }: ManagementSidebarProps): JSX.Element {
     const pathname = usePathname()
     const authorisedNav = getAuthorisedNav(MANAGEMENT_NAV, permissions)
 
     return (
         <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 border-r bg-background z-30">
-            {/* School name + role */}
-            <div className="p-4 border-b">
-                <p className="font-bold text-sm truncate">{institutionName}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                    {portalType.replace('_', ' ')}
+            {/* Logo + School name + role */}
+            <div className="p-4 border-b space-y-2.5">
+                {logoUrl ? (
+                    <img src={logoUrl} alt={institutionName} className="h-6 max-w-[140px] object-contain" />
+                ) : (
+                    <img src="/logo-wide.svg" alt="Onflows" className="h-6" />
+                )}
+                <p className="text-xs text-muted-foreground truncate">
+                    {institutionName} · {portalType.replace('_', ' ')}
                 </p>
             </div>
 

@@ -124,8 +124,8 @@ export function SuperDashboardClient({ stats, recentInstitutions, planBreakdown 
                                 <span className="text-sm text-muted-foreground">{p._count} schools</span>
                             </div>
                         ))}
-                        <div className="h-40 mt-4">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-40 mt-4 min-w-0">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                 <BarChart data={chartData}>
                                     <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                                     <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />

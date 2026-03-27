@@ -156,7 +156,12 @@ export async function GET(
     }
 
     return NextResponse.json({
-      institution,
+      institution: institution
+        ? {
+            ...institution,
+            createdAt: institution.createdAt.toISOString(),
+          }
+        : null,
       stats: {
         userCount,
         studentCount,

@@ -83,7 +83,8 @@ export async function saveTheme(
     })
 
     revalidatePath(`/super/institutions/${data.institutionId}`)
-    revalidatePath(`/management/settings/whitelabel`)
+    revalidatePath(`/management/settings/branding`)
+    revalidatePath(`/management`, 'layout')
 
     return { success: true }
   } catch (err) {

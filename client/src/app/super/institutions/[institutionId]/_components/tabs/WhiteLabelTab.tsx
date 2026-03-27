@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Save, RotateCcw, AlertTriangle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Save, RotateCcw, AlertTriangle, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import {
@@ -12,6 +13,10 @@ import { LogoUpload } from './whitelabel/LogoUpload'
 import { ColorControls } from './whitelabel/ColorControls'
 import { ContrastChecker } from './whitelabel/ContrastChecker'
 import { ThemePreview } from './whitelabel/ThemePreview'
+
+// Onflows brand defaults — used when "Reset" is clicked
+const BRAND_PRIMARY = '#C56447'
+const BRAND_SECONDARY = '#64748b'
 
 interface Institution {
   id: string
@@ -29,20 +34,26 @@ interface Props {
 }
 
 export function WhiteLabelTab({ institution }: Props) {
+  const router = useRouter()
   const [primaryHex, setPrimaryHex] = useState(institution.primaryColor)
   const [secondaryHex, setSecondaryHex] = useState(
-    institution.secondaryColor ?? '#64748b'
+    institution.secondaryColor ?? BRAND_SECONDARY
   )
   const [logoUrl, setLogoUrl] = useState(institution.logoUrl ?? '')
   const [isDark, setIsDark] = useState(false)
   const [isPending, startTransition] = useTransition()
+
+  const isOnflowsDefaults =
+    primaryHex === BRAND_PRIMARY &&
+    secondaryHex === BRAND_SECONDARY &&
+    logoUrl === ''
 
   const palette = generateThemePalette(primaryHex, secondaryHex, isDark)
   const validation = validateTheme(palette)
 
   const hasChanges =
     primaryHex !== institution.primaryColor ||
-    secondaryHex !== (institution.secondaryColor ?? '#64748b') ||
+    secondaryHex !== (institution.secondaryColor ?? BRAND_SECONDARY) ||
     logoUrl !== (institution.logoUrl ?? '')
 
   function handleColorChange(
@@ -54,17 +65,12 @@ export function WhiteLabelTab({ institution }: Props) {
   }
 
   function handleReset() {
-    setPrimaryHex(institution.primaryColor)
-    setSecondaryHex(institution.secondaryColor ?? '#64748b')
-    setLogoUrl(institution.logoUrl ?? '')
+    setPrimaryHex(BRAND_PRIMARY)
+    setSecondaryHex(BRAND_SECONDARY)
+    setLogoUrl('')
   }
 
   function handleSave() {
-    if (!validation.allPass) {
-      toast.error('Theme has contrast issues. Please fix before saving.')
-      return
-    }
-
     const darkPalette = generateThemePalette(
       primaryHex, secondaryHex, true
     )
@@ -81,6 +87,8 @@ export function WhiteLabelTab({ institution }: Props) {
 
       if (result.success) {
         toast.success('Theme saved successfully')
+        router.refresh()
+        window.location.reload()
       } else {
         toast.error(result.error ?? 'Failed to save theme')
       }
@@ -127,6 +135,23 @@ export function WhiteLabelTab({ institution }: Props) {
           />
 
           <ContrastChecker validation={validation} />
+
+          {/* Reset to Onflows defaults */}
+          {!isOnflowsDefaults && (
+            <div className="rounded-xl border bg-card p-4 flex items-center
+              justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Reset to Onflows Theme</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Restore the default Onflows brand colors and remove logo
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleReset}>
+                <Undo2 className="h-3.5 w-3.5 mr-1.5" />
+                Reset
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Right column — Preview */}
@@ -177,15 +202,13 @@ export function WhiteLabelTab({ institution }: Props) {
             }
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {validation.allPass
-              ? `Contrast score: ${validation.score}/100`
-              : 'Fix contrast issues before saving'
-            }
+            Contrast score: {validation.score}/100
+            {!validation.allPass && ' — some checks failing (save anyway)'}
           </p>
         </div>
         <Button
           onClick={handleSave}
-          disabled={isPending || !validation.allPass}
+          disabled={isPending}
         >
           <Save className="h-4 w-4 mr-2" />
           {isPending ? 'Saving...' : 'Save Theme'}

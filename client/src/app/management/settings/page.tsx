@@ -1,19 +1,33 @@
-import { Construction } from 'lucide-react'
+import { auth } from '@/server/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
+import { InstitutionDetailsTab } from
+  '@/features/school/components/InstitutionDetailsTab'
 
-export default function SettingsPage() {
-  return (
-    <div className="flex flex-col items-center justify-center
-      min-h-[60vh] gap-4">
-      <div className="h-14 w-14 rounded-full bg-muted flex
-        items-center justify-center">
-        <Construction className="h-7 w-7 text-muted-foreground" />
-      </div>
-      <div className="text-center">
-        <h1 className="text-xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Coming soon. This feature is being built.
-        </p>
-      </div>
-    </div>
-  )
+export default async function SettingsDetailsPage() {
+  const session = await auth()
+  if (!session) redirect('/auth/login')
+
+  const institution = await prisma.institution.findUnique({
+    where: { id: session.user.institutionId },
+    select: {
+      name: true,
+      subdomain: true,
+      board: true,
+      institutionType: true,
+      phone: true,
+      website: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      state: true,
+      pinCode: true,
+      establishedYear: true,
+      studentCapacity: true,
+    },
+  })
+
+  if (!institution) redirect('/management/dashboard')
+
+  return <InstitutionDetailsTab institution={institution} />
 }

@@ -10,6 +10,9 @@ declare module 'next-auth' {
             institutionName: string
             institutionSubdomain: string
             primaryColor: string
+            secondaryColor?: string
+            themePalette?: Record<string, string>
+            darkPalette?: Record<string, string>
             logoUrl?: string
             permissions: Permission[]
         } & DefaultSession['user']
@@ -21,6 +24,9 @@ declare module 'next-auth' {
         institutionName: string
         institutionSubdomain: string
         primaryColor: string
+        secondaryColor?: string
+        themePalette?: Record<string, string>
+        darkPalette?: Record<string, string>
         logoUrl?: string
         permissions: Permission[]
     }
@@ -34,6 +40,9 @@ declare module 'next-auth/jwt' {
         institutionName: string
         institutionSubdomain: string
         primaryColor: string
+        secondaryColor?: string
+        themePalette?: Record<string, string>
+        darkPalette?: Record<string, string>
         logoUrl?: string
         permissions: Permission[]
     }

@@ -24,16 +24,11 @@ export function SuperSidebar({ userEmail }: { userEmail: string }) {
 
     return (
         <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 border-r bg-background z-30">
-            <div className="p-4 border-b">
-                <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                        <ShieldCheck className="h-4 w-4 text-primary-foreground" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold leading-none">Onflows</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Super Admin</p>
-                    </div>
-                </div>
+            <div className="p-4 border-b space-y-2.5">
+                <img src="/logo-wide.svg" alt="Onflows" className="h-6" />
+                <p className="text-xs text-muted-foreground truncate">
+                    Onflows · Super Admin
+                </p>
             </div>
 
             <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">

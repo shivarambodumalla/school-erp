@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { OverviewData } from './overview/types'
 import { OverviewStatsRow } from './overview/OverviewStats'
@@ -94,7 +93,7 @@ export function OverviewTab({ institutionId, apiBase, isSchoolAdmin }: Props) {
   return (
     <div className="space-y-6">
       {/* Stats row */}
-      <OverviewStatsRow stats={data.stats} institution={data.institution} />
+      <OverviewStatsRow stats={data.stats} institution={data.institution} isSchoolAdmin={isSchoolAdmin} />
 
       {/* Main grid: 2/3 left + 1/3 right */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

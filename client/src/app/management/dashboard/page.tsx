@@ -1,12 +1,10 @@
 import { auth } from '@/server/auth'
-import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { OnboardingWizard } from
   '@/features/onboarding/components/OnboardingWizard'
-import { SchoolHero } from
-  '@/features/school/components/SchoolHero'
 import { OverviewTab } from
   '@/app/super/institutions/[institutionId]/_components/tabs/OverviewTab'
+import { prisma } from '@/lib/prisma'
 
 export default async function ManagementDashboard() {
   const session = await auth()
@@ -16,45 +14,12 @@ export default async function ManagementDashboard() {
 
   const institutionId = session.user.institutionId
 
-  const institution = await prisma.institution.findUnique({
-    where: { id: institutionId },
-    select: {
-      id: true,
-      name: true,
-      subdomain: true,
-      institutionType: true,
-      board: true,
-      planTier: true,
-      primaryColor: true,
-      logoUrl: true,
-      isActive: true,
-      city: true,
-      state: true,
-      createdAt: true,
-      onboarding: {
-        select: {
-          classesAdded: true,
-          staffAdded: true,
-          studentsAdded: true,
-          completedAt: true,
-        },
-      },
-      _count: {
-        select: {
-          users: true,
-          students: true,
-        },
-      },
-    },
+  const onboarding = await prisma.onboardingStep.findUnique({
+    where: { institutionId },
+    select: { completedAt: true, classesAdded: true, staffAdded: true, studentsAdded: true },
   })
 
-  if (!institution) redirect('/auth/login')
-
-  const openTickets = await prisma.supportTicket.count({
-    where: { institutionId, status: 'OPEN' },
-  })
-
-  const isOnboardingComplete = institution.onboarding?.completedAt != null
+  const isOnboardingComplete = onboarding?.completedAt != null
 
   return (
     <div className="space-y-6">
@@ -64,20 +29,14 @@ export default async function ManagementDashboard() {
           institutionName={session.user.institutionName}
         />
       )}
-      <SchoolHero
-        institution={{
-          ...institution,
-          createdAt: institution.createdAt.toISOString(),
-          onboarding: institution.onboarding
-            ? {
-                ...institution.onboarding,
-                completedAt:
-                  institution.onboarding.completedAt?.toISOString() ?? null,
-              }
-            : null,
-        }}
-        openTickets={openTickets}
-      />
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Welcome back, {session.user.email?.split('@')[0]}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Here&apos;s an overview of {session.user.institutionName}
+        </p>
+      </div>
       <OverviewTab
         institutionId={institutionId}
         apiBase="/api/school"

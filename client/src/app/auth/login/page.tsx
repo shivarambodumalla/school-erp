@@ -52,11 +52,13 @@ export default function LoginPage(): JSX.Element {
             <div className="w-full max-w-[400px] space-y-6">
                 {/* Logo + Branding */}
                 <div className="text-center space-y-3">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold">
-                        S
-                    </div>
+                    <img
+                        src="/logo-square.svg"
+                        alt="Onflows"
+                        className="mx-auto h-16 w-16"
+                    />
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                        School ERP
+                        Onflows
                     </h1>
                     <p className="text-sm text-muted-foreground">
                         Sign in to your account

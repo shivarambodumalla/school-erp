@@ -56,6 +56,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     institutionName: user.institution.name,
                     institutionSubdomain: user.institution.subdomain,
                     primaryColor: user.institution.primaryColor,
+                    secondaryColor: user.institution.secondaryColor ?? undefined,
+                    themePalette: user.institution.themePalette as Record<string, string> | undefined,
+                    darkPalette: user.institution.darkPalette as Record<string, string> | undefined,
                     logoUrl: user.institution.logoUrl ?? undefined,
                     permissions,
                 }
@@ -72,6 +75,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.institutionName = user.institutionName
                 token.institutionSubdomain = user.institutionSubdomain
                 token.primaryColor = user.primaryColor
+                token.secondaryColor = user.secondaryColor
+                token.themePalette = user.themePalette
+                token.darkPalette = user.darkPalette
                 token.logoUrl = user.logoUrl
                 token.permissions = user.permissions
             }
@@ -85,6 +91,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             session.user.institutionName = token.institutionName as string
             session.user.institutionSubdomain = token.institutionSubdomain as string
             session.user.primaryColor = token.primaryColor as string
+            session.user.secondaryColor = token.secondaryColor as string | undefined
+            session.user.themePalette = token.themePalette as Record<string, string> | undefined
+            session.user.darkPalette = token.darkPalette as Record<string, string> | undefined
             session.user.logoUrl = token.logoUrl as string | undefined
             session.user.permissions = token.permissions as Permission[]
             return session
