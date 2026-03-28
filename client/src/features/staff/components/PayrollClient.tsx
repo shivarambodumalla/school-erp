@@ -75,6 +75,12 @@ export function PayrollClient() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Payroll</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Process and manage staff salaries
+        </p>
+      </div>
       <div className="flex items-center gap-3">
         <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
           <SelectTrigger className="w-36 min-h-[44px]">

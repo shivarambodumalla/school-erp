@@ -133,7 +133,7 @@ function StaffFilters({ search, onSearch, status, onStatus, view, onView }: {
   status: string; onStatus: (v: string) => void
   view: ViewMode; onView: (v: ViewMode) => void
 }) {
-  const statuses = ['', 'ACTIVE', 'INACTIVE', 'ON_LEAVE']
+  const statuses = ['', 'ACTIVE', 'INACTIVE', 'ON_LEAVE', 'TERMINATED']
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="relative">

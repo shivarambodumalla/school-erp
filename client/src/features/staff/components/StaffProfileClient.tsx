@@ -13,6 +13,7 @@ import { StaffPerformanceTab } from './tabs/StaffPerformanceTab'
 import { StaffActivityTab } from './tabs/StaffActivityTab'
 import { StaffLeaveTab } from './tabs/StaffLeaveTab'
 import { StaffAttendanceTab } from './tabs/StaffAttendanceTab'
+import { StaffPayrollTab } from './tabs/StaffPayrollTab'
 import type { StaffDetail } from '../types'
 
 const AVATAR_COLORS = [
@@ -145,9 +146,12 @@ export function StaffProfileClient({ staffId }: { staffId: string }) {
           <StaffAttendanceTab staffId={staff.id} />
         </TabsContent>
         <TabsContent value="payroll">
-          <div className="rounded-xl border p-8 text-center text-muted-foreground">
-            Payroll tab coming soon
-          </div>
+          <StaffPayrollTab
+            staffId={staff.id}
+            staffName={`${staff.firstName} ${staff.lastName}`}
+            employeeNo={staff.employeeNo}
+            designation={staff.designation}
+          />
         </TabsContent>
         <TabsContent value="documents">
           <StaffDocumentsTab staffId={staff.id} />

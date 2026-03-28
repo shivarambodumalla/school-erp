@@ -54,7 +54,7 @@ describe('FEATURE_GROUPS', () => {
 
 describe('ALL_FEATURES', () => {
   it('should have 27 total features', () => {
-    expect(ALL_FEATURES).toHaveLength(27)
+    expect(ALL_FEATURES).toHaveLength(28)
   })
 
   it('should include expected features', () => {
@@ -70,7 +70,7 @@ describe('ALL_FEATURES', () => {
 describe('getDefaultPermissions', () => {
   it('should return permissions for all 27 features', () => {
     const perms = getDefaultPermissions()
-    expect(perms).toHaveLength(27)
+    expect(perms).toHaveLength(28)
   })
 
   it('all default permissions should be NONE access with ALL scope', () => {
@@ -138,7 +138,7 @@ describe('summarizePermissions', () => {
   it('should summarize full default permissions as all NONE', () => {
     const perms = getDefaultPermissions()
     const summary = summarizePermissions(perms)
-    expect(summary.none).toBe(27)
+    expect(summary.none).toBe(28)
     expect(summary.full).toBe(0)
     expect(summary.edit).toBe(0)
     expect(summary.view).toBe(0)

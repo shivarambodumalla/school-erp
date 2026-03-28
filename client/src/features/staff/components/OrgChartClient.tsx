@@ -134,12 +134,13 @@ export function OrgChartClient() {
 }
 
 function TreeNode({ node, level }: { node: OrgNode; level: number }) {
+  const router = useRouter()
   const [open, setOpen] = useState(level < 2)
   const hasChildren = node.directReports.length > 0
 
   return (
     <div style={{ marginLeft: level * 24 }}>
-      <div className="flex items-center gap-2 py-2">
+      <div className="flex items-center gap-2 py-2 group">
         {hasChildren ? (
           <button type="button" onClick={() => setOpen(!open)}
             className="h-6 w-6 flex items-center justify-center shrink-0">
@@ -152,19 +153,25 @@ function TreeNode({ node, level }: { node: OrgNode; level: number }) {
         ) : (
           <div className="w-6 shrink-0" />
         )}
-        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center
-          text-xs font-bold text-primary shrink-0">
-          {node.firstName[0]}{node.lastName[0]}
-        </div>
-        <div>
-          <p className="text-sm font-medium">
-            {node.firstName} {node.lastName}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {node.designation}
-            {node.department ? ` - ${node.department.name}` : ''}
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={() => router.push(`/management/staff/${node.id}`)}
+          className="flex items-center gap-2 rounded-lg px-2 py-1 -mx-2 hover:bg-muted/60 transition-colors text-left"
+        >
+          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center
+            text-xs font-bold text-primary shrink-0">
+            {node.firstName[0]}{node.lastName[0]}
+          </div>
+          <div>
+            <p className="text-sm font-medium group-hover:text-primary transition-colors">
+              {node.firstName} {node.lastName}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {node.designation}
+              {node.department ? ` \u00b7 ${node.department.name}` : ''}
+            </p>
+          </div>
+        </button>
       </div>
       {open && node.directReports.map(child => (
         <TreeNode key={child.id} node={child} level={level + 1} />

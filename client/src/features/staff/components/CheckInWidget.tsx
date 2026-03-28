@@ -14,7 +14,29 @@ export function CheckInWidget() {
   const [checkOutTime, setCheckOutTime] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState('00:00:00')
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Fetch today's attendance status on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/school/staff/checkin')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.checkOutTime) {
+            setCheckInTime(data.checkInTime)
+            setCheckOutTime(data.checkOutTime)
+            setState('CHECKED_OUT')
+          } else if (data.checkInTime) {
+            setCheckInTime(data.checkInTime)
+            setState('CHECKED_IN')
+          }
+        }
+      } catch { /* remain NOT_CHECKED_IN */ }
+      setInitialLoading(false)
+    })()
+  }, [])
 
   useEffect(() => {
     if (state === 'CHECKED_IN' && checkInTime) {
@@ -73,6 +95,19 @@ export function CheckInWidget() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (initialLoading) {
+    return (
+      <Card>
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-muted animate-pulse shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-32 rounded bg-muted animate-pulse" />
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

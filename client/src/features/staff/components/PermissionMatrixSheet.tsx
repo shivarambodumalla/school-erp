@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AlertTriangle, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -35,10 +35,14 @@ export function PermissionMatrixSheet({
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [saving, setSaving] = useState(false)
 
-  const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen && role) {
+  // Sync permissions when role changes or sheet opens
+  useEffect(() => {
+    if (open && role) {
       setPermissions(role.permissions as Permission[])
     }
+  }, [open, role])
+
+  const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) onClose()
   }
 
