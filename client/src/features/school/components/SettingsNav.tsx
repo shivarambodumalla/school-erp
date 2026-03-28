@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Building2, Palette, Lock } from 'lucide-react'
+import { Building2, Palette, Lock, SlidersHorizontal, BookOpenCheck } from 'lucide-react'
 
 const TABS = [
   { label: 'Institution Details', href: '/management/settings', icon: Building2 },
   { label: 'Branding & Theme', href: '/management/settings/branding', icon: Palette },
+  { label: 'Admissions', href: '/management/settings/admissions', icon: SlidersHorizontal },
+  { label: 'Academics', href: '/management/settings/academics', icon: BookOpenCheck },
   { label: 'Change Password', href: '/management/settings/password', icon: Lock },
 ]
 

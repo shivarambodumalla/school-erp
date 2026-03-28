@@ -21,7 +21,7 @@ interface AcademicData {
 
 interface Props { institutionId: string; apiBase: string }
 
-export function AcademicTab({ institutionId, apiBase }: Props) {
+export function AcademicTab({ apiBase }: Props) {
   const [data, setData] = useState<AcademicData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)

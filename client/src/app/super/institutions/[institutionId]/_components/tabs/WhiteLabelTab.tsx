@@ -24,6 +24,8 @@ interface Institution {
   primaryColor: string
   secondaryColor: string | null
   logoUrl: string | null
+  squareLogoUrl: string | null
+  faviconUrl: string | null
   planTier: string
   themePalette: unknown
   themeAppliedAt: string | null
@@ -40,13 +42,17 @@ export function WhiteLabelTab({ institution }: Props) {
     institution.secondaryColor ?? BRAND_SECONDARY
   )
   const [logoUrl, setLogoUrl] = useState(institution.logoUrl ?? '')
+  const [squareLogoUrl, setSquareLogoUrl] = useState(institution.squareLogoUrl ?? '')
+  const [faviconUrl, setFaviconUrl] = useState(institution.faviconUrl ?? '')
   const [isDark, setIsDark] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const isOnflowsDefaults =
     primaryHex === BRAND_PRIMARY &&
     secondaryHex === BRAND_SECONDARY &&
-    logoUrl === ''
+    logoUrl === '' &&
+    squareLogoUrl === '' &&
+    faviconUrl === ''
 
   const palette = generateThemePalette(primaryHex, secondaryHex, isDark)
   const validation = validateTheme(palette)
@@ -54,7 +60,9 @@ export function WhiteLabelTab({ institution }: Props) {
   const hasChanges =
     primaryHex !== institution.primaryColor ||
     secondaryHex !== (institution.secondaryColor ?? BRAND_SECONDARY) ||
-    logoUrl !== (institution.logoUrl ?? '')
+    logoUrl !== (institution.logoUrl ?? '') ||
+    squareLogoUrl !== (institution.squareLogoUrl ?? '') ||
+    faviconUrl !== (institution.faviconUrl ?? '')
 
   function handleColorChange(
     type: 'primary' | 'secondary',
@@ -68,6 +76,8 @@ export function WhiteLabelTab({ institution }: Props) {
     setPrimaryHex(BRAND_PRIMARY)
     setSecondaryHex(BRAND_SECONDARY)
     setLogoUrl('')
+    setSquareLogoUrl('')
+    setFaviconUrl('')
   }
 
   function handleSave() {
@@ -81,6 +91,8 @@ export function WhiteLabelTab({ institution }: Props) {
         primaryColor: primaryHex,
         secondaryColor: secondaryHex,
         logoUrl: logoUrl || null,
+        squareLogoUrl: squareLogoUrl || null,
+        faviconUrl: faviconUrl || null,
         themePalette: JSON.stringify(palette),
         darkPalette: JSON.stringify(darkPalette),
       })
@@ -99,13 +111,15 @@ export function WhiteLabelTab({ institution }: Props) {
     <div className="space-y-6">
       {/* Unsaved changes banner */}
       {hasChanges && (
-        <div className="flex items-center gap-3 rounded-lg border
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg border
           border-amber-200 bg-amber-50 p-3">
-          <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
-          <p className="text-sm text-amber-800 flex-1">
-            You have unsaved changes
-          </p>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+            <p className="text-sm text-amber-800">
+              You have unsaved changes
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
             <Button variant="ghost" size="sm" onClick={handleReset}>
               <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
               Reset
@@ -123,8 +137,12 @@ export function WhiteLabelTab({ institution }: Props) {
         <div className="space-y-6">
           <LogoUpload
             currentUrl={logoUrl}
+            squareLogoUrl={squareLogoUrl}
+            faviconUrl={faviconUrl}
             institutionName={institution.name}
-            onChange={setLogoUrl}
+            onLogoChange={setLogoUrl}
+            onSquareLogoChange={setSquareLogoUrl}
+            onFaviconChange={setFaviconUrl}
           />
 
           <ColorControls
@@ -138,15 +156,15 @@ export function WhiteLabelTab({ institution }: Props) {
 
           {/* Reset to Onflows defaults */}
           {!isOnflowsDefaults && (
-            <div className="rounded-xl border bg-card p-4 flex items-center
-              justify-between gap-3">
-              <div>
+            <div className="rounded-xl border bg-card p-4 flex flex-col sm:flex-row
+              sm:items-center justify-between gap-3">
+              <div className="min-w-0">
                 <p className="text-sm font-medium">Reset to Onflows Theme</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Restore the default Onflows brand colors and remove logo
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={handleReset}>
+              <Button variant="outline" size="sm" className="shrink-0 self-start sm:self-auto" onClick={handleReset}>
                 <Undo2 className="h-3.5 w-3.5 mr-1.5" />
                 Reset
               </Button>
@@ -156,7 +174,7 @@ export function WhiteLabelTab({ institution }: Props) {
 
         {/* Right column — Preview */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold text-sm">Preview</h3>
             <div className="flex items-center gap-2">
               <button
@@ -192,9 +210,9 @@ export function WhiteLabelTab({ institution }: Props) {
       </div>
 
       {/* Save bar */}
-      <div className="flex items-center justify-between rounded-lg
-        border bg-card p-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3
+        rounded-lg border bg-card p-4">
+        <div className="min-w-0">
           <p className="text-sm font-medium">
             {institution.themeAppliedAt
               ? `Last saved: ${new Date(institution.themeAppliedAt).toLocaleDateString('en-IN')}`
@@ -207,6 +225,7 @@ export function WhiteLabelTab({ institution }: Props) {
           </p>
         </div>
         <Button
+          className="shrink-0 self-start sm:self-auto"
           onClick={handleSave}
           disabled={isPending}
         >

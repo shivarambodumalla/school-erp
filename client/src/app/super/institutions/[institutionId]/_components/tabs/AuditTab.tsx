@@ -17,7 +17,7 @@ interface LogRow {
 
 interface Props { institutionId: string; apiBase: string }
 
-export function AuditTab({ institutionId, apiBase }: Props) {
+export function AuditTab({ apiBase }: Props) {
   const [logs, setLogs] = useState<LogRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)

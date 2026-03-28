@@ -11,15 +11,15 @@ export function ContrastChecker({ validation }: Props) {
   return (
     <div className="rounded-xl border bg-card p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
           <h3 className="font-semibold text-sm">W3C Contrast Check</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             WCAG 2.1 accessibility compliance
           </p>
         </div>
         <div className={`flex items-center gap-1.5 text-xs
-          font-medium px-2.5 py-1 rounded-full
+          font-medium px-2.5 py-1 rounded-full shrink-0
           ${validation.allPass
             ? 'bg-green-100 text-green-700'
             : validation.score >= 60
@@ -57,20 +57,19 @@ export function ContrastChecker({ validation }: Props) {
       {/* Individual checks */}
       <div className="space-y-0 divide-y">
         {validation.checks.map((check, i) => (
-          <div key={i} className="flex items-center justify-between gap-3
-            py-2.5">
+          <div key={i} className="flex flex-wrap items-center gap-2 py-2.5">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {check.result.aa ? (
                 <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
               ) : (
                 <XCircle className="h-4 w-4 text-red-500 shrink-0" />
               )}
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <div
                   className="h-4 w-4 rounded border shrink-0"
                   style={{ backgroundColor: check.foreground }}
                 />
-                <span className="text-xs text-muted-foreground">on</span>
+                <span className="text-[10px] text-muted-foreground">on</span>
                 <div
                   className="h-4 w-4 rounded border shrink-0"
                   style={{ backgroundColor: check.background }}
@@ -78,12 +77,12 @@ export function ContrastChecker({ validation }: Props) {
                 <span className="text-xs truncate">{check.label}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
               <span className="text-xs font-mono text-muted-foreground">
                 {check.result.ratio}:1
               </span>
-              <span className={`inline-flex items-center px-2 py-0.5
-                rounded-full text-xs font-medium
+              <span className={`inline-flex items-center px-1.5 py-0.5
+                rounded-full text-[10px] font-medium
                 ${check.result.aaa
                   ? 'bg-green-100 text-green-700'
                   : check.result.aa

@@ -1,9 +1,30 @@
 import { auth } from '@/server/auth'
+import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { isConsumerPortal } from '@/lib/permissions'
 import { ConsumerBottomNav } from '@/components/layout/ConsumerBottomNav'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+    const session = await auth()
+    if (!session) return {}
+
+    const institution = await prisma.institution.findUnique({
+        where: { id: session.user.institutionId },
+        select: { faviconUrl: true },
+    })
+
+    if (!institution?.faviconUrl) return {}
+
+    return {
+        icons: {
+            icon: institution.faviconUrl,
+            apple: institution.faviconUrl,
+        },
+    }
+}
 
 export default async function ConsumerLayout({
     children,

@@ -45,7 +45,7 @@ export async function GET(
       }),
       prisma.user.count({ where: { institutionId } }),
       prisma.student.count({ where: { institutionId } }),
-      prisma.class.count({ where: { institutionId } }),
+      prisma.classYear.count({ where: { institutionId } }),
       prisma.supportTicket.count({
         where: { institutionId, status: 'OPEN' },
       }),
@@ -92,7 +92,7 @@ export async function GET(
         day: '2-digit',
         month: 'short',
       })
-      const count = recentLogins.filter(u => {
+      const count = recentLogins.filter((u: { lastLoginAt: Date | null }) => {
         if (!u.lastLoginAt) return false
         const loginDate = new Date(u.lastLoginAt)
         return (
@@ -168,7 +168,7 @@ export async function GET(
         classCount,
         openTickets,
       },
-      userBreakdown: userBreakdown.map(b => ({
+      userBreakdown: userBreakdown.map((b: { portalType: string; _count: number }) => ({
         role: b.portalType,
         count: b._count,
       })),

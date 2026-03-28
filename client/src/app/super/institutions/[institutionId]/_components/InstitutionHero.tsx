@@ -6,6 +6,7 @@ import {
   Clock, AlertTriangle, Calendar, Users,
   GraduationCap, Ticket,
 } from 'lucide-react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { PLAN_COLORS } from '@/lib/colors'
 import { formatDistanceToNow } from 'date-fns'
@@ -163,10 +164,12 @@ export function InstitutionHero({
           {/* Logo / initials */}
           <div className="relative shrink-0">
             {institution.logoUrl ? (
-              <img
+              <Image
                 src={institution.logoUrl}
                 alt={institution.name}
-                className="h-16 w-16 rounded-xl object-cover border"
+                width={64}
+                height={64}
+                className="rounded-xl object-cover border"
               />
             ) : (
               <div

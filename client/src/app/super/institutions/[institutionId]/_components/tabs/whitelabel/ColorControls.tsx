@@ -57,7 +57,7 @@ function ColorInput({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-1">
         <label className="text-sm font-medium">{label}</label>
         <HslDisplay hex={hex} />
       </div>

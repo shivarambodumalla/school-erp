@@ -61,7 +61,7 @@ function EmptyState() {
   )
 }
 
-export function PeopleTab({ institutionId, apiBase }: Props) {
+export function PeopleTab({ apiBase }: Props) {
   const [data, setData] = useState<PeopleData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)

@@ -43,7 +43,7 @@ const SIGNAL_ICONS: Record<string, LucideIcon> = {
   open_tickets: AlertTriangle,
 }
 
-export function RiskTab({ institutionId, apiBase }: Props) {
+export function RiskTab({ apiBase }: Props) {
   const [signals, setSignals] = useState<RiskSignal[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)

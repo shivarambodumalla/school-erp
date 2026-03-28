@@ -18,6 +18,8 @@ interface Institution {
   primaryColor: string
   secondaryColor: string | null
   logoUrl: string | null
+  squareLogoUrl: string | null
+  faviconUrl: string | null
   planTier: string
   themePalette: unknown
   themeAppliedAt: string | null

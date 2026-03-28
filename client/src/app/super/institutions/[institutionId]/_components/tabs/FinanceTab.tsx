@@ -23,7 +23,7 @@ interface FinanceData {
 
 interface Props { institutionId: string; apiBase: string }
 
-export function FinanceTab({ institutionId, apiBase }: Props) {
+export function FinanceTab({ apiBase }: Props) {
   const [data, setData] = useState<FinanceData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)

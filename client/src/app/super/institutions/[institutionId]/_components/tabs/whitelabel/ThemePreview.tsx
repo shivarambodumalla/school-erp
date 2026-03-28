@@ -47,14 +47,14 @@ export function ThemePreview({
   return (
     <div className="rounded-xl border bg-card p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-semibold text-sm">Live Preview</h3>
-        <div className="flex rounded-lg border overflow-hidden">
+        <div className="flex rounded-lg border overflow-hidden shrink-0">
           {(['desktop', 'mobile', 'email'] as PreviewMode[]).map(m => (
             <button
               key={m}
               onClick={() => setMode(m)}
-              className={`px-3 py-1.5 text-xs font-medium capitalize
+              className={`px-2.5 py-1.5 text-xs font-medium capitalize
                 transition-colors
                 ${mode === m
                   ? 'bg-primary text-primary-foreground'
@@ -124,7 +124,7 @@ export function ThemePreview({
                 className="h-3 w-24 rounded"
                 style={{ backgroundColor: text, opacity: 0.8 }}
               />
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {['Students', 'Fees', 'Staff'].map((_, i) => (
                   <div
                     key={i}

@@ -1,6 +1,27 @@
-import { Construction } from 'lucide-react'
+import { auth } from '@/server/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { GraduationCap } from 'lucide-react'
 
-export default function GradesPage() {
+export default async function GradesPage() {
+  const session = await auth()
+  if (!session) redirect('/auth/login')
+
+  const institutionId = session.user.institutionId
+
+  const classYears = await prisma.classYear.findMany({
+    where: { institutionId, status: 'ACTIVE' },
+    include: {
+      classTemplate: { select: { name: true } },
+      subjects: {
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+      },
+    },
+    orderBy: { classTemplate: { gradeLevel: 'asc' } },
+  })
+
   return (
     <div className="space-y-6">
       <div>
@@ -11,21 +32,59 @@ export default function GradesPage() {
           Enter and view student exam results
         </p>
       </div>
-      <div className="rounded-xl border bg-card p-16 flex flex-col
-        items-center justify-center gap-4 text-center">
-        <div className="h-14 w-14 rounded-full bg-muted flex
-          items-center justify-center">
-          <Construction className="h-7 w-7 text-muted-foreground" />
-        </div>
-        <div>
-          <p className="font-semibold">
-            Grades — Coming Week 4 (April 22)
-          </p>
-          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            Enter marks for exams, auto-calculate grade letters, view class rankings and student performance reports.
+
+      {classYears.length === 0 ? (
+        <div className="rounded-xl border bg-card p-12
+          text-center">
+          <GraduationCap className="mx-auto h-10 w-10
+            text-muted-foreground mb-3" />
+          <p className="text-muted-foreground">
+            No active classes found. Create classes first.
           </p>
         </div>
-      </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {classYears.map((cy) => (
+            <div
+              key={cy.id}
+              className="rounded-xl border bg-card p-4 space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">
+                  {cy.classTemplate.name}
+                </h3>
+                <Link
+                  href={`/management/institution/classes/${cy.id}/gradebook`}
+                  className="text-sm text-primary
+                    hover:underline min-h-[44px]
+                    flex items-center"
+                >
+                  Class View
+                </Link>
+              </div>
+              <div className="space-y-1">
+                {cy.subjects.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/management/subjects/${s.id}/gradebook`}
+                    className="flex items-center text-sm px-3 py-2
+                      rounded-lg hover:bg-muted
+                      transition-colors min-h-[44px]"
+                  >
+                    {s.name}
+                  </Link>
+                ))}
+                {cy.subjects.length === 0 && (
+                  <p className="text-xs text-muted-foreground
+                    px-3 py-2">
+                    No subjects yet
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

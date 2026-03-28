@@ -23,7 +23,7 @@ interface SupportData {
 
 interface Props { institutionId: string; apiBase: string }
 
-export function SupportTab({ institutionId, apiBase }: Props) {
+export function SupportTab({ apiBase }: Props) {
   const [data, setData] = useState<SupportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)

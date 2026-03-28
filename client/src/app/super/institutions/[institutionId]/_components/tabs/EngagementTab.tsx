@@ -2,10 +2,8 @@
 
 import { BarChart3 } from 'lucide-react'
 
-export function EngagementTab({
-  institutionId: _,
-  apiBase: _apiBase,
-}: {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function EngagementTab(props: {
   institutionId: string
   apiBase: string
 }) {

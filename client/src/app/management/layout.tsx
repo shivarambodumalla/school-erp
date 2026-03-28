@@ -5,6 +5,26 @@ import { isConsumerPortal } from '@/lib/permissions'
 import { ManagementSidebar } from '@/components/layout/ManagementSidebar'
 import { ThemeInjector } from '@/components/shared/ThemeInjector'
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+    const session = await auth()
+    if (!session) return {}
+
+    const institution = await prisma.institution.findUnique({
+        where: { id: session.user.institutionId },
+        select: { faviconUrl: true, name: true },
+    })
+
+    if (!institution?.faviconUrl) return {}
+
+    return {
+        icons: {
+            icon: institution.faviconUrl,
+            apple: institution.faviconUrl,
+        },
+    }
+}
 
 export default async function ManagementLayout({
     children,

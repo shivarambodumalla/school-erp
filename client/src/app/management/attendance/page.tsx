@@ -1,31 +1,92 @@
-import { Construction } from 'lucide-react'
+import { auth } from '@/server/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
+import { AttendanceClient } from
+  '@/features/attendance/components/AttendanceClient'
+import type { SectionOption } from '@/features/attendance/types'
+import type { AttendanceMode } from '@/features/attendance/types'
 
-export default function AttendancePage() {
+export default async function AttendancePage() {
+  const session = await auth()
+  if (!session) redirect('/auth/login')
+
+  const institutionId = session.user.institutionId
+  const isTeacher = session.user.portalType === 'TEACHER'
+
+  let sectionRows: {
+    id: string
+    name: string
+    classYear: {
+      id: string
+      classTemplate: { name: string }
+    }
+  }[]
+
+  if (isTeacher) {
+    const teacherSubjects = await prisma.subjectTeacher.findMany({
+      where: { teacherId: session.user.id },
+      select: {
+        subject: {
+          select: {
+            section: {
+              select: {
+                id: true,
+                name: true,
+                classYear: {
+                  select: {
+                    id: true,
+                    classTemplate: { select: { name: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const sectionMap = new Map<string, typeof sectionRows[number]>()
+    for (const ts of teacherSubjects) {
+      const sec = ts.subject.section
+      if (sec && !sectionMap.has(sec.id)) {
+        sectionMap.set(sec.id, sec)
+      }
+    }
+    sectionRows = Array.from(sectionMap.values())
+  } else {
+    sectionRows = await prisma.section.findMany({
+      where: { institutionId },
+      select: {
+        id: true,
+        name: true,
+        classYear: {
+          select: {
+            id: true,
+            classTemplate: { select: { name: true } },
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    })
+  }
+
+  const sections: SectionOption[] = sectionRows.map((s) => ({
+    id: s.id,
+    name: s.name,
+    classYearId: s.classYear.id,
+    className: s.classYear.classTemplate.name,
+  }))
+
+  const settings = await prisma.attendanceSettings.findUnique({
+    where: { institutionId },
+  })
+
+  const mode: AttendanceMode = settings?.mode ?? 'DAILY'
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Attendance
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Mark and track daily student attendance
-        </p>
-      </div>
-      <div className="rounded-xl border bg-card p-16 flex flex-col
-        items-center justify-center gap-4 text-center">
-        <div className="h-14 w-14 rounded-full bg-muted flex
-          items-center justify-center">
-          <Construction className="h-7 w-7 text-muted-foreground" />
-        </div>
-        <div>
-          <p className="font-semibold">
-            Attendance — Coming Week 3 (April 15)
-          </p>
-          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            Teachers mark class attendance daily. Admin views monthly summaries, absentee reports, and attendance trends.
-          </p>
-        </div>
-      </div>
-    </div>
+    <AttendanceClient
+      sections={sections}
+      mode={mode}
+    />
   )
 }

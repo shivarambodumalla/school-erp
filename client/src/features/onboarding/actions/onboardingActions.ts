@@ -58,22 +58,32 @@ export async function completeOnboarding(data: OnboardingData) {
     })).id
 
     await prisma.$transaction(async (tx) => {
-        // Create classes + sections
-        const createdClasses: { id: string; sectionId: string }[] = []
+        // Create class templates + class years + sections
+        const createdClasses: { classYearId: string; sectionId: string }[] = []
         for (const cls of data.classes) {
             if (!cls.name.trim()) continue
-            const created = await tx.class.create({
+            const template = await tx.classTemplate.create({
                 data: {
                     institutionId: data.institutionId,
-                    academicYearId,
                     name: cls.name,
                     gradeLevel: cls.gradeLevel,
                 },
             })
-            const section = await tx.section.create({
-                data: { classId: created.id, name: cls.sectionName },
+            const classYear = await tx.classYear.create({
+                data: {
+                    institutionId: data.institutionId,
+                    classTemplateId: template.id,
+                    academicYearId,
+                },
             })
-            createdClasses.push({ id: created.id, sectionId: section.id })
+            const section = await tx.section.create({
+                data: {
+                    classYearId: classYear.id,
+                    institutionId: data.institutionId,
+                    name: cls.sectionName,
+                },
+            })
+            createdClasses.push({ classYearId: classYear.id, sectionId: section.id })
         }
 
         // Create staff users
@@ -92,25 +102,43 @@ export async function completeOnboarding(data: OnboardingData) {
 
         // Create students (assigned to first class + section)
         const firstClass = createdClasses[0]
+        const year = new Date().getFullYear()
+        let studentSeq = 1
         for (const student of data.students) {
             if (!student.firstName.trim() || !student.admissionNo.trim()) continue
             const dob = new Date(student.dateOfBirth)
             if (isNaN(dob.getTime())) continue
 
-            await tx.student.create({
+            const sisId = `ONF-${year}-${String(studentSeq).padStart(5, '0')}`
+            studentSeq++
+            const created = await tx.student.create({
                 data: {
                     institutionId: data.institutionId,
                     admissionNo: student.admissionNo,
+                    sisId,
                     firstName: student.firstName,
                     lastName: student.lastName,
                     dateOfBirth: dob,
                     gender: student.gender,
-                    classId: firstClass?.id ?? data.classId,
-                    sectionId: firstClass?.sectionId ?? '',
                     guardianName: student.guardianName,
                     guardianPhone: student.guardianPhone,
                 },
             })
+
+            // Link student to class/section via StudentSection
+            const classYearId = firstClass?.classYearId ?? data.classId
+            const sectionId = firstClass?.sectionId ?? ''
+            if (classYearId && sectionId) {
+                await tx.studentSection.create({
+                    data: {
+                        institutionId: data.institutionId,
+                        studentId: created.id,
+                        sectionId,
+                        classYearId,
+                        status: 'ACTIVE',
+                    },
+                })
+            }
         }
 
         // Mark onboarding complete

@@ -42,6 +42,8 @@ export default async function InstitutionDetailPage({
       billingEmail: true,
       establishedYear: true,
       studentCapacity: true,
+      squareLogoUrl: true,
+      faviconUrl: true,
       themePalette: true,
       themeAppliedAt: true,
       onboarding: {
@@ -138,6 +140,8 @@ export default async function InstitutionDetailPage({
           primaryColor: institution.primaryColor,
           secondaryColor: institution.secondaryColor,
           logoUrl: institution.logoUrl,
+          squareLogoUrl: institution.squareLogoUrl,
+          faviconUrl: institution.faviconUrl,
           planTier: institution.planTier,
           themePalette: institution.themePalette,
           themeAppliedAt:

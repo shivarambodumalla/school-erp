@@ -16,6 +16,8 @@ export default async function SettingsBrandingPage() {
       primaryColor: true,
       secondaryColor: true,
       logoUrl: true,
+      squareLogoUrl: true,
+      faviconUrl: true,
       planTier: true,
       themePalette: true,
       themeAppliedAt: true,

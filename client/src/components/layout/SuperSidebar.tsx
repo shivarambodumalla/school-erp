@@ -25,7 +25,7 @@ export function SuperSidebar({ userEmail }: { userEmail: string }) {
     return (
         <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 border-r bg-background z-30">
             <div className="p-4 border-b space-y-2.5">
-                <img src="/logo-wide.svg" alt="Onflows" className="h-6" />
+                <img src="/images/logo-wide.svg" alt="Onflows" className="h-6" />
                 <p className="text-xs text-muted-foreground truncate">
                     Onflows · Super Admin
                 </p>

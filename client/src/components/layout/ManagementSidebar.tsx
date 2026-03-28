@@ -36,7 +36,7 @@ export function ManagementSidebar({
                 {logoUrl ? (
                     <img src={logoUrl} alt={institutionName} className="h-6 max-w-[140px] object-contain" />
                 ) : (
-                    <img src="/logo-wide.svg" alt="Onflows" className="h-6" />
+                    <img src="/images/logo-wide.svg" alt="Onflows" className="h-6" />
                 )}
                 <p className="text-xs text-muted-foreground truncate">
                     {institutionName} · {portalType.replace('_', ' ')}

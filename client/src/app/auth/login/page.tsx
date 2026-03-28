@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import Image from 'next/image'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function LoginPage(): JSX.Element {
@@ -52,10 +53,12 @@ export default function LoginPage(): JSX.Element {
             <div className="w-full max-w-[400px] space-y-6">
                 {/* Logo + Branding */}
                 <div className="text-center space-y-3">
-                    <img
+                    <Image
                         src="/logo-square.svg"
                         alt="Onflows"
-                        className="mx-auto h-16 w-16"
+                        width={64}
+                        height={64}
+                        className="mx-auto"
                     />
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">
                         Onflows

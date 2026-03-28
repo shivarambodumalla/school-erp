@@ -16,6 +16,8 @@ const themeSchema = z.object({
     'Invalid hex color'
   ),
   logoUrl: z.string().nullable(),
+  squareLogoUrl: z.string().nullable(),
+  faviconUrl: z.string().nullable(),
   themePalette: z.string(),
   darkPalette: z.string(),
 })
@@ -60,6 +62,8 @@ export async function saveTheme(
         primaryColor: data.primaryColor,
         secondaryColor: data.secondaryColor,
         logoUrl: data.logoUrl,
+        squareLogoUrl: data.squareLogoUrl,
+        faviconUrl: data.faviconUrl,
         themePalette: parsedTheme,
         darkPalette: parsedDark,
         themeAppliedAt: new Date(),

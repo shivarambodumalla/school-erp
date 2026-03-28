@@ -28,6 +28,8 @@ interface Institution {
   pinCode: string | null
   establishedYear: number | null
   studentCapacity: number | null
+  squareLogoUrl: string | null
+  faviconUrl: string | null
 }
 
 interface Props {
