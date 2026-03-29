@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { EmployeeNumberCard } from './staff/EmployeeNumberCard'
 import { DepartmentsCard } from './staff/DepartmentsCard'
 import { LeaveTypesCard } from './staff/LeaveTypesCard'
@@ -9,10 +10,11 @@ import { StaffDocumentTypesCard } from './staff/DocumentTypesCard'
 import type { StaffSettingsData } from './staff/types'
 
 export function StaffSettingsClient() {
+  const { apiParam } = useInstitutionId()
   const [settings, setSettings] = useState<StaffSettingsData | null>(null)
 
   const fetchSettings = useCallback(async () => {
-    const res = await fetch('/api/school/settings/staff')
+    const res = await fetch(`/api/school/settings/staff${apiParam}`)
     if (res.ok) setSettings(await res.json())
   }, [])
 

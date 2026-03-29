@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
   params: Promise<{ staffId: string }>
 }
 
-export async function GET(req: NextRequest, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || !['ADMIN', 'TEACHER'].includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
-  const { staffId } = await ctx.params
+export async function GET(req: NextRequest,routeCtx: RouteContext) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { staffId } = await routeCtx.params
   const sp = req.nextUrl.searchParams
   const month = Number(sp.get('month') ?? new Date().getMonth() + 1)
   const year = Number(sp.get('year') ?? new Date().getFullYear())

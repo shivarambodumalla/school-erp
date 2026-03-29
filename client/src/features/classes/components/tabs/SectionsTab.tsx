@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +17,7 @@ interface SectionsTabProps {
 }
 
 export function SectionsTab({ classYearId }: SectionsTabProps) {
+  const { apiParam } = useInstitutionId()
   const [sections, setSections] = useState<SectionData[]>([])
   const [loading, setLoading] = useState(true)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -23,7 +25,7 @@ export function SectionsTab({ classYearId }: SectionsTabProps) {
   const fetchSections = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/school/classes/${classYearId}/sections`)
+      const res = await fetch(`/api/school/classes/${classYearId}/sections${apiParam}`)
       if (res.ok) setSections((await res.json()) as SectionData[])
     } catch { /* empty */ }
     setLoading(false)
@@ -94,6 +96,7 @@ function AddSectionSheet({ open, onClose, classYearId, onCreated }: {
   onCreated: () => void
 }) {
   const { toast } = useToast()
+  const { apiParam } = useInstitutionId()
   const [name, setName] = useState('')
   const [maxStrength, setMaxStrength] = useState('')
   const [saving, setSaving] = useState(false)
@@ -103,7 +106,7 @@ function AddSectionSheet({ open, onClose, classYearId, onCreated }: {
     if (!name.trim()) return
     setSaving(true)
     try {
-      const res = await fetch(`/api/school/classes/${classYearId}/sections`, {
+      const res = await fetch(`/api/school/classes/${classYearId}/sections${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

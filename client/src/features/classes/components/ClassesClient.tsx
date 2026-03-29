@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Plus, GraduationCap, Users, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ClassCard } from './ClassCard'
@@ -8,6 +9,7 @@ import { AddClassSheet } from './AddClassSheet'
 import type { ClassTemplate } from '../types'
 
 export function ClassesClient() {
+  const { apiParam } = useInstitutionId()
   const [classes, setClasses] = useState<ClassTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -15,7 +17,7 @@ export function ClassesClient() {
   const fetchClasses = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/school/classes')
+      const res = await fetch(`/api/school/classes${apiParam}`)
       if (res.ok) {
         const data = (await res.json()) as ClassTemplate[]
         setClasses(data)

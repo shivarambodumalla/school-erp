@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
-  Search, Plus, ChevronRight,
+  Search, Plus, ChevronRight, SlidersHorizontal,
   ArrowUpDown, ArrowUp, ArrowDown,
 } from 'lucide-react'
 import { PLAN_COLORS } from '@/lib/colors'
@@ -38,11 +40,14 @@ interface Props {
   }
 }
 
+const PLAN_OPTIONS = ['STARTER', 'GROWTH', 'PRO']
+const STATUS_OPTIONS = ['active', 'suspended']
+
 export function InstitutionsClient({ initialData }: Props) {
   const router = useRouter()
   const [search, setSearch] = useState('')
-  const [planFilter, setPlanFilter] = useState('ALL')
-  const [statusFilter, setStatusFilter] = useState('ALL')
+  const [plans, setPlans] = useState<string[]>([])
+  const [statusFilters, setStatusFilters] = useState<string[]>([])
   const [institutions, setInstitutions] =
     useState<Institution[]>(initialData.institutions)
   const [total, setTotal] = useState(initialData.total)
@@ -55,8 +60,8 @@ export function InstitutionsClient({ initialData }: Props) {
     setLoading(true)
     const params = new URLSearchParams()
     if (search) params.set('search', search)
-    if (planFilter !== 'ALL') params.set('plan', planFilter)
-    if (statusFilter !== 'ALL') params.set('status', statusFilter)
+    if (plans.length === 1) params.set('plan', plans[0])
+    if (statusFilters.length === 1) params.set('status', statusFilters[0])
     try {
       const res = await fetch(`/api/super/institutions?${params}`)
       const data = await res.json() as {
@@ -69,7 +74,7 @@ export function InstitutionsClient({ initialData }: Props) {
       // keep existing data on error
     }
     setLoading(false)
-  }, [search, planFilter, statusFilter])
+  }, [search, plans, statusFilters])
 
   useEffect(() => {
     const timer = setTimeout(fetchData, 300)
@@ -111,81 +116,105 @@ export function InstitutionsClient({ initialData }: Props) {
       : <ArrowDown className="h-3 w-3 ml-1" />
   }
 
-  const PLANS = ['ALL', 'STARTER', 'GROWTH', 'PRO']
-  const STATUSES = ['ALL', 'active', 'suspended']
+  const togglePlan = (p: string) => {
+    setPlans(prev => prev.includes(p) ? prev.filter(v => v !== p) : [...prev, p])
+  }
+
+  const toggleStatusFilter = (s: string) => {
+    setStatusFilters(prev => prev.includes(s) ? prev.filter(v => v !== s) : [...prev, s])
+  }
+
+  const activeFilterCount = plans.length + statusFilters.length
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Institutions
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+      {/* Toolbar: Title left | Search + Filter + Add right */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="shrink-0">
+          <h1 className="text-2xl font-bold tracking-tight">Institutions</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             {total} school{total !== 1 ? 's' : ''} on the platform
           </p>
         </div>
-        <Button onClick={() => setDrawerOpen(true)} className="min-h-[44px]">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Institution
-        </Button>
-      </div>
-
-      {/* Filters row */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2
-            h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name or subdomain..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9 min-h-[44px]"
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {PLANS.map(p => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPlanFilter(p)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium
-                border transition-colors min-h-[32px]
-                ${planFilter === p
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
-                }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          {STATUSES.map(s => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium
-                border transition-colors capitalize min-h-[32px]
-                ${statusFilter === s
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
-                }`}
-            >
-              {s}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2
+              h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9 w-48 min-h-[44px]"
+            />
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="min-h-[44px] min-w-[44px] relative">
+                <SlidersHorizontal className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary
+                    text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-52 p-0">
+              <div className="px-3 py-2.5 border-b">
+                <p className="text-sm font-medium">Plan</p>
+              </div>
+              <div className="p-2 space-y-0.5">
+                {PLAN_OPTIONS.map(p => (
+                  <label key={p}
+                    className="flex items-center gap-2.5 px-2 py-2 rounded-md
+                      hover:bg-muted/50 cursor-pointer transition-colors">
+                    <Checkbox
+                      checked={plans.includes(p)}
+                      onCheckedChange={() => togglePlan(p)}
+                    />
+                    <span className="text-sm">{p}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="px-3 py-2.5 border-b border-t">
+                <p className="text-sm font-medium">Status</p>
+              </div>
+              <div className="p-2 space-y-0.5">
+                {STATUS_OPTIONS.map(s => (
+                  <label key={s}
+                    className="flex items-center gap-2.5 px-2 py-2 rounded-md
+                      hover:bg-muted/50 cursor-pointer transition-colors capitalize">
+                    <Checkbox
+                      checked={statusFilters.includes(s)}
+                      onCheckedChange={() => toggleStatusFilter(s)}
+                    />
+                    <span className="text-sm capitalize">{s}</span>
+                  </label>
+                ))}
+              </div>
+              {activeFilterCount > 0 && (
+                <div className="px-3 py-2 border-t">
+                  <button type="button" onClick={() => { setPlans([]); setStatusFilters([]) }}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    Clear all
+                  </button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+          <Button onClick={() => setDrawerOpen(true)} className="min-h-[44px]">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Institution
+          </Button>
         </div>
       </div>
 
       {/* Table */}
       <div className="rounded-xl border bg-card">
-        <div className="overflow-x-auto">
+        <div className="overflow-auto max-h-[calc(100vh-240px)]">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/30">
+            <thead className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
+              <tr className="border-b">
                 <th
                   className="text-left px-4 py-3 font-medium
                     text-muted-foreground text-xs uppercase tracking-wide

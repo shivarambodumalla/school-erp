@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ subjectId: string }> }
@@ -14,17 +14,12 @@ function gradeLetter(pct: number): string {
   return 'F'
 }
 
-export async function POST(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    !['ADMIN', 'TEACHER'].includes(session.user.portalType)
-  ) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function POST(req: NextRequest, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
-  const { subjectId } = await ctx.params
+  const { subjectId } = await params
 
   try {
     const body = await req.json() as {
@@ -65,7 +60,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         isIncludedInFinal: body.isIncludedInFinal ?? true,
         notes: body.notes ?? null,
         source: 'MANUAL',
-        enteredById: session.user.id,
+        enteredById: ctx.userId,
       },
       update: {
         marksObtained: body.marksObtained,
@@ -73,14 +68,14 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         gradeLetter: letter,
         isIncludedInFinal: body.isIncludedInFinal ?? true,
         notes: body.notes ?? null,
-        overriddenById: session.user.id,
+        overriddenById: ctx.userId,
       },
     })
 
     await prisma.auditLog.create({
       data: {
         institutionId,
-        userId: session.user.id,
+        userId: ctx.userId,
         action: 'GRADE_ENTRY_UPSERT',
         tableName: 'GradeEntry',
         recordId: entry.id,
@@ -104,17 +99,12 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   }
 }
 
-export async function DELETE(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    !['ADMIN', 'TEACHER'].includes(session.user.portalType)
-  ) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function DELETE(req: NextRequest, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
-  const { subjectId } = await ctx.params
+  const { subjectId } = await params
 
   try {
     const body = await req.json() as {
@@ -145,7 +135,7 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
     await prisma.auditLog.create({
       data: {
         institutionId,
-        userId: session.user.id,
+        userId: ctx.userId,
         action: 'GRADE_ENTRY_DELETE',
         tableName: 'GradeEntry',
         recordId: existing.id,

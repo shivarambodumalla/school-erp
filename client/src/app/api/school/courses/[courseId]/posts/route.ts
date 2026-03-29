@@ -1,23 +1,20 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
   params: Promise<{ courseId: string }>
 }
 
-const MANAGEMENT_TYPES = ['ADMIN', 'TEACHER', 'INSTRUCTOR']
 
-export async function GET(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function GET(req: NextRequest, { params }: RouteContext) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER', 'STUDENT'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await params
 
-  const isStudent = session.user.portalType === 'STUDENT'
+  const isStudent = ctx.portalType === 'STUDENT'
 
   const posts = await prisma.coursePost.findMany({
     where: {
@@ -32,14 +29,12 @@ export async function GET(_req: Request, ctx: RouteContext) {
   return NextResponse.json({ posts })
 }
 
-export async function POST(req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || !MANAGEMENT_TYPES.includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function POST(req: NextRequest, { params }: RouteContext) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER', 'INSTRUCTOR'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await params
   const body = (await req.json()) as {
     type: string
     title: string
@@ -65,7 +60,7 @@ export async function POST(req: Request, ctx: RouteContext) {
       topicTag: body.topicTag ?? null,
       isPublished: body.isPublished ?? true,
       order: body.order ?? 0,
-      createdById: session.user.id,
+      createdById: ctx.userId,
     },
   })
 

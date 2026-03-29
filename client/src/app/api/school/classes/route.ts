@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
-  if (!institutionId) {
-    return NextResponse.json({ error: 'No institution' }, { status: 400 })
-  }
+export async function GET(req: Request) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const templates = await prisma.classTemplate.findMany({
@@ -54,15 +48,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
-  if (!institutionId) {
-    return NextResponse.json({ error: 'No institution' }, { status: 400 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const body = await req.json() as { name: string; gradeLevel: number; description?: string }

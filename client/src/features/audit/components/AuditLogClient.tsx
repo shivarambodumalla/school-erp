@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { Search, SlidersHorizontal } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface AuditEntry {
     id: string
@@ -19,8 +22,8 @@ interface Props {
     logs: AuditEntry[]
 }
 
-const DATE_FILTERS = ['Today', 'Last 7 days', 'Last 30 days', 'All'] as const
-const ACTION_FILTERS = ['ALL', 'created', 'updated', 'deleted', 'PASSWORD_CHANGED', 'MASQUERADE_START', 'MASQUERADE_STOP'] as const
+const DATE_FILTERS = ['Today', 'Last 7 days', 'Last 30 days'] as const
+const ACTION_OPTIONS = ['created', 'updated', 'deleted', 'PASSWORD_CHANGED', 'MASQUERADE_START', 'MASQUERADE_STOP'] as const
 
 const actionBadgeColor: Record<string, string> = {
     created: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -32,7 +35,7 @@ const actionBadgeColor: Record<string, string> = {
 }
 
 function filterByDate(log: AuditEntry, dateFilter: string): boolean {
-    if (dateFilter === 'All') return true
+    if (!dateFilter) return true
     const now = new Date()
     const logDate = new Date(log.createdAt)
     if (dateFilter === 'Today') {
@@ -45,9 +48,21 @@ function filterByDate(log: AuditEntry, dateFilter: string): boolean {
 
 export function AuditLogClient({ logs }: Props) {
     const [search, setSearch] = useState('')
-    const [dateFilter, setDateFilter] = useState<string>('All')
-    const [actionFilter, setActionFilter] = useState<string>('ALL')
+    const [dateFilter, setDateFilter] = useState('')
+    const [actions, setActions] = useState<string[]>([])
     const [expanded, setExpanded] = useState<string | null>(null)
+
+    const toggleAction = (a: string) => {
+        setActions(prev =>
+            prev.includes(a) ? prev.filter(v => v !== a) : [...prev, a],
+        )
+    }
+
+    const toggleDate = (d: string) => {
+        setDateFilter(prev => prev === d ? '' : d)
+    }
+
+    const activeFilterCount = actions.length + (dateFilter ? 1 : 0)
 
     const filtered = logs.filter((log) => {
         const matchesSearch =
@@ -55,67 +70,92 @@ export function AuditLogClient({ logs }: Props) {
             log.action.toLowerCase().includes(search.toLowerCase()) ||
             log.userId.toLowerCase().includes(search.toLowerCase()) ||
             log.tableName.toLowerCase().includes(search.toLowerCase())
-        const matchesAction = actionFilter === 'ALL' || log.action === actionFilter
+        const matchesAction = actions.length === 0 || actions.includes(log.action)
         const matchesDate = filterByDate(log, dateFilter)
         return matchesSearch && matchesAction && matchesDate
     })
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold">Audit Log</h1>
-                <p className="text-muted-foreground text-sm mt-1">Track all admin actions</p>
-            </div>
-
-            {/* Filters */}
-            <div className="space-y-3">
-                <div className="relative max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by action or user..."
-                        className="pl-9"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    {DATE_FILTERS.map((d) => (
-                        <button
-                            key={d}
-                            onClick={() => setDateFilter(d)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                                dateFilter === d
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                            }`}
-                        >
-                            {d}
-                        </button>
-                    ))}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    {ACTION_FILTERS.map((a) => (
-                        <button
-                            key={a}
-                            onClick={() => setActionFilter(a)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                                actionFilter === a
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                            }`}
-                        >
-                            {a}
-                        </button>
-                    ))}
+            {/* Toolbar: Title left | Search + Filter right */}
+            <div className="flex items-center justify-between gap-3">
+                <h1 className="text-2xl font-bold tracking-tight shrink-0">Audit Log</h1>
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search..."
+                            className="pl-9 w-48 min-h-[44px]"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" size="icon" className="min-h-[44px] min-w-[44px] relative">
+                                <SlidersHorizontal className="h-4 w-4" />
+                                {activeFilterCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary
+                                        text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="w-56 p-0">
+                            {/* Date filter — radio-style (single select) */}
+                            <div className="px-3 py-2.5 border-b">
+                                <p className="text-sm font-medium">Date Range</p>
+                            </div>
+                            <div className="p-2 space-y-0.5">
+                                {DATE_FILTERS.map(d => (
+                                    <label key={d}
+                                        className="flex items-center gap-2.5 px-2 py-2 rounded-md
+                                            hover:bg-muted/50 cursor-pointer transition-colors">
+                                        <span className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0
+                                            ${dateFilter === d ? 'border-primary' : 'border-muted-foreground/40'}`}>
+                                            {dateFilter === d && <span className="h-2 w-2 rounded-full bg-primary" />}
+                                        </span>
+                                        <span className="text-sm">{d}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            {/* Action filter — checkbox (multi select) */}
+                            <div className="px-3 py-2.5 border-b border-t">
+                                <p className="text-sm font-medium">Action</p>
+                            </div>
+                            <div className="p-2 space-y-0.5">
+                                {ACTION_OPTIONS.map(a => (
+                                    <label key={a}
+                                        className="flex items-center gap-2.5 px-2 py-2 rounded-md
+                                            hover:bg-muted/50 cursor-pointer transition-colors">
+                                        <Checkbox
+                                            checked={actions.includes(a)}
+                                            onCheckedChange={() => toggleAction(a)}
+                                        />
+                                        <span className="text-sm">{a}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            {activeFilterCount > 0 && (
+                                <div className="px-3 py-2 border-t">
+                                    <button type="button" onClick={() => { setDateFilter(''); setActions([]) }}
+                                        className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                        Clear all
+                                    </button>
+                                </div>
+                            )}
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 
             {/* Table */}
             <div className="rounded-xl border bg-card overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="overflow-auto max-h-[calc(100vh-220px)]">
                     <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b bg-muted/50">
+                        <thead className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
+                            <tr className="border-b">
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Action</th>
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">User</th>
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Table</th>

@@ -21,14 +21,15 @@ export function PermissionMatrixTable({
   readOnly,
   onChange,
 }: PermissionMatrixTableProps) {
-  const permMap = new Map(permissions.map((p) => [p.feature, p]))
+  const safePerms = Array.isArray(permissions) ? permissions : []
+  const permMap = new Map(safePerms.map((p) => [p.feature, p]))
 
   const handleFieldChange = (
     feature: string,
     field: 'access' | 'scope',
     value: string
   ) => {
-    const updated: Permission[] = permissions.map((p) => {
+    const updated: Permission[] = safePerms.map((p) => {
       if (p.feature !== feature) return p
       if (field === 'access') {
         return { ...p, access: value as AccessLevel }
@@ -39,7 +40,7 @@ export function PermissionMatrixTable({
   }
 
   const setAll = (access: AccessLevel) => {
-    onChange(permissions.map((p) => ({ ...p, access })))
+    onChange(safePerms.map((p) => ({ ...p, access })))
   }
 
   const reset = () => {

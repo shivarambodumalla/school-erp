@@ -1,22 +1,20 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
   params: Promise<{ subjectId: string; quizId: string }>
 }
 
-export async function POST(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'STUDENT') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function POST(req: Request,routeCtx: RouteContext) {
+  const ctx = await getSchoolContext(req, ['STUDENT'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
-  const { quizId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { quizId } = await routeCtx.params
 
   const student = await prisma.student.findFirst({
-    where: { userId: session.user.id, institutionId },
+    where: { userId: ctx.userId, institutionId },
   })
   if (!student) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 })
@@ -59,21 +57,19 @@ export async function POST(_req: Request, ctx: RouteContext) {
   })
 }
 
-export async function PATCH(req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'STUDENT') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function PATCH(req: Request,routeCtx: RouteContext) {
+  const ctx = await getSchoolContext(req, ['STUDENT'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
-  const { quizId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { quizId } = await routeCtx.params
   const body = (await req.json()) as {
     attemptId: string
     answers: Record<string, string | string[]>
   }
 
   const student = await prisma.student.findFirst({
-    where: { userId: session.user.id, institutionId },
+    where: { userId: ctx.userId, institutionId },
   })
   if (!student) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 })

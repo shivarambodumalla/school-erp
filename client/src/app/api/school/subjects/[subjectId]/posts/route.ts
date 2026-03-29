@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { sendNotifications } from '@/lib/notifications'
 import type { SubjectPostType, AttachmentType } from '@prisma/client'
 
 type RouteContext = { params: Promise<{ subjectId: string }> }
@@ -11,11 +12,10 @@ export async function GET(
   req: NextRequest,
   context: RouteContext
 ) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -23,7 +23,6 @@ export async function GET(
     )
   }
 
-  const institutionId = session.user.institutionId
   if (!institutionId) {
     return NextResponse.json(
       { error: 'No institution' },
@@ -102,11 +101,10 @@ export async function POST(
   req: NextRequest,
   context: RouteContext
 ) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -114,7 +112,6 @@ export async function POST(
     )
   }
 
-  const institutionId = session.user.institutionId
   if (!institutionId) {
     return NextResponse.json(
       { error: 'No institution' },
@@ -157,7 +154,7 @@ export async function POST(
         canPreview: body.canPreview ?? true,
         canDownload: body.canDownload ?? false,
         topicTag: body.topicTag ?? null,
-        createdById: session.user.id,
+        createdById: ctx.userId,
         attachments: body.attachments?.length
           ? {
               create: body.attachments.map((a) => ({
@@ -214,9 +211,33 @@ export async function POST(
           title: body.title,
           description: body.description ?? null,
           dueDate: new Date(body.dueDate),
-          createdById: session.user.id,
+          createdById: ctx.userId,
         },
       })
+    }
+
+    // Notify students when an assignment is posted
+    if (body.type === 'ASSIGNMENT' && subject.sectionId) {
+      try {
+        const studentSections = await prisma.studentSection.findMany({
+          where: { sectionId: subject.sectionId, status: 'ACTIVE' },
+          include: { student: { select: { userId: true } } },
+        })
+        const studentUserIds = studentSections
+          .map(ss => ss.student.userId)
+          .filter(Boolean) as string[]
+        if (studentUserIds.length > 0) {
+          await sendNotifications({
+            institutionId,
+            userIds: studentUserIds,
+            type: 'ASSIGNMENT_DUE',
+            title: 'New assignment posted',
+            body: `New assignment: ${body.title}`,
+          })
+        }
+      } catch (notifErr) {
+        console.error('[Notifications] assignment post error:', notifErr)
+      }
     }
 
     return NextResponse.json(post, { status: 201 })

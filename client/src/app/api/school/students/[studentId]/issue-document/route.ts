@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(
     req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
-
-    const institutionId = session.user.institutionId
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
         where: { id: params.studentId, institutionId },
@@ -51,7 +48,7 @@ export async function POST(
     await prisma.auditLog.create({
         data: {
             institutionId,
-            userId: session.user.id,
+            userId: ctx.userId,
             action: 'DOCUMENT_ISSUED',
             tableName: 'Student',
             recordId: student.id,
@@ -65,6 +62,6 @@ export async function POST(
         studentData: student,
         institutionData: institution,
         issuedAt: new Date().toISOString(),
-        issuedBy: session.user.email,
+        issuedBy: ctx.userId,
     })
 }

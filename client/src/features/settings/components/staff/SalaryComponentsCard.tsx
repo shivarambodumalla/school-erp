@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -72,14 +72,12 @@ function ListSection({
 
 export function SalaryComponentsCard() {
   const [config, setConfig] = useState<SalaryConfigData | null>(null)
-  const [loaded, setLoaded] = useState(false)
-
   const refresh = useCallback(async () => {
     const res = await fetch('/api/school/settings/salary-config')
-    if (res.ok) { setConfig(await res.json()); setLoaded(true) }
+    if (res.ok) { setConfig(await res.json()) }
   }, [])
 
-  if (!loaded) refresh()
+  useEffect(() => { refresh() }, [refresh])
 
   const save = async (patch: { allowanceTypes?: string[]; deductionTypes?: string[] }) => {
     const res = await fetch('/api/school/settings/salary-config', {

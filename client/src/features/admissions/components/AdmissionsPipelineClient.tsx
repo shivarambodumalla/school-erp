@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, type MouseEvent } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Plus, Search, MessageSquarePlus, X, Archive } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { AdmissionsKanban } from './AdmissionsKanban'
@@ -49,6 +50,7 @@ export function AdmissionsPipelineClient() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { apiParam, addParams } = useInstitutionId()
 
   const [search, setSearch] = useState('')
   const [admissions, setAdmissions] = useState<AdmissionListItem[]>([])
@@ -82,10 +84,11 @@ export function AdmissionsPipelineClient() {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     params.set('take', '100')
+    addParams(params)
 
     Promise.all([
       fetch(`/api/school/admissions?${params}`).then(r => r.json()),
-      fetch('/api/school/inquiries').then(r => r.json()),
+      fetch(`/api/school/inquiries${apiParam}`).then(r => r.json()),
     ])
       .then(([admData, inqData]) => {
         setAdmissions(admData.admissions ?? [])
@@ -235,7 +238,8 @@ export function AdmissionsPipelineClient() {
             </div>
           ) : (
             <AdmissionsKanban admissions={activeAdmissions} inquiries={inquiries}
-              openedIds={openedIds} onOpen={handleAdmissionClick} />
+              openedIds={openedIds} onOpen={handleAdmissionClick}
+              onNewInquiry={() => setShowInquirySheet(true)} />
           )}
 
           {/* Link to rejected page */}

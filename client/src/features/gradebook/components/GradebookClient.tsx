@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Button } from '@/components/ui/button'
 import { GradebookTable } from './GradebookTable'
 import { BulkEntrySheet } from './BulkEntrySheet'
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function GradebookClient({ subjectId }: Props) {
+  const { apiParam } = useInstitutionId()
   const [data, setData] = useState<GradebookData | null>(null)
   const [loading, setLoading] = useState(true)
   const [bulkOpen, setBulkOpen] = useState(false)
@@ -20,7 +22,7 @@ export function GradebookClient({ subjectId }: Props) {
     setLoading(true)
     try {
       const res = await fetch(
-        `/api/school/subjects/${subjectId}/gradebook`,
+        `/api/school/subjects/${subjectId}/gradebook${apiParam}`,
       )
       if (res.ok) setData(await res.json())
     } finally {

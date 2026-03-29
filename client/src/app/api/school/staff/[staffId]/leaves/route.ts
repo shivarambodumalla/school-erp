@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { staffId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const leaves = await prisma.staffLeave.findMany({
     where: { institutionId, staffId: params.staffId },
@@ -38,12 +35,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { staffId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const body = await req.json() as {
     leaveTypeId: string

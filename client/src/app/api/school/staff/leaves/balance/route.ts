@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface LeaveBalance {
@@ -13,12 +13,9 @@ interface LeaveBalance {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const staffId = req.nextUrl.searchParams.get('staffId')
 
   if (!staffId) {

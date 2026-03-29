@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,7 @@ import type { DepartmentRow } from './types'
 
 export function DepartmentsCard() {
   const [departments, setDepartments] = useState<DepartmentRow[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [fetched, setFetched] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
@@ -22,13 +22,11 @@ export function DepartmentsCard() {
     const res = await fetch('/api/school/settings/departments')
     if (res.ok) {
       setDepartments(await res.json())
-      setLoaded(true)
+      setFetched(true)
     }
   }, [])
 
-  if (!loaded) {
-    refresh()
-  }
+  useEffect(() => { refresh() }, [refresh])
 
   const add = async () => {
     setSaving(true)
@@ -145,7 +143,7 @@ export function DepartmentsCard() {
               </Button>
             </div>
           ))}
-          {loaded && departments.length === 0 && (
+          {fetched && departments.length === 0 && (
             <p className="px-4 py-6 text-center text-muted-foreground">
               No departments configured yet.
             </p>

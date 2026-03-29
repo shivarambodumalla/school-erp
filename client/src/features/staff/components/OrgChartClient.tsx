@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ interface DeptOption { id: string; name: string }
 
 export function OrgChartClient() {
   const router = useRouter()
+  const { iid } = useInstitutionId()
   const [flat, setFlat] = useState<FlatStaff[]>([])
   const [departments, setDepartments] = useState<DeptOption[]>([])
   const [deptFilter, setDeptFilter] = useState<string | null>(null)
@@ -28,14 +30,14 @@ export function OrgChartClient() {
   useEffect(() => {
     (async () => {
       setLoading(true)
-      const res = await fetch('/api/school/staff?page=1')
+      const res = await fetch(`/api/school/staff?page=1${iid ? `&iid=${iid}` : ''}`)
       if (res.ok) {
         const data = (await res.json()) as { staff: FlatStaff[]; total: number }
         // Fetch all pages
         const pages = Math.ceil(data.total / 20)
         let all = [...data.staff]
         for (let p = 2; p <= pages; p++) {
-          const r = await fetch(`/api/school/staff?page=${p}`)
+          const r = await fetch(`/api/school/staff?page=${p}${iid ? `&iid=${iid}` : ''}`)
           if (r.ok) {
             const d = (await r.json()) as { staff: FlatStaff[] }
             all = all.concat(d.staff)

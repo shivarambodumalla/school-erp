@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { sendNotifications } from '@/lib/notifications'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { staffId: string; leaveId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const body = await req.json() as {
     status: 'APPROVED' | 'REJECTED' | 'CANCELLED'
@@ -42,7 +40,7 @@ export async function PATCH(
     data: {
       status: body.status,
       approvalComment: body.approvalComment ?? null,
-      approvedById: session.user.id,
+      approvedById: ctx.userId,
       reviewedAt: new Date(),
     },
     include: {
@@ -72,7 +70,7 @@ export async function PATCH(
         update: {
           status: 'ON_LEAVE',
           notes: `Leave: ${updated.leaveType.name}`,
-          markedById: session.user.id,
+          markedById: ctx.userId,
         },
         create: {
           institutionId,
@@ -80,10 +78,30 @@ export async function PATCH(
           date,
           status: 'ON_LEAVE',
           notes: `Leave: ${updated.leaveType.name}`,
-          markedById: session.user.id,
+          markedById: ctx.userId,
         },
       })
     }
+  }
+
+  // Notify staff member about leave decision
+  try {
+    const newStatus = body.status
+    const staffMember = await prisma.staff.findUnique({
+      where: { id: params.staffId },
+      select: { userId: true }
+    })
+    if (staffMember?.userId) {
+      await sendNotifications({
+        institutionId,
+        userIds: [staffMember.userId],
+        type: newStatus === 'APPROVED' ? 'LEAVE_APPROVED' : 'LEAVE_REJECTED',
+        title: newStatus === 'APPROVED' ? 'Leave approved' : 'Leave rejected',
+        body: `Your leave request has been ${newStatus.toLowerCase()}.`,
+      })
+    }
+  } catch (notifErr) {
+    console.error('[Notifications] leave status error:', notifErr)
   }
 
   return NextResponse.json(updated)

@@ -91,7 +91,7 @@ export function StudentHeroActions({ student, editMode, onEditToggle }: Props) {
             {showTransfer && (
                 <TransferClassModal
                     studentId={student.id}
-                    currentClassId={student.classId}
+                    currentClassId={student.sections?.[0]?.classYear.id ?? ''}
                     onClose={() => setShowTransfer(false)}
                     onTransferred={() => { setShowTransfer(false); router.refresh() }}
                 />

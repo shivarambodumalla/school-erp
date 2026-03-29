@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PostCard } from './PostCard'
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export function SubjectStream({ subjectId }: Props) {
+  const { addParams } = useInstitutionId()
   const [posts, setPosts] = useState<SubjectPostData[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -35,6 +37,7 @@ export function SubjectStream({ subjectId }: Props) {
       const params = new URLSearchParams()
       if (filter) params.set('type', filter)
       params.set('page', String(page))
+      addParams(params)
       const res = await fetch(
         `/api/school/subjects/${subjectId}/posts?${params}`
       )
@@ -55,7 +58,7 @@ export function SubjectStream({ subjectId }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [subjectId, filter, page])
+  }, [subjectId, filter, page, addParams])
 
   useEffect(() => {
     fetchPosts()

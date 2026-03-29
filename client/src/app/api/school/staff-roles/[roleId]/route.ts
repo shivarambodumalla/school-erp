@@ -1,26 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ roleId: string }> }
 const json = NextResponse.json
 const INCLUDE_COUNT = { _count: { select: { primaryStaff: true, assignments: true } } }
 
-async function getSession() {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') return null
-  if (!session.user.institutionId) return null
-  return session
-}
+export async function GET(req: NextRequest, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-export async function GET(_req: NextRequest, ctx: Ctx) {
-  const session = await getSession()
-  if (!session) return json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { roleId } = await ctx.params
+  const { roleId } = await params
   try {
     const role = await prisma.staffRole.findFirst({
-      where: { id: roleId, institutionId: session.user.institutionId },
+      where: { id: roleId, institutionId },
       include: INCLUDE_COUNT,
     })
     if (!role) return json({ error: 'Role not found' }, { status: 404 })
@@ -41,12 +35,12 @@ interface PatchBody {
   permissions?: { feature: string; access: string; scope: string }[]
 }
 
-export async function PATCH(req: NextRequest, ctx: Ctx) {
-  const session = await getSession()
-  if (!session) return json({ error: 'Unauthorized' }, { status: 401 })
+export async function PATCH(req: NextRequest, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
-  const { roleId } = await ctx.params
+  const { roleId } = await params
 
   try {
     const role = await prisma.staffRole.findFirst({
@@ -76,12 +70,12 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 }
 
-export async function DELETE(_req: NextRequest, ctx: Ctx) {
-  const session = await getSession()
-  if (!session) return json({ error: 'Unauthorized' }, { status: 401 })
+export async function DELETE(req: NextRequest, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
-  const { roleId } = await ctx.params
+  const { roleId } = await params
 
   try {
     const role = await prisma.staffRole.findFirst({

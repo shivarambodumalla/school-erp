@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, [])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const sp = req.nextUrl.searchParams
   const sectionId = sp.get('sectionId')
   const studentId = sp.get('studentId')

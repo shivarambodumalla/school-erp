@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { updateGuardianSchema } from '@/features/admissions/schemas/admissionSchema'
 
 interface Ctx { params: { id: string; gId: string } }
 
 export async function PATCH(req: Request, { params }: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const admission = await prisma.admission.findFirst({
-    where: { id: params.id, institutionId: session.user.institutionId },
+    where: { id: params.id, institutionId: institutionId },
     select: { id: true },
   })
 
@@ -42,14 +41,13 @@ export async function PATCH(req: Request, { params }: Ctx) {
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: Request, { params }: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function DELETE(req: Request, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const admission = await prisma.admission.findFirst({
-    where: { id: params.id, institutionId: session.user.institutionId },
+    where: { id: params.id, institutionId: institutionId },
     select: { id: true },
   })
 

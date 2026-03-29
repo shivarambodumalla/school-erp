@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
-    _req: NextRequest,
+    req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
-        where: { id: params.studentId, institutionId: session.user.institutionId },
+        where: { id: params.studentId, institutionId: institutionId },
         select: { id: true },
     })
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -28,13 +29,12 @@ export async function POST(
     req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
-        where: { id: params.studentId, institutionId: session.user.institutionId },
+        where: { id: params.studentId, institutionId: institutionId },
         select: {
             id: true,
             sections: {
@@ -53,7 +53,7 @@ export async function POST(
         validTill = new Date(body.validTill)
     } else {
         const settings = await prisma.admissionSettings.findUnique({
-            where: { institutionId: session.user.institutionId },
+            where: { institutionId: institutionId },
             select: { idCardValidTill: true },
         })
         if (settings?.idCardValidTill) {
@@ -76,7 +76,7 @@ export async function POST(
     const card = await prisma.studentIdCard.create({
         data: {
             studentId: params.studentId,
-            issuedById: session.user.id,
+            issuedById: ctx.userId,
             validTill,
             isActive: true,
         },
@@ -84,8 +84,8 @@ export async function POST(
 
     await prisma.auditLog.create({
         data: {
-            institutionId: session.user.institutionId,
-            userId: session.user.id,
+            institutionId: institutionId,
+            userId: ctx.userId,
             action: 'ID_CARD_ISSUED',
             tableName: 'StudentIdCard',
             recordId: card.id,

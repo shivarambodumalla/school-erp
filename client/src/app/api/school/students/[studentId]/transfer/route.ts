@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 const transferSchema = z.object({
@@ -15,12 +15,9 @@ export async function POST(
     req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
-
-    const institutionId = session.user.institutionId
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
         where: { id: params.studentId, institutionId },
@@ -53,7 +50,7 @@ export async function POST(
                 exitDate: new Date(exitDate),
                 destinationSchool: destinationSchool ?? null,
                 reason: reason ?? null,
-                processedById: session.user.id,
+                processedById: ctx.userId,
             },
         }),
         prisma.student.update({
@@ -65,7 +62,7 @@ export async function POST(
     await prisma.auditLog.create({
         data: {
             institutionId,
-            userId: session.user.id,
+            userId: ctx.userId,
             action: 'STUDENT_TRANSFERRED',
             tableName: 'Student',
             recordId: params.studentId,

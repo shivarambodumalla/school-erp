@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ staffId: string; docId: string }> }
 
-export async function PATCH(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const institutionId = session.user.institutionId
-  const { staffId, docId } = await ctx.params
+export async function PATCH(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { staffId, docId } = await routeCtx.params
 
   const doc = await prisma.staffDocument.findFirst({
     where: { id: docId, staffId, institutionId },
@@ -28,7 +26,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   if ('isVerified' in body) {
     data.isVerified = body.isVerified
     if (body.isVerified) {
-      data.verifiedById = session.user.id
+      data.verifiedById = ctx.userId
       data.verifiedAt = new Date()
     }
   }
@@ -42,13 +40,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const institutionId = session.user.institutionId
-  const { staffId, docId } = await ctx.params
+export async function DELETE(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { staffId, docId } = await routeCtx.params
 
   const doc = await prisma.staffDocument.findFirst({
     where: { id: docId, staffId, institutionId },

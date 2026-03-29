@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { documentTypeSchema } from '@/features/settings/schemas/admissionSettingsSchema'
 
-export async function GET() {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+export async function GET(req: Request) {
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const docs = await prisma.documentTypeConfig.findMany({
-        where: { institutionId: session.user.institutionId },
+        where: { institutionId: institutionId },
         orderBy: { order: 'asc' },
     })
 
@@ -18,10 +17,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const body = await req.json()
     const parsed = documentTypeSchema.safeParse(body)
@@ -29,7 +27,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const institutionId = session.user.institutionId
 
     const existing = await prisma.documentTypeConfig.findUnique({
         where: { institutionId_name: { institutionId, name: parsed.data.name } },

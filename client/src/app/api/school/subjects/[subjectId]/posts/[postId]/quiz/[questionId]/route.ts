@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { QuestionType, Prisma } from '@prisma/client'
 
@@ -21,12 +21,11 @@ interface QuestionPatch {
   explanation?: string | null
 }
 
-export async function PATCH(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+export async function PATCH(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -34,10 +33,9 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     )
   }
 
-  const institutionId = session.user.institutionId
   try {
     const { subjectId, postId, questionId } =
-      await ctx.params
+      await routeCtx.params
     const body = (await req.json()) as QuestionPatch
 
     const post = await prisma.subjectPost.findFirst({
@@ -76,12 +74,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 }
 
-export async function DELETE(_req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+export async function DELETE(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -89,10 +86,9 @@ export async function DELETE(_req: NextRequest, ctx: Ctx) {
     )
   }
 
-  const institutionId = session.user.institutionId
   try {
     const { subjectId, postId, questionId } =
-      await ctx.params
+      await routeCtx.params
 
     const post = await prisma.subjectPost.findFirst({
       where: { id: postId, subjectId, institutionId },

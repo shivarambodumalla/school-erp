@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'TEACHER') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+export async function GET(req: Request) {
+  const ctx = await getSchoolContext(req, ['TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const today = new Date()
   const dateOnly = new Date(
     Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
@@ -16,7 +13,7 @@ export async function GET() {
 
   try {
     const teacherSubjects = await prisma.subjectTeacher.findMany({
-      where: { teacherId: session.user.id },
+      where: { teacherId: ctx.userId },
       select: {
         subject: {
           select: {

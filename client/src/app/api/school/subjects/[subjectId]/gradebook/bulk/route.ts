@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { sendNotifications } from '@/lib/notifications'
 
 type Ctx = { params: Promise<{ subjectId: string }> }
 
@@ -19,17 +20,12 @@ interface BulkEntry {
   marksObtained: number
 }
 
-export async function POST(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    !['ADMIN', 'TEACHER'].includes(session.user.portalType)
-  ) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function POST(req: NextRequest, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
-  const { subjectId } = await ctx.params
+  const { subjectId } = await params
 
   try {
     const body = await req.json() as {
@@ -75,17 +71,38 @@ export async function POST(req: NextRequest, ctx: Ctx) {
             totalMarks: body.totalMarks,
             gradeLetter: letter,
             source: 'MANUAL',
-            enteredById: session.user.id,
+            enteredById: ctx.userId,
           },
           update: {
             marksObtained: e.marksObtained,
             totalMarks: body.totalMarks,
             gradeLetter: letter,
-            overriddenById: session.user.id,
+            overriddenById: ctx.userId,
           },
         })
       }),
     )
+
+    // Notify students about published grades
+    try {
+      const studentIds = body.entries.map(e => e.studentId)
+      const students = await prisma.student.findMany({
+        where: { id: { in: studentIds }, userId: { not: null } },
+        select: { userId: true },
+      })
+      const studentUserIds = students.map(s => s.userId).filter(Boolean) as string[]
+      if (studentUserIds.length > 0) {
+        await sendNotifications({
+          institutionId,
+          userIds: studentUserIds,
+          type: 'GRADE_PUBLISHED',
+          title: 'Grades published',
+          body: `Your grades have been published.`,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[Notifications] grade publish error:', notifErr)
+    }
 
     return NextResponse.json({ saved: saved.length })
   } catch (err) {

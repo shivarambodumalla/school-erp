@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { createInquirySchema } from '@/features/admissions/schemas/admissionSchema'
 
-export async function GET() {
-  const session = await auth()
-  if (!session || !['ADMIN', 'TEACHER'].includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function GET(req: Request) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const inquiries = await prisma.inquiry.findMany({
-    where: { institutionId: session.user.institutionId },
+    where: { institutionId: institutionId },
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -28,10 +27,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const body = await req.json()
   const parsed = createInquirySchema.safeParse(body)
@@ -46,13 +44,13 @@ export async function POST(req: Request) {
   const d = parsed.data
   const inquiry = await prisma.inquiry.create({
     data: {
-      institutionId: session.user.institutionId,
+      institutionId: institutionId,
       name: d.name,
       phone: d.phone,
       email: d.email || null,
       source: d.source,
       notes: d.notes,
-      createdById: session.user.id,
+      createdById: ctx.userId,
     },
     select: { id: true, name: true, createdAt: true },
   })

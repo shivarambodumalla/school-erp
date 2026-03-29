@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { documentTypeUpdateSchema } from '@/features/settings/schemas/admissionSettingsSchema'
 
@@ -7,10 +7,9 @@ export async function PATCH(
     req: NextRequest,
     { params }: { params: { id: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const body = await req.json()
     const parsed = documentTypeUpdateSchema.safeParse(body)
@@ -19,7 +18,7 @@ export async function PATCH(
     }
 
     const config = await prisma.documentTypeConfig.findFirst({
-        where: { id: params.id, institutionId: session.user.institutionId },
+        where: { id: params.id, institutionId: institutionId },
     })
     if (!config) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -34,16 +33,15 @@ export async function PATCH(
 }
 
 export async function DELETE(
-    _req: NextRequest,
+    req: NextRequest,
     { params }: { params: { id: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const config = await prisma.documentTypeConfig.findFirst({
-        where: { id: params.id, institutionId: session.user.institutionId },
+        where: { id: params.id, institutionId: institutionId },
     })
     if (!config) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 })

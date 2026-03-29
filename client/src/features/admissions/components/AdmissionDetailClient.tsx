@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import Link from 'next/link'
 import { ArrowLeft, UserCheck, XCircle, GraduationCap, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -56,6 +57,7 @@ const AVATAR_COLORS = [
 
 export function AdmissionDetailClient({ admission: initial, classes, auditLogs }: Props) {
   const router = useRouter()
+  const { apiParam } = useInstitutionId()
   const [admission, setAdmission] = useState(initial)
   const [showEnroll, setShowEnroll] = useState(false)
   const [showReject, setShowReject] = useState(false)
@@ -67,7 +69,7 @@ export function AdmissionDetailClient({ admission: initial, classes, auditLogs }
   async function handleAdmit() {
     setActing(true)
     try {
-      const res = await fetch(`/api/school/admissions/${admission.id}/status`, {
+      const res = await fetch(`/api/school/admissions/${admission.id}/status${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'ADMIT' }),
@@ -82,7 +84,7 @@ export function AdmissionDetailClient({ admission: initial, classes, auditLogs }
   async function handleReject(reason: string) {
     setActing(true)
     try {
-      const res = await fetch(`/api/school/admissions/${admission.id}/status`, {
+      const res = await fetch(`/api/school/admissions/${admission.id}/status${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'REJECT', reason }),
@@ -98,7 +100,7 @@ export function AdmissionDetailClient({ admission: initial, classes, auditLogs }
   async function handleEnroll(classId: string, sectionId?: string) {
     setActing(true)
     try {
-      const res = await fetch(`/api/school/admissions/${admission.id}/status`, {
+      const res = await fetch(`/api/school/admissions/${admission.id}/status${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'ENROLL', classId, sectionId }),

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type RouteContext = { params: Promise<{ classYearId: string; studentId: string }> }
@@ -8,15 +8,9 @@ export async function PATCH(
   req: NextRequest,
   context: RouteContext
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
-  if (!institutionId) {
-    return NextResponse.json({ error: 'No institution' }, { status: 400 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const { classYearId, studentId } = await context.params
@@ -46,18 +40,12 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   context: RouteContext
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
-  if (!institutionId) {
-    return NextResponse.json({ error: 'No institution' }, { status: 400 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const { classYearId, studentId } = await context.params

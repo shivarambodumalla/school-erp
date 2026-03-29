@@ -39,18 +39,9 @@ const TABS = [
 export function SchoolTabs({ institutionId }: Props) {
   return (
     <Tabs defaultValue="overview">
-      <TabsList className="w-full justify-start border-b rounded-none
-        h-auto p-0 bg-transparent overflow-x-auto flex">
+      <TabsList className="w-full justify-start">
         {TABS.map(tab => (
-          <TabsTrigger
-            key={tab.value}
-            value={tab.value}
-            className="rounded-none border-b-2 border-transparent
-              data-[state=active]:border-primary
-              data-[state=active]:bg-transparent
-              data-[state=active]:shadow-none
-              px-4 py-3 text-sm font-medium shrink-0"
-          >
+          <TabsTrigger key={tab.value} value={tab.value}>
             {tab.label}
           </TabsTrigger>
         ))}

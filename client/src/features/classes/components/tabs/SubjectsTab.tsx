@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { useRouter } from 'next/navigation'
 import { Plus, ArrowRight, Pencil, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ interface SubjectsTabProps {
 
 export function SubjectsTab({ classYearId, sections }: SubjectsTabProps) {
   const router = useRouter()
+  const { apiParam } = useInstitutionId()
   const [subjects, setSubjects] = useState<SubjectData[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -23,7 +25,7 @@ export function SubjectsTab({ classYearId, sections }: SubjectsTabProps) {
   const fetchSubjects = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/school/classes/${classYearId}/subjects`)
+      const res = await fetch(`/api/school/classes/${classYearId}/subjects${apiParam}`)
       if (res.ok) setSubjects((await res.json()) as SubjectData[])
     } catch { /* empty */ }
     setLoading(false)
@@ -33,7 +35,7 @@ export function SubjectsTab({ classYearId, sections }: SubjectsTabProps) {
 
   const handleDelete = async (subjectId: string, name: string) => {
     if (!confirm(`Delete subject "${name}"? This only works if there are no posts or grades.`)) return
-    const res = await fetch(`/api/school/classes/${classYearId}/subjects/${subjectId}`, { method: 'DELETE' })
+    const res = await fetch(`/api/school/classes/${classYearId}/subjects/${subjectId}${apiParam}`, { method: 'DELETE' })
     if (res.ok) { toast.success(`${name} deleted`); fetchSubjects() }
     else { const e = await res.json(); toast.error(e.error ?? 'Cannot delete') }
   }
@@ -121,6 +123,7 @@ function AddSubjectForm({ classYearId, sections, onClose, onDone }: {
   classYearId: string; sections?: { id: string; name: string }[]
   onClose: () => void; onDone: () => void
 }) {
+  const { apiParam } = useInstitutionId()
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   const [periods, setPeriods] = useState(5)
@@ -131,7 +134,7 @@ function AddSubjectForm({ classYearId, sections, onClose, onDone }: {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetch('/api/school/people').then(async r => {
+    fetch(`/api/school/people${apiParam}`).then(async r => {
       if (r.ok) {
         const data = await r.json()
         const list: { id: string; email: string; portalType: string }[] = data.users ?? []
@@ -143,7 +146,7 @@ function AddSubjectForm({ classYearId, sections, onClose, onDone }: {
   const handleSubmit = async () => {
     if (!name || !teacherId) { toast.error('Name and teacher are required'); return }
     setSaving(true)
-    const res = await fetch(`/api/school/classes/${classYearId}/subjects`, {
+    const res = await fetch(`/api/school/classes/${classYearId}/subjects${apiParam}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, code: code || undefined, weeklyPeriods: periods, teacherId, sectionId: sectionId || undefined, hasOnlineContent: online }),
     })
@@ -190,6 +193,7 @@ function AddSubjectForm({ classYearId, sections, onClose, onDone }: {
 function EditSubjectForm({ classYearId, subject, onClose, onDone }: {
   classYearId: string; subject: SubjectData; onClose: () => void; onDone: () => void
 }) {
+  const { apiParam } = useInstitutionId()
   const [name, setName] = useState(subject.name)
   const [code, setCode] = useState(subject.code ?? '')
   const [periods, setPeriods] = useState(subject.weeklyPeriods)
@@ -199,7 +203,7 @@ function EditSubjectForm({ classYearId, subject, onClose, onDone }: {
   const handleSubmit = async () => {
     if (!name) { toast.error('Name is required'); return }
     setSaving(true)
-    const res = await fetch(`/api/school/classes/${classYearId}/subjects/${subject.id}`, {
+    const res = await fetch(`/api/school/classes/${classYearId}/subjects/${subject.id}${apiParam}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, code: code || undefined, weeklyPeriods: periods, hasOnlineContent: online }),
     })

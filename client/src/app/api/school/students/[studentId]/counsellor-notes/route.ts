@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(
   req: Request,
   { params }: { params: { studentId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const student = await prisma.student.findUnique({
     where: { id: params.studentId },
@@ -34,14 +31,14 @@ export async function POST(
       studentId: student.id,
       note,
       followUpDate: followUpDate ? new Date(followUpDate) : null,
-      createdById: session.user.id,
+      createdById: ctx.userId,
     },
   })
 
   await prisma.auditLog.create({
     data: {
       institutionId,
-      userId: session.user.id,
+      userId: ctx.userId,
       action: 'COUNSELLOR_NOTE_ADDED',
       tableName: 'CounsellorNote',
       recordId: record.id,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import type { LeaveTypeRow } from './types'
 
 export function LeaveTypesCard() {
   const [types, setTypes] = useState<LeaveTypeRow[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [fetched, setFetched] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [name, setName] = useState('')
   const [shortName, setShortName] = useState('')
@@ -26,10 +26,10 @@ export function LeaveTypesCard() {
 
   const refresh = useCallback(async () => {
     const res = await fetch('/api/school/settings/leave-types')
-    if (res.ok) { setTypes(await res.json()); setLoaded(true) }
+    if (res.ok) { setTypes(await res.json()); setFetched(true) }
   }, [])
 
-  if (!loaded) refresh()
+  useEffect(() => { refresh() }, [refresh])
 
   const add = async () => {
     setSaving(true)
@@ -119,7 +119,7 @@ export function LeaveTypesCard() {
                 </TableCell>
               </TableRow>
             ))}
-            {loaded && types.length === 0 && (
+            {fetched && types.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                   No leave types configured yet.

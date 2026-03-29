@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   req: Request,
   { params }: { params: { studentId: string; docId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const doc = await prisma.studentDocument.findFirst({
     where: { id: params.docId, studentId: params.studentId, institutionId },
@@ -26,7 +23,7 @@ export async function PATCH(
   if (typeof body.isVerified === 'boolean') {
     updateData.isVerified = body.isVerified
     if (body.isVerified) {
-      updateData.verifiedById = session.user.id
+      updateData.verifiedById = ctx.userId
       updateData.verifiedAt = new Date()
     } else {
       updateData.verifiedById = null
@@ -46,15 +43,12 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: { studentId: string; docId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const doc = await prisma.studentDocument.findFirst({
     where: { id: params.docId, studentId: params.studentId, institutionId },
@@ -68,7 +62,7 @@ export async function DELETE(
   await prisma.auditLog.create({
     data: {
       institutionId,
-      userId: session.user.id,
+      userId: ctx.userId,
       action: 'DOCUMENT_DELETED',
       tableName: 'StudentDocument',
       recordId: params.docId,

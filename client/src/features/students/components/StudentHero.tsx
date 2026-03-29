@@ -57,7 +57,9 @@ export function StudentHero({ student, editMode, onEditToggle }: Props) {
                     {s.sisId} · {s.admissionNo}{s.rollNo ? ` · Roll ${s.rollNo}` : ''}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                    {s.class.name} — {s.section.name}
+                    {s.sections?.[0]
+                        ? `${s.sections[0].classYear.classTemplate.name} — ${s.sections[0].section.name}`
+                        : 'No class assigned'}
                     {s.bloodGroup ? ` · ${s.bloodGroup}` : ''}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">

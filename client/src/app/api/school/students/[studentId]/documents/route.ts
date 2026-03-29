@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { studentId: string } },
 ) {
-  const session = await auth()
-  if (!session || !['ADMIN', 'TEACHER'].includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const student = await prisma.student.findUnique({
     where: { id: params.studentId },
@@ -66,12 +63,9 @@ export async function POST(
   req: Request,
   { params }: { params: { studentId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const student = await prisma.student.findUnique({
     where: { id: params.studentId },
@@ -109,14 +103,14 @@ export async function POST(
       fileSize: fileSize ?? null,
       mimeType: mimeType ?? null,
       notes: notes ?? null,
-      uploadedById: session.user.id,
+      uploadedById: ctx.userId,
     },
   })
 
   await prisma.auditLog.create({
     data: {
       institutionId,
-      userId: session.user.id,
+      userId: ctx.userId,
       action: 'DOCUMENT_UPLOADED',
       tableName: 'StudentDocument',
       recordId: doc.id,

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { ArrowLeft, MoreHorizontal, Archive, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -32,6 +33,7 @@ interface ClassYearProps {
 
 export function ClassYearClient({ classYear }: ClassYearProps) {
   const router = useRouter()
+  const { apiParam } = useInstitutionId()
   const { classTemplate, academicYear, status } = classYear
   const statusClass = STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT
   const [menuOpen, setMenuOpen] = useState(false)
@@ -39,7 +41,7 @@ export function ClassYearClient({ classYear }: ClassYearProps) {
 
   const handleArchive = async () => {
     if (!confirm(`Archive ${classTemplate.name} — ${academicYear.name}?`)) return
-    const res = await fetch(`/api/school/classes/${classYear.id}`, {
+    const res = await fetch(`/api/school/classes/${classYear.id}${apiParam}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'ARCHIVED' }),
     })
@@ -93,10 +95,10 @@ export function ClassYearClient({ classYear }: ClassYearProps) {
       {/* Tabs */}
       <Tabs defaultValue="sections">
         <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="sections" className="min-h-[44px]">Sections</TabsTrigger>
-          <TabsTrigger value="subjects" className="min-h-[44px]">Subjects</TabsTrigger>
-          <TabsTrigger value="students" className="min-h-[44px]">Students</TabsTrigger>
-          <TabsTrigger value="promote" className="min-h-[44px]">Promote</TabsTrigger>
+          <TabsTrigger value="sections">Sections</TabsTrigger>
+          <TabsTrigger value="subjects">Subjects</TabsTrigger>
+          <TabsTrigger value="students">Students</TabsTrigger>
+          <TabsTrigger value="promote">Promote</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sections">

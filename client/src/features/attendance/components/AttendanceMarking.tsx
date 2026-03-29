@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,6 +26,7 @@ const STATUS_OPTIONS: {
 ]
 
 export function AttendanceMarking({ sections, mode }: Props) {
+  const { addParams, apiParam } = useInstitutionId()
   const today = new Date().toISOString().slice(0, 10)
   const [date, setDate] = useState(today)
   const [sectionId, setSectionId] = useState(sections[0]?.id ?? '')
@@ -38,6 +40,7 @@ export function AttendanceMarking({ sections, mode }: Props) {
     if (mode !== 'DAILY' && period) {
       params.set('periodNumber', String(period))
     }
+    addParams(params)
     const res = await fetch(`/api/school/attendance?${params}`)
     if (res.ok) {
       const data = await res.json()
@@ -71,7 +74,7 @@ export function AttendanceMarking({ sections, mode }: Props) {
           notes: s.notes ?? undefined,
         }))
 
-      await fetch('/api/school/attendance', {
+      await fetch(`/api/school/attendance${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

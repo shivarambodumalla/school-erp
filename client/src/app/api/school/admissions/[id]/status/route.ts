@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { statusTransitionSchema } from '@/features/admissions/schemas/admissionSchema'
 import bcrypt from 'bcryptjs'
@@ -7,12 +7,9 @@ import bcrypt from 'bcryptjs'
 interface Ctx { params: { id: string } }
 
 export async function POST(req: Request, { params }: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const body = await req.json()
   const parsed = statusTransitionSchema.safeParse(body)
 
@@ -36,13 +33,13 @@ export async function POST(req: Request, { params }: Ctx) {
 
   try {
     if (action === 'ADMIT') {
-      return await handleAdmit(admission, institutionId, session.user.id)
+      return await handleAdmit(admission, institutionId, ctx.userId)
     }
     if (action === 'ENROLL') {
-      return await handleEnroll(admission, institutionId, session.user.id, classId, sectionId)
+      return await handleEnroll(admission, institutionId, ctx.userId, classId, sectionId)
     }
     if (action === 'REJECT') {
-      return await handleReject(admission, institutionId, session.user.id, reason)
+      return await handleReject(admission, institutionId, ctx.userId, reason)
     }
   } catch (err) {
     console.error(`POST /api/school/admissions/${params.id}/status error:`, err)

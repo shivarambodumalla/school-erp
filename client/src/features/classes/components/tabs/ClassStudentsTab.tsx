@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { useRouter } from 'next/navigation'
 import { Search, UserPlus, MoreHorizontal, ArrowRightLeft, ExternalLink, UserMinus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -14,6 +15,7 @@ interface ClassStudentsTabProps {
 }
 
 export function ClassStudentsTab({ classYearId, sections }: ClassStudentsTabProps) {
+  const { addParams } = useInstitutionId()
   const [students, setStudents] = useState<StudentEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -25,6 +27,7 @@ export function ClassStudentsTab({ classYearId, sections }: ClassStudentsTabProp
     try {
       const params = new URLSearchParams()
       if (filter !== 'all') params.set('sectionId', filter)
+      addParams(params)
       const res = await fetch(`/api/school/classes/${classYearId}/students?${params}`)
       if (res.ok) setStudents((await res.json()) as StudentEntry[])
     } catch { /* empty */ }
@@ -127,13 +130,14 @@ function StudentRow({ entry, classYearId, sections, onRefresh }: {
   sections: { id: string; name: string }[]; onRefresh: () => void
 }) {
   const router = useRouter()
+  const { apiParam } = useInstitutionId()
   const { student, sectionName, status } = entry
   const [menuOpen, setMenuOpen] = useState(false)
   const [moveOpen, setMoveOpen] = useState(false)
   const sc = STATUS_STYLE[status] ?? 'bg-gray-100 text-gray-600'
 
   const handleMove = async (sectionId: string) => {
-    const res = await fetch(`/api/school/classes/${classYearId}/students/${student.id}`, {
+    const res = await fetch(`/api/school/classes/${classYearId}/students/${student.id}${apiParam}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sectionId }),
     })
@@ -144,7 +148,7 @@ function StudentRow({ entry, classYearId, sections, onRefresh }: {
 
   const handleUnenroll = async () => {
     if (!confirm(`Unenroll ${student.firstName} ${student.lastName}?`)) return
-    const res = await fetch(`/api/school/classes/${classYearId}/students/${student.id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/school/classes/${classYearId}/students/${student.id}${apiParam}`, { method: 'DELETE' })
     if (res.ok) { toast.success('Student unenrolled'); onRefresh() }
     else { const e = await res.json(); toast.error(e.error ?? 'Failed') }
     setMenuOpen(false)
@@ -211,6 +215,7 @@ function EnrollSheet({ classYearId, sections, onClose, onDone }: {
   classYearId: string; sections: { id: string; name: string }[]
   onClose: () => void; onDone: () => void
 }) {
+  const { apiParam, iid } = useInstitutionId()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [sectionId, setSectionId] = useState(sections[0]?.id ?? '')
@@ -220,7 +225,7 @@ function EnrollSheet({ classYearId, sections, onClose, onDone }: {
   useEffect(() => {
     if (!query) { setResults([]); return }
     const t = setTimeout(async () => {
-      const res = await fetch(`/api/school/students?search=${encodeURIComponent(query)}&pageSize=10`)
+      const res = await fetch(`/api/school/students?search=${encodeURIComponent(query)}&pageSize=10${iid ? `&iid=${iid}` : ''}`)
       if (res.ok) {
         const data = await res.json() as { students: SearchResult[] }
         setResults(data.students ?? [])
@@ -242,7 +247,7 @@ function EnrollSheet({ classYearId, sections, onClose, onDone }: {
     setSubmitting(true)
     let enrolled = 0
     for (const studentId of Array.from(selected)) {
-      const res = await fetch(`/api/school/classes/${classYearId}/students`, {
+      const res = await fetch(`/api/school/classes/${classYearId}/students${apiParam}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId, sectionId }),
       })

@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const sp = req.nextUrl.searchParams
   const month = Number(sp.get('month') ?? new Date().getMonth() + 1)
   const year = Number(sp.get('year') ?? new Date().getFullYear())
@@ -95,12 +92,9 @@ interface PayrollEntry {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const body = (await req.json()) as {
@@ -143,7 +137,7 @@ export async function POST(req: NextRequest) {
           grossSalary,
           netSalary,
           notes: e.notes ?? null,
-          processedById: session.user.id,
+          processedById: ctx.userId,
         },
         create: {
           institutionId,
@@ -158,7 +152,7 @@ export async function POST(req: NextRequest) {
           grossSalary,
           netSalary,
           notes: e.notes ?? null,
-          processedById: session.user.id,
+          processedById: ctx.userId,
         },
       })
 

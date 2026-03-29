@@ -17,6 +17,8 @@ interface ManagementSidebarProps {
     userEmail: string
     portalType: string
     logoUrl?: string | null
+    isSuperAdminManaging?: boolean
+    managingInstitutionId?: string
 }
 
 export function ManagementSidebar({
@@ -25,12 +27,28 @@ export function ManagementSidebar({
     userEmail,
     portalType,
     logoUrl,
+    isSuperAdminManaging = false,
+    managingInstitutionId,
 }: ManagementSidebarProps): JSX.Element {
     const pathname = usePathname()
     const authorisedNav = getAuthorisedNav(MANAGEMENT_NAV, permissions)
 
+    const manageBase = isSuperAdminManaging && managingInstitutionId
+        ? `/super/institutions/${managingInstitutionId}/manage`
+        : ''
+
+    function resolvePath(path: string): string {
+        if (!manageBase) return path
+        // /management/dashboard -> /super/institutions/[id]/manage
+        // /management/students -> /super/institutions/[id]/manage/students
+        const suffix = path.replace('/management', '')
+        if (suffix === '/dashboard') return manageBase
+        return manageBase + suffix
+    }
+
     return (
-        <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 border-r bg-background z-30">
+        <aside className={`hidden md:flex flex-col fixed left-0 h-full w-64 border-r bg-background z-30
+            ${isSuperAdminManaging ? 'top-12 border-l-4 border-l-amber-500' : 'top-0'}`}>
             {/* Logo + School name + role */}
             <div className="p-4 border-b space-y-2.5">
                 {logoUrl ? (
@@ -39,7 +57,7 @@ export function ManagementSidebar({
                     <img src="/images/logo-wide.svg" alt="Onflows" className="h-6" />
                 )}
                 <p className="text-xs text-muted-foreground truncate">
-                    {institutionName} · {portalType.replace('_', ' ')}
+                    {institutionName} · {isSuperAdminManaging ? 'SUPER ADMIN' : portalType.replace('_', ' ')}
                 </p>
             </div>
 
@@ -53,12 +71,13 @@ export function ManagementSidebar({
                         </p>
                         <div className="space-y-0.5">
                             {group.items.map((item) => {
-                                const isActive = pathname === item.path ||
-                                    (item.path !== '/management/dashboard' && pathname.startsWith(item.path))
+                                const href = resolvePath(item.path)
+                                const isActive = pathname === href ||
+                                    (href !== resolvePath('/management/dashboard') && pathname.startsWith(href))
                                 return (
                                     <Link
                                         key={item.path}
-                                        href={item.path}
+                                        href={href}
                                         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg
                                             text-sm transition-colors min-h-[44px]
                                             ${isActive
@@ -76,24 +95,43 @@ export function ManagementSidebar({
                 ))}
             </nav>
 
-            {/* User email + actions */}
+            {/* Bottom section */}
             <div className="p-3 border-t">
-                <p className="text-xs text-muted-foreground truncate px-3 mb-1">
-                    {userEmail}
-                </p>
-                <div className="flex items-center gap-1">
-                    <button
-                        type="button"
-                        onClick={(): void => { signOut({ callbackUrl: '/auth/login' }) }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
-                            text-muted-foreground hover:text-foreground hover:bg-muted
-                            flex-1 transition-colors min-h-[44px]"
-                    >
-                        <LogOut className="h-4 w-4" />
-                        Sign out
-                    </button>
-                    <ThemeToggle />
-                </div>
+                {isSuperAdminManaging ? (
+                    <>
+                        <p className="text-xs text-muted-foreground truncate px-3 mb-1">
+                            Managing {institutionName}
+                        </p>
+                        <Link
+                            href={`/super/institutions/${managingInstitutionId}`}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
+                                text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950
+                                flex-1 transition-colors min-h-[44px] font-medium"
+                        >
+                            <LogOut className="h-4 w-4" />
+                            Exit to Platform
+                        </Link>
+                    </>
+                ) : (
+                    <>
+                        <p className="text-xs text-muted-foreground truncate px-3 mb-1">
+                            {userEmail}
+                        </p>
+                        <div className="flex items-center gap-1">
+                            <button
+                                type="button"
+                                onClick={(): void => { signOut({ callbackUrl: '/auth/login' }) }}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
+                                    text-muted-foreground hover:text-foreground hover:bg-muted
+                                    flex-1 transition-colors min-h-[44px]"
+                            >
+                                <LogOut className="h-4 w-4" />
+                                Sign out
+                            </button>
+                            <ThemeToggle />
+                        </div>
+                    </>
+                )}
             </div>
         </aside>
     )

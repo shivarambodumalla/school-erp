@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = {
   params: Promise<{ subjectId: string; postId: string }>
 }
 
-export async function GET(_req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+export async function GET(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -19,9 +18,8 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
     )
   }
 
-  const institutionId = session.user.institutionId
   try {
-    const { subjectId, postId } = await ctx.params
+    const { subjectId, postId } = await routeCtx.params
 
     const post = await prisma.subjectPost.findFirst({
       where: { id: postId, subjectId, institutionId },
@@ -68,12 +66,11 @@ interface PatchBody {
   isPublished?: boolean
 }
 
-export async function PATCH(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+export async function PATCH(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -81,9 +78,8 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     )
   }
 
-  const institutionId = session.user.institutionId
   try {
-    const { subjectId, postId } = await ctx.params
+    const { subjectId, postId } = await routeCtx.params
     const body = (await req.json()) as PatchBody
 
     const exists = await prisma.subjectPost.findFirst({
@@ -125,12 +121,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 }
 
-export async function DELETE(_req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+export async function DELETE(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -138,9 +133,8 @@ export async function DELETE(_req: NextRequest, ctx: Ctx) {
     )
   }
 
-  const institutionId = session.user.institutionId
   try {
-    const { subjectId, postId } = await ctx.params
+    const { subjectId, postId } = await routeCtx.params
 
     const post = await prisma.subjectPost.findFirst({
       where: { id: postId, subjectId, institutionId },

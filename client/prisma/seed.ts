@@ -7,6 +7,12 @@ const HASH_ROUNDS = 12
 
 async function main(): Promise<void> {
     // Clean up in dependency order
+    await prisma.feeConcession.deleteMany()
+    await prisma.feePayment.deleteMany()
+    await prisma.feeReminder.deleteMany()
+    await prisma.feeFine.deleteMany()
+    await prisma.feeCategory.deleteMany()
+    await prisma.feeSettings.deleteMany()
     await prisma.staffIdCard.deleteMany()
     await prisma.performanceNote.deleteMany()
     await prisma.staffDocument.deleteMany()
@@ -73,6 +79,8 @@ async function main(): Promise<void> {
     await prisma.documentTypeConfig.deleteMany()
     await prisma.onboardingStep.deleteMany()
     await prisma.auditLog.deleteMany()
+    await prisma.notification.deleteMany()
+    await prisma.notificationTemplate.deleteMany()
     await prisma.role.deleteMany()
     await prisma.user.deleteMany()
     await prisma.institution.deleteMany()
@@ -760,8 +768,184 @@ async function main(): Promise<void> {
     console.log('✅ 1 course (Spoken English), 3 posts, 2 enrollments (Arjun + Priya)')
     // eslint-disable-next-line no-console -- seed script output
     console.log('✅ Staff: 6 roles, 6 departments, 5 leave types, 3 staff records')
+
+    // ── Fee Module ──
+    await prisma.feeSettings.upsert({
+        where: { institutionId: stmarys.id },
+        update: {},
+        create: {
+            institutionId: stmarys.id,
+            receiptPrefix: 'RCP',
+            receiptCurrentSeq: 1003,
+            lateFineEnabled: false,
+            partialPaymentAllowed: true,
+        },
+    })
+
+    const tuitionFee = await prisma.feeCategory.upsert({
+        where: { institutionId_name: { institutionId: stmarys.id, name: 'Tuition Fee' } },
+        update: {},
+        create: {
+            institutionId: stmarys.id, name: 'Tuition Fee',
+            description: 'Monthly tuition fee', amount: 2500,
+            frequency: 'MONTHLY', applicableTo: 'ALL', order: 1,
+        },
+    })
+
+    await prisma.feeCategory.upsert({
+        where: { institutionId_name: { institutionId: stmarys.id, name: 'Transport Fee' } },
+        update: {},
+        create: {
+            institutionId: stmarys.id, name: 'Transport Fee',
+            description: 'Monthly transport fee for bus students', amount: 800,
+            frequency: 'MONTHLY', applicableTo: 'ALL', isOptional: true, order: 2,
+        },
+    })
+
+    const annualFee = await prisma.feeCategory.upsert({
+        where: { institutionId_name: { institutionId: stmarys.id, name: 'Annual Fee' } },
+        update: {},
+        create: {
+            institutionId: stmarys.id, name: 'Annual Fee',
+            description: 'Yearly maintenance and development fee', amount: 5000,
+            frequency: 'ANNUAL', applicableTo: 'ALL', order: 3,
+        },
+    })
+
+    const feeStudents = await prisma.student.findMany({
+        where: { institutionId: stmarys.id, status: 'ACTIVE' },
+        select: { id: true, firstName: true },
+        take: 10,
+    })
+    const currentMonth = new Date().getMonth() + 1
+    const currentYear = new Date().getFullYear()
+    const dueDate = new Date(currentYear, new Date().getMonth(), 10)
+
+    for (const s of feeStudents) {
+        await prisma.feePayment.create({
+            data: {
+                institutionId: stmarys.id, studentId: s.id,
+                feeCategoryId: tuitionFee.id, amount: 2500,
+                fineAmount: 0, totalAmount: 2500, status: 'PENDING',
+                dueDate, month: currentMonth, year: currentYear,
+            },
+        })
+        await prisma.feePayment.create({
+            data: {
+                institutionId: stmarys.id, studentId: s.id,
+                feeCategoryId: annualFee.id, amount: 5000,
+                fineAmount: 0, totalAmount: 5000, status: 'PENDING',
+                dueDate: new Date(currentYear, 3, 10), month: 0, year: currentYear,
+            },
+        })
+    }
+
+    // Mark Arjun + Priya tuition as paid
+    const arjunFee = feeStudents.find(s => s.firstName === 'Arjun')
+    const priyaFee = feeStudents.find(s => s.firstName === 'Priya')
+    if (arjunFee) {
+        await prisma.feePayment.updateMany({
+            where: { studentId: arjunFee.id, feeCategoryId: tuitionFee.id, month: currentMonth, year: currentYear },
+            data: { status: 'PAID', method: 'UPI', receiptNo: `RCP-${currentYear}-1001`, paidAt: new Date(), collectedById: adminUser.id },
+        })
+    }
+    if (priyaFee) {
+        await prisma.feePayment.updateMany({
+            where: { studentId: priyaFee.id, feeCategoryId: tuitionFee.id, month: currentMonth, year: currentYear },
+            data: { status: 'PAID', method: 'UPI', receiptNo: `RCP-${currentYear}-1002`, paidAt: new Date(), collectedById: adminUser.id },
+        })
+    }
+
+    // eslint-disable-next-line no-console -- seed script output
+    console.log('✅ Fees: 3 categories, 10 pending tuition + 10 pending annual, 2 paid (Arjun + Priya)')
     // eslint-disable-next-line no-console -- seed script output
     console.log('Password for all: Demo@1234 | Teachers: TempPass@123')
+    // ── Notifications seed ──
+    const studentUser = await prisma.user.findFirst({
+        where: { institutionId: stmarys.id, email: 'student@stmarys.com' },
+    })
+
+    if (adminUser && studentUser) {
+        await prisma.notification.createMany({
+            data: [
+                {
+                    institutionId: stmarys.id,
+                    userId: adminUser.id,
+                    type: 'GENERAL',
+                    title: 'Welcome to Onflows',
+                    body: 'Your school is all set up. Start by adding classes and staff.',
+                    status: 'SENT',
+                    channel: 'PUSH',
+                    priority: 'NORMAL',
+                    sentAt: new Date(),
+                },
+                {
+                    institutionId: stmarys.id,
+                    userId: adminUser.id,
+                    type: 'FEE_OVERDUE',
+                    title: '3 students have overdue fees',
+                    body: 'Students in Class 8A have overdue fee payments.',
+                    status: 'SENT',
+                    channel: 'PUSH',
+                    priority: 'HIGH',
+                    sentAt: new Date(),
+                },
+                {
+                    institutionId: stmarys.id,
+                    userId: studentUser.id,
+                    type: 'ASSIGNMENT_DUE',
+                    title: 'Assignment due tomorrow',
+                    body: 'Mathematics assignment due Mar 28. Open app to submit.',
+                    status: 'SENT',
+                    channel: 'PUSH',
+                    priority: 'NORMAL',
+                    sentAt: new Date(),
+                },
+                {
+                    institutionId: stmarys.id,
+                    userId: studentUser.id,
+                    type: 'GRADE_PUBLISHED',
+                    title: 'Grades published',
+                    body: 'Your Unit Test 1 grades are now available.',
+                    status: 'READ',
+                    readAt: new Date(),
+                    channel: 'PUSH',
+                    priority: 'NORMAL',
+                    sentAt: new Date(),
+                },
+            ],
+        })
+
+        await prisma.notificationTemplate.createMany({
+            data: [
+                {
+                    institutionId: stmarys.id,
+                    type: 'ATTENDANCE_ABSENT',
+                    name: 'Absence Alert',
+                    titleTemplate: '{studentName} marked absent',
+                    bodyTemplate: '{studentName} was absent on {date}. Please ensure regular attendance.',
+                    channel: 'PUSH',
+                },
+                {
+                    institutionId: stmarys.id,
+                    type: 'FEE_DUE',
+                    name: 'Fee Reminder',
+                    titleTemplate: 'Fee due: {categoryName}',
+                    bodyTemplate: '₹{amount} is due on {dueDate}. Please pay to avoid late fees.',
+                    channel: 'PUSH',
+                },
+                {
+                    institutionId: stmarys.id,
+                    type: 'GRADE_PUBLISHED',
+                    name: 'Grade Published',
+                    titleTemplate: 'Grades available: {examType}',
+                    bodyTemplate: '{studentName} scored {marks}/{total} in {subjectName}.',
+                    channel: 'PUSH',
+                },
+            ],
+        })
+    }
+
     // eslint-disable-next-line no-console -- seed script output
     console.log('Super admin: super@platform.com / Demo@1234')
 }

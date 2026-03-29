@@ -1,22 +1,20 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
   params: Promise<{ courseId: string }>
 }
 
-export async function POST(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'STUDENT') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function POST(req: Request,routeCtx: RouteContext) {
+  const ctx = await getSchoolContext(req, ['STUDENT'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await routeCtx.params
 
   const student = await prisma.student.findFirst({
-    where: { userId: session.user.id, institutionId, status: 'ACTIVE' },
+    where: { userId: ctx.userId, institutionId, status: 'ACTIVE' },
   })
   if (!student) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 })
@@ -48,17 +46,15 @@ export async function POST(_req: Request, ctx: RouteContext) {
   return NextResponse.json(enrollment, { status: 201 })
 }
 
-export async function DELETE(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'STUDENT') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function DELETE(req: Request,routeCtx: RouteContext) {
+  const ctx = await getSchoolContext(req, ['STUDENT'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await routeCtx.params
 
   const student = await prisma.student.findFirst({
-    where: { userId: session.user.id, institutionId },
+    where: { userId: ctx.userId, institutionId },
   })
   if (!student) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 })

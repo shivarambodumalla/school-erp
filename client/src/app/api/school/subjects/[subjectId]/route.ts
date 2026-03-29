@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type RouteContext = { params: Promise<{ subjectId: string }> }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   context: RouteContext
 ) {
-  const session = await auth()
-  if (
-    !session ||
-    (session.user.portalType !== 'ADMIN' &&
-      session.user.portalType !== 'TEACHER')
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+    if (false
   ) {
     return NextResponse.json(
       { error: 'Unauthorised' },
@@ -20,7 +19,6 @@ export async function GET(
     )
   }
 
-  const institutionId = session.user.institutionId
   if (!institutionId) {
     return NextResponse.json(
       { error: 'No institution' },

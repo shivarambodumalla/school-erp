@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { studentId: string } },
 ) {
-  const session = await auth()
-  if (!session || !['ADMIN', 'TEACHER'].includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const student = await prisma.student.findUnique({
     where: { id: params.studentId },
@@ -32,7 +29,7 @@ export async function GET(
       orderBy: { date: 'desc' },
     }),
     // Only return counsellor notes for ADMIN
-    session.user.portalType === 'ADMIN'
+    ctx.portalType === 'ADMIN'
       ? prisma.counsellorNote.findMany({
           where: { studentId: student.id, institutionId },
           orderBy: { createdAt: 'desc' },

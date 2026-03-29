@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ subjectId: string }> }
@@ -14,17 +14,12 @@ function gradeLetter(pct: number): string {
   return 'F'
 }
 
-export async function GET(_req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (
-    !session ||
-    !['ADMIN', 'TEACHER'].includes(session.user.portalType)
-  ) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function GET(req: NextRequest, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
-  const { subjectId } = await ctx.params
+  const { subjectId } = await params
 
   try {
     const subject = await prisma.subject.findFirst({

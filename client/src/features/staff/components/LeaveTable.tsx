@@ -27,9 +27,9 @@ export function LeaveTable({ leaves, onApprove, onReject }: Props) {
   }
 
   return (
-    <div className="border rounded-xl overflow-auto">
+    <div className="border rounded-xl overflow-auto max-h-[calc(100vh-320px)]">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
           <TableRow>
             <TableHead>Staff</TableHead>
             <TableHead>Leave Type</TableHead>

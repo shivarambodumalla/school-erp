@@ -38,7 +38,8 @@ export function PermissionMatrixSheet({
   // Sync permissions when role changes or sheet opens
   useEffect(() => {
     if (open && role) {
-      setPermissions(role.permissions as Permission[])
+      const perms = role.permissions
+      setPermissions(Array.isArray(perms) ? perms : [])
     }
   }, [open, role])
 

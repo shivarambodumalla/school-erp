@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(
   req: Request,
   { params }: { params: { studentId: string } },
 ) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const student = await prisma.student.findUnique({
     where: { id: params.studentId },
@@ -39,7 +36,7 @@ export async function POST(
       title,
       description: description || null,
       date: new Date(date),
-      awardedById: session.user.id,
+      awardedById: ctx.userId,
       photoUrl: photoUrl || null,
     },
   })
@@ -47,7 +44,7 @@ export async function POST(
   await prisma.auditLog.create({
     data: {
       institutionId,
-      userId: session.user.id,
+      userId: ctx.userId,
       action: 'ACHIEVEMENT_ADDED',
       tableName: 'Achievement',
       recordId: achievement.id,

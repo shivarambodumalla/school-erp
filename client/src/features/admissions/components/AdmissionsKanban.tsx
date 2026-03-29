@@ -2,7 +2,7 @@
 
 import { type MouseEvent } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Phone, Plus } from 'lucide-react'
+import { ArrowRight, Phone, Plus, MessageSquarePlus } from 'lucide-react'
 import { AdmissionCard } from './AdmissionCard'
 import type { Inquiry, AdmissionListItem } from './AdmissionsPipelineClient'
 
@@ -17,9 +17,10 @@ interface Props {
   inquiries: Inquiry[]
   openedIds: Set<string>
   onOpen: (a: AdmissionListItem, e: MouseEvent) => void
+  onNewInquiry: () => void
 }
 
-export function AdmissionsKanban({ admissions, inquiries, openedIds, onOpen }: Props) {
+export function AdmissionsKanban({ admissions, inquiries, openedIds, onOpen, onNewInquiry }: Props) {
   const grouped = COLUMNS.map(col => ({
     ...col,
     items: admissions.filter(a => a.status === col.status),
@@ -39,13 +40,14 @@ export function AdmissionsKanban({ admissions, inquiries, openedIds, onOpen }: P
               {unconverted.length}
             </span>
           </div>
-          <Link
-            href="/management/admissions/new"
+          <button
+            type="button"
+            onClick={onNewInquiry}
             className="p-1 rounded hover:bg-muted transition-colors"
             title="New Inquiry"
           >
-            <Plus className="h-4 w-4 text-muted-foreground" />
-          </Link>
+            <MessageSquarePlus className="h-4 w-4 text-amber-600" />
+          </button>
         </div>
 
         <div className="space-y-2">
@@ -79,7 +81,7 @@ export function AdmissionsKanban({ admissions, inquiries, openedIds, onOpen }: P
                 className="p-1 rounded hover:bg-muted transition-colors"
                 title="New Application"
               >
-                <Plus className="h-4 w-4 text-muted-foreground" />
+                <Plus className="h-4 w-4 text-blue-500" />
               </Link>
             )}
           </div>

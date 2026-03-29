@@ -1,21 +1,18 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
   params: Promise<{ courseId: string }>
 }
 
-const MANAGEMENT_TYPES = ['ADMIN', 'TEACHER', 'INSTRUCTOR']
 
-export async function POST(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || !MANAGEMENT_TYPES.includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function POST(req: Request,routeCtx: RouteContext) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER', 'INSTRUCTOR'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await routeCtx.params
 
   const source = await prisma.course.findFirst({
     where: { id: courseId, institutionId },
@@ -32,7 +29,7 @@ export async function POST(_req: Request, ctx: RouteContext) {
       institutionId,
       title: `${source.title} (Copy)`,
       description: source.description,
-      instructorId: session.user.id,
+      instructorId: ctx.userId,
       targetType: source.targetType,
       targetIds: source.targetIds,
       maxEnrollment: source.maxEnrollment,
@@ -53,7 +50,7 @@ export async function POST(_req: Request, ctx: RouteContext) {
         topicTag: post.topicTag,
         isPublished: false,
         order: post.order,
-        createdById: session.user.id,
+        createdById: ctx.userId,
       },
     })
 

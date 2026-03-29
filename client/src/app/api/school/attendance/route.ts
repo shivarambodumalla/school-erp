@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { sendNotifications } from '@/lib/notifications'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (
-    !session ||
-    !['ADMIN', 'TEACHER'].includes(session.user.portalType)
-  ) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
   const sp = req.nextUrl.searchParams
   const sectionId = sp.get('sectionId')
   const dateStr = sp.get('date') ?? new Date().toISOString().slice(0, 10)
@@ -98,15 +94,10 @@ interface AttendanceRecord {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (
-    !session ||
-    !['ADMIN', 'TEACHER'].includes(session.user.portalType)
-  ) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const institutionId = session.user.institutionId
 
   try {
     const body = await req.json() as {
@@ -146,7 +137,7 @@ export async function POST(req: NextRequest) {
           data: {
             status: r.status,
             notes: r.notes ?? null,
-            markedById: session.user.id,
+            markedById: ctx.userId,
           },
         })
       } else {
@@ -160,7 +151,7 @@ export async function POST(req: NextRequest) {
             periodNumber: body.periodNumber ?? null,
             status: r.status,
             notes: r.notes ?? null,
-            markedById: session.user.id,
+            markedById: ctx.userId,
           },
         })
       }
@@ -172,7 +163,7 @@ export async function POST(req: NextRequest) {
     await prisma.auditLog.create({
       data: {
         institutionId,
-        userId: session.user.id,
+        userId: ctx.userId,
         action: 'ATTENDANCE_MARK',
         tableName: 'Attendance',
         recordId: body.sectionId,
@@ -182,6 +173,30 @@ export async function POST(req: NextRequest) {
         },
       },
     })
+
+    // Notify parents of absent students
+    try {
+      const absentStudentIds = body.records.filter(r => r.status === 'ABSENT').map(r => r.studentId)
+      if (absentStudentIds.length > 0) {
+        const guardians = await prisma.guardian.findMany({
+          where: { studentId: { in: absentStudentIds }, userId: { not: null } },
+          select: { userId: true }
+        })
+        const parentUserIds = guardians.map(g => g.userId).filter(Boolean) as string[]
+        if (parentUserIds.length > 0) {
+          await sendNotifications({
+            institutionId,
+            userIds: parentUserIds,
+            type: 'ATTENDANCE_ABSENT',
+            title: 'Attendance alert',
+            body: `Your child was marked absent today.`,
+            priority: 'HIGH',
+          })
+        }
+      }
+    } catch (notifErr) {
+      console.error('[Notifications] attendance error:', notifErr)
+    }
 
     return NextResponse.json({ saved: saved.length, date: body.date })
   } catch (err) {

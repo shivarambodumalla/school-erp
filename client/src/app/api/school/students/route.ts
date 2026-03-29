@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
-    const session = await auth()
-    if (!session || !['ADMIN', 'TEACHER'].includes(session.user.portalType)) {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     try {
-        const institutionId = session.user.institutionId
         const url = new URL(req.url)
         const search = url.searchParams.get('search') ?? ''
         const page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1', 10))

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { StudentHero } from './StudentHero'
 import { StudentTabs } from './StudentTabs'
 import type { StudentProfile } from '../types'
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function StudentDetailInline({ studentId }: Props) {
+  const { apiParam } = useInstitutionId()
   const [student, setStudent] = useState<StudentProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -19,14 +21,14 @@ export function StudentDetailInline({ studentId }: Props) {
     setLoading(true)
     setError(false)
     setEditMode(false)
-    fetch(`/api/school/students/${studentId}`)
+    fetch(`/api/school/students/${studentId}${apiParam}`)
       .then(r => {
         if (!r.ok) throw new Error('Not found')
         return r.json()
       })
       .then(d => { setStudent(d as StudentProfile); setLoading(false) })
       .catch(() => { setError(true); setLoading(false) })
-  }, [studentId])
+  }, [studentId, apiParam])
 
   if (loading) {
     return (

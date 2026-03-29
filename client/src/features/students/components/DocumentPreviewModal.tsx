@@ -8,7 +8,7 @@ interface Props {
     studentName: string
     student: {
         sisId: string; admissionNo: string
-        class: { name: string }; section: { name: string }
+        sections?: { section: { name: string }; classYear: { classTemplate: { name: string } } }[]
     }
     institution: {
         name: string; logoUrl: string | null
@@ -58,7 +58,7 @@ export function DocumentPreviewModal({ documentType, studentName, student, insti
                             This is to certify that <strong>{studentName}</strong> (SIS ID: {student.sisId},
                             Admission No: {student.admissionNo}) is/was a bonafide student of{' '}
                             <strong>{institution.name}</strong>, studying in Class{' '}
-                            <strong>{student.class.name}</strong>, Section <strong>{student.section.name}</strong>.
+                            <strong>{student.sections?.[0]?.classYear.classTemplate.name ?? '—'}</strong>, Section <strong>{student.sections?.[0]?.section.name ?? '—'}</strong>.
                         </p>
                         <p>
                             This certificate is issued on request for whatever purpose it may serve.

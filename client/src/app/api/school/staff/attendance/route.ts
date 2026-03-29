@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const sp = req.nextUrl.searchParams
   const dateStr = sp.get('date') ?? new Date().toISOString().slice(0, 10)
   const departmentId = sp.get('departmentId')
@@ -70,12 +67,9 @@ interface AttendanceRecord {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const body = (await req.json()) as {
@@ -104,7 +98,7 @@ export async function POST(req: NextRequest) {
           checkInTime: r.checkInTime ?? null,
           checkOutTime: r.checkOutTime ?? null,
           notes: r.notes ?? null,
-          markedById: session.user.id,
+          markedById: ctx.userId,
         },
         create: {
           institutionId,
@@ -114,7 +108,7 @@ export async function POST(req: NextRequest) {
           checkInTime: r.checkInTime ?? null,
           checkOutTime: r.checkOutTime ?? null,
           notes: r.notes ?? null,
-          markedById: session.user.id,
+          markedById: ctx.userId,
         },
       })
       savedCount++

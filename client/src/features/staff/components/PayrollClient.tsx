@@ -1,6 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
+import { SlidersHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { PayrollSummaryCards } from './PayrollSummaryCards'
@@ -41,6 +45,7 @@ const MONTHS = [
 ]
 
 export function PayrollClient() {
+  const { iid } = useInstitutionId()
   const now = new Date()
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
@@ -54,7 +59,7 @@ export function PayrollClient() {
     setLoading(true)
     try {
       const res = await fetch(
-        `/api/school/staff/payroll?month=${month}&year=${year}`,
+        `/api/school/staff/payroll?month=${month}&year=${year}${iid ? `&iid=${iid}` : ''}`,
       )
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
@@ -73,35 +78,57 @@ export function PayrollClient() {
     (sum, p) => sum + Number(p.netSalary), 0,
   )
 
+  const periodLabel = `${MONTHS[month - 1]} ${year}`
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Payroll</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Process and manage staff salaries
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
-          <SelectTrigger className="w-36 min-h-[44px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {MONTHS.map((m, i) => (
-              <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-          <SelectTrigger className="w-24 min-h-[44px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {[year - 1, year, year + 1].map((y) => (
-              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Toolbar: Title left | Filter right */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="shrink-0">
+          <h1 className="text-2xl font-bold tracking-tight">Payroll</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{periodLabel}</p>
+        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="min-h-[44px] gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Period</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-64 p-0">
+            <div className="px-3 py-2.5 border-b">
+              <p className="text-sm font-medium">Select Period</p>
+            </div>
+            <div className="p-3 space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Month</label>
+                <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
+                  <SelectTrigger className="min-h-[44px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m, i) => (
+                      <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Year</label>
+                <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+                  <SelectTrigger className="min-h-[44px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[year - 1, year, year + 1].map((y) => (
+                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {loading ? (

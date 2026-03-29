@@ -29,7 +29,7 @@ interface Props {
     student: {
         id: string; firstName: string; middleName: string | null; lastName: string
         sisId: string; admissionNo: string
-        class: { name: string }; section: { name: string }
+        sections?: { section: { name: string }; classYear: { classTemplate: { name: string } } }[]
     }
 }
 
@@ -100,7 +100,7 @@ export function TransferOutClient({ student }: Props) {
                 <div className="rounded-lg bg-muted/30 p-3 text-sm space-y-1">
                     <p><span className="text-muted-foreground">Student:</span> <strong>{fullName}</strong></p>
                     <p><span className="text-muted-foreground">SIS ID:</span> {student.sisId} &middot; <span className="text-muted-foreground">Adm No:</span> {student.admissionNo}</p>
-                    <p><span className="text-muted-foreground">Class:</span> {student.class.name} — {student.section.name}</p>
+                    <p><span className="text-muted-foreground">Class:</span> {student.sections?.[0] ? `${student.sections[0].classYear.classTemplate.name} — ${student.sections[0].section.name}` : '—'}</p>
                 </div>
 
                 {step === 1 && (

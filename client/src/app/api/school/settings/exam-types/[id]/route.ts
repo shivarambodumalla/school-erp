@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ id: string }> }
 
-export async function PATCH(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
-  const { id } = await ctx.params
+export async function PATCH(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { id } = await routeCtx.params
 
   try {
     const existing = await prisma.examType.findFirst({
@@ -75,14 +72,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
   }
 }
 
-export async function DELETE(_req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
-  const { id } = await ctx.params
+export async function DELETE(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { id } = await routeCtx.params
 
   try {
     const existing = await prisma.examType.findFirst({

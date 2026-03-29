@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { ArrowLeft, Mail, Phone, Calendar, Building2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
@@ -34,12 +35,13 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function StaffProfileClient({ staffId }: { staffId: string }) {
   const router = useRouter()
+  const { apiParam } = useInstitutionId()
   const [staff, setStaff] = useState<StaffDetail | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchStaff = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/school/staff/${staffId}`)
+    const res = await fetch(`/api/school/staff/${staffId}${apiParam}`)
     if (res.ok) {
       const data = (await res.json()) as StaffDetail
       setStaff(data)
@@ -122,7 +124,7 @@ export function StaffProfileClient({ staffId }: { staffId: string }) {
 
       {/* Tabs */}
       <Tabs defaultValue="overview">
-        <TabsList className="w-full justify-start overflow-x-auto">
+        <TabsList className="w-full justify-start">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="subjects">Subjects</TabsTrigger>
           <TabsTrigger value="leave">Leave</TabsTrigger>

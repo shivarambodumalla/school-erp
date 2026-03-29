@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Label } from '@/components/ui/label'
 import type { SectionOption, SummaryStudent } from '../types'
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function AttendanceSummaryTable({ sections }: Props) {
+  const { addParams } = useInstitutionId()
   const now = new Date()
   const [sectionId, setSectionId] = useState(sections[0]?.id ?? '')
   const [month, setMonth] = useState(now.getMonth() + 1)
@@ -25,6 +27,7 @@ export function AttendanceSummaryTable({ sections }: Props) {
         month: String(month),
         year: String(year),
       })
+      addParams(params)
       const res = await fetch(
         `/api/school/attendance/summary?${params}`,
       )

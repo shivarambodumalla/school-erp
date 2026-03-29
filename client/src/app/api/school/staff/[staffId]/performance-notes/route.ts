@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ staffId: string }> }
 
-export async function GET(_req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const institutionId = session.user.institutionId
-  const { staffId } = await ctx.params
+export async function GET(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { staffId } = await routeCtx.params
 
   const staff = await prisma.staff.findFirst({
     where: { id: staffId, institutionId },
@@ -28,13 +26,11 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
   return NextResponse.json({ notes })
 }
 
-export async function POST(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const institutionId = session.user.institutionId
-  const { staffId } = await ctx.params
+export async function POST(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { staffId } = await routeCtx.params
 
   const staff = await prisma.staff.findFirst({
     where: { id: staffId, institutionId },
@@ -57,7 +53,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       note: body.note,
       rating: body.rating ?? null,
       isPrivate: body.isPrivate ?? true,
-      createdById: session.user.id,
+      createdById: ctx.userId,
     },
   })
 

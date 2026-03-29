@@ -164,14 +164,18 @@ describe('Staff API routes — auth guard pattern', () => {
   ]
 
   for (const file of routeFiles) {
-    it(`${file} should import auth from @/server/auth`, () => {
+    it(`${file} should have auth guard (auth or getSchoolContext)`, () => {
       const content = fs.readFileSync(path.join(apiBase, file), 'utf-8')
-      expect(content).toContain("from '@/server/auth'")
+      const hasDirectAuth = content.includes("from '@/server/auth'")
+      const hasHelperAuth = content.includes("from '@/lib/api-helpers'")
+      expect(hasDirectAuth || hasHelperAuth).toBe(true)
     })
 
-    it(`${file} should check session exists`, () => {
+    it(`${file} should check authorization`, () => {
       const content = fs.readFileSync(path.join(apiBase, file), 'utf-8')
-      expect(content).toMatch(/!session/)
+      const hasSessionCheck = /!session/.test(content)
+      const hasCtxCheck = /isApiError/.test(content) || /getSchoolContext/.test(content)
+      expect(hasSessionCheck || hasCtxCheck).toBe(true)
     })
 
     it(`${file} should use institutionId`, () => {

@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
-export async function POST() {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'TEACHER') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+export async function POST(req: Request) {
+  const ctx = await getSchoolContext(req, ['TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const staff = await prisma.staff.findFirst({
-      where: { institutionId, userId: session.user.id, status: 'ACTIVE' },
+      where: { institutionId, userId: ctx.userId, status: 'ACTIVE' },
     })
 
     if (!staff) {
@@ -46,7 +43,7 @@ export async function POST() {
         date: dateOnly,
         status: 'PRESENT',
         checkInTime: now,
-        markedById: session.user.id,
+        markedById: ctx.userId,
       },
     })
 
@@ -64,17 +61,14 @@ export async function POST() {
   }
 }
 
-export async function PATCH() {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'TEACHER') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+export async function PATCH(req: Request) {
+  const ctx = await getSchoolContext(req, ['TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   try {
     const staff = await prisma.staff.findFirst({
-      where: { institutionId, userId: session.user.id, status: 'ACTIVE' },
+      where: { institutionId, userId: ctx.userId, status: 'ACTIVE' },
     })
 
     if (!staff) {

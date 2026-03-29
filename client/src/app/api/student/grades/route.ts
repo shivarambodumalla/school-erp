@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'STUDENT') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+export async function GET(req: Request) {
+  const ctx = await getSchoolContext(req, ['STUDENT'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const student = await prisma.student.findFirst({
-    where: { userId: session.user.id, institutionId },
+    where: { userId: ctx.userId, institutionId },
   })
   if (!student) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 })

@@ -89,6 +89,9 @@ export const PERMISSIONS = {
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS]
 
+// All permissions — used for super admin full access
+export const ALL_PERMISSIONS = Object.values(PERMISSIONS)
+
 // ── Shell Assignment ───────────────────────────────────────────
 // Which shell does each portal type use?
 export const CONSUMER_PORTAL_TYPES = ['PARENT', 'STUDENT'] as const

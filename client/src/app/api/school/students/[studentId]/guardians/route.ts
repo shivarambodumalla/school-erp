@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
 export async function GET(
-    _req: NextRequest,
+    req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
-        where: { id: params.studentId, institutionId: session.user.institutionId },
+        where: { id: params.studentId, institutionId: institutionId },
         select: { id: true },
     })
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -27,13 +28,12 @@ export async function POST(
     req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
-        where: { id: params.studentId, institutionId: session.user.institutionId },
+        where: { id: params.studentId, institutionId: institutionId },
         select: { id: true },
     })
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -58,7 +58,7 @@ export async function POST(
         const hashed = await bcrypt.hash('Welcome@123', 10)
         const user = await prisma.user.create({
             data: {
-                institutionId: session.user.institutionId,
+                institutionId: institutionId,
                 email: body.email,
                 hashedPassword: hashed,
                 portalType: 'PARENT',

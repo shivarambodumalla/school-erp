@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { createGuardianSchema } from '@/features/admissions/schemas/admissionSchema'
 
 interface Ctx { params: { id: string } }
 
-export async function GET(_req: Request, { params }: Ctx) {
-  const session = await auth()
-  if (!session || !['ADMIN', 'TEACHER'].includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function GET(req: Request, { params }: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const admission = await prisma.admission.findFirst({
-    where: { id: params.id, institutionId: session.user.institutionId },
+    where: { id: params.id, institutionId: institutionId },
     select: { id: true },
   })
 
@@ -29,13 +28,12 @@ export async function GET(_req: Request, { params }: Ctx) {
 }
 
 export async function POST(req: Request, { params }: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
   const admission = await prisma.admission.findFirst({
-    where: { id: params.id, institutionId: session.user.institutionId },
+    where: { id: params.id, institutionId: institutionId },
     select: { id: true },
   })
 

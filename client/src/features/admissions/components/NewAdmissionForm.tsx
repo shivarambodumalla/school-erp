@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronDown, ChevronRight, Check, Loader2, X, Pencil } from 'lucide-react'
@@ -39,6 +40,7 @@ interface Props {
 export function NewAdmissionForm({ academicYears, classes }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { apiParam } = useInstitutionId()
   const inquiryId = searchParams.get('inquiryId')
   const prefillName = searchParams.get('name') ?? ''
   const prefillPhone = searchParams.get('phone') ?? ''
@@ -165,7 +167,7 @@ export function NewAdmissionForm({ academicYears, classes }: Props) {
         values.photoUrl = photoPreview ?? ''
       }
 
-      const res = await fetch('/api/school/admissions', {
+      const res = await fetch(`/api/school/admissions${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
@@ -178,7 +180,7 @@ export function NewAdmissionForm({ academicYears, classes }: Props) {
       }
 
       for (const g of guardians) {
-        await fetch(`/api/school/admissions/${data.id}/guardians`, {
+        await fetch(`/api/school/admissions/${data.id}/guardians${apiParam}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(g),
@@ -186,7 +188,7 @@ export function NewAdmissionForm({ academicYears, classes }: Props) {
       }
 
       if (inquiryId) {
-        await fetch(`/api/school/inquiries/${inquiryId}/convert`, {
+        await fetch(`/api/school/inquiries/${inquiryId}/convert${apiParam}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ admissionId: data.id }),

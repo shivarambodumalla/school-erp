@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function DELETE(
-    _req: NextRequest,
+    req: NextRequest,
     { params }: { params: { studentId: string; cardId: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
-        where: { id: params.studentId, institutionId: session.user.institutionId },
+        where: { id: params.studentId, institutionId: institutionId },
         select: { id: true },
     })
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })

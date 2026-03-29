@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { AlertTriangle, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -21,6 +22,7 @@ interface NextClassInfo {
 }
 
 export function PromoteTab({ classYearId, gradeLevel, academicYearName }: PromoteTabProps) {
+  const { apiParam } = useInstitutionId()
   const [students, setStudents] = useState<PromoteStudent[]>([])
   const [loading, setLoading] = useState(true)
   const [decisions, setDecisions] = useState<Record<string, Decision>>({})
@@ -32,7 +34,7 @@ export function PromoteTab({ classYearId, gradeLevel, academicYearName }: Promot
   const fetchStudents = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/school/classes/${classYearId}/promote`)
+      const res = await fetch(`/api/school/classes/${classYearId}/promote${apiParam}`)
       if (res.ok) {
         const data = (await res.json()) as PromoteStudent[]
         setStudents(data)
@@ -47,12 +49,12 @@ export function PromoteTab({ classYearId, gradeLevel, academicYearName }: Promot
   // Fetch next class info (gradeLevel + 1)
   useEffect(() => {
     setNextClassLoading(true)
-    fetch('/api/school/classes').then(async r => {
+    fetch(`/api/school/classes${apiParam}`).then(async r => {
       if (!r.ok) { setNextClassLoading(false); return }
       const classes = await r.json() as { id: string; name: string; gradeLevel: number; activeYear: { id: string } | null }[]
       const nextGrade = classes.find(c => c.gradeLevel === gradeLevel + 1)
       if (nextGrade?.activeYear) {
-        const detailRes = await fetch(`/api/school/classes/${nextGrade.activeYear.id}`)
+        const detailRes = await fetch(`/api/school/classes/${nextGrade.activeYear.id}${apiParam}`)
         if (detailRes.ok) {
           const detail = await detailRes.json()
           setNextClass({
@@ -89,7 +91,7 @@ export function PromoteTab({ classYearId, gradeLevel, academicYearName }: Promot
 
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/school/classes/${classYearId}/promote`, {
+      const res = await fetch(`/api/school/classes/${classYearId}/promote${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ decisions: list }),

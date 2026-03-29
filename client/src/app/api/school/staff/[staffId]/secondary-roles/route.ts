@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 type Ctx = { params: Promise<{ staffId: string }> }
 
-export async function POST(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const institutionId = session.user.institutionId
-  const { staffId } = await ctx.params
+export async function POST(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { staffId } = await routeCtx.params
 
   const staff = await prisma.staff.findFirst({
     where: { id: staffId, institutionId },
@@ -36,7 +34,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     data: {
       staffId,
       staffRoleId,
-      assignedById: session.user.id,
+      assignedById: ctx.userId,
     },
     include: { staffRole: { select: { id: true, name: true } } },
   })
@@ -44,13 +42,11 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   return NextResponse.json(assignment, { status: 201 })
 }
 
-export async function DELETE(req: NextRequest, ctx: Ctx) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const institutionId = session.user.institutionId
-  const { staffId } = await ctx.params
+export async function DELETE(req: NextRequest,routeCtx: Ctx) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+  const { staffId } = await routeCtx.params
 
   const staff = await prisma.staff.findFirst({
     where: { id: staffId, institutionId },

@@ -1,19 +1,17 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
   params: Promise<{ courseId: string }>
 }
 
-export async function GET(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function GET(req: NextRequest, { params }: RouteContext) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER', 'STUDENT'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await params
 
   const course = await prisma.course.findFirst({
     where: { id: courseId, institutionId },
@@ -30,9 +28,9 @@ export async function GET(_req: Request, ctx: RouteContext) {
   }
 
   let enrollment = null
-  if (session.user.portalType === 'STUDENT') {
+  if (ctx.portalType === 'STUDENT') {
     const student = await prisma.student.findFirst({
-      where: { userId: session.user.id, institutionId },
+      where: { userId: ctx.userId, institutionId },
     })
     if (student) {
       enrollment = await prisma.courseEnrollment.findUnique({
@@ -46,14 +44,12 @@ export async function GET(_req: Request, ctx: RouteContext) {
   return NextResponse.json({ ...course, enrollment })
 }
 
-export async function PATCH(req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await params
   const body = (await req.json()) as Record<string, unknown>
 
   const updated = await prisma.course.update({
@@ -64,14 +60,12 @@ export async function PATCH(req: Request, ctx: RouteContext) {
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
-  const { courseId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { courseId } = await params
 
   const count = await prisma.courseEnrollment.count({
     where: { courseId },

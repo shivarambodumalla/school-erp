@@ -30,8 +30,6 @@ export interface StudentProfile {
     motherTongue: string | null
     idProofType: string | null
     idProofNumber: string | null
-    classId: string
-    sectionId: string
     createdAt: string
     allergies: string[]
     medicalConditions: unknown
@@ -43,8 +41,14 @@ export interface StudentProfile {
     dropStop: string | null
     boardingType: string
     hostelRoom: string | null
-    class: { id: string; name: string; gradeLevel: number; academicYearId: string }
-    section: { id: string; name: string }
+    sections: {
+        section: { id: string; name: string }
+        classYear: {
+            id: string
+            academicYearId: string
+            classTemplate: { id: string; name: string; gradeLevel: number }
+        }
+    }[]
     admission: {
         id: string; applicationNo: string
         admissionNo: string | null; admissionType: string

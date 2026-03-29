@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,6 +19,7 @@ export function AcademicSettingsClient({
   examTypes: initial,
   attendanceMode: initialMode,
 }: Props) {
+  const { apiParam } = useInstitutionId()
   const [examTypes, setExamTypes] = useState(initial)
   const [mode, setMode] = useState(initialMode)
   const [showAdd, setShowAdd] = useState(false)
@@ -31,14 +33,14 @@ export function AcademicSettingsClient({
   )
 
   const refreshExamTypes = useCallback(async () => {
-    const res = await fetch('/api/school/settings/exam-types')
+    const res = await fetch(`/api/school/settings/exam-types${apiParam}`)
     if (res.ok) setExamTypes(await res.json())
-  }, [])
+  }, [apiParam])
 
   const addExamType = async () => {
     setSaving(true)
     try {
-      const res = await fetch('/api/school/settings/exam-types', {
+      const res = await fetch(`/api/school/settings/exam-types${apiParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -61,14 +63,14 @@ export function AcademicSettingsClient({
   }
 
   const deleteExamType = async (id: string) => {
-    const res = await fetch(`/api/school/settings/exam-types/${id}`, {
+    const res = await fetch(`/api/school/settings/exam-types/${id}${apiParam}`, {
       method: 'DELETE',
     })
     if (res.ok) await refreshExamTypes()
   }
 
   const toggleFinal = async (et: ExamTypeRow) => {
-    await fetch(`/api/school/settings/exam-types/${et.id}`, {
+    await fetch(`/api/school/settings/exam-types/${et.id}${apiParam}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -80,7 +82,7 @@ export function AcademicSettingsClient({
 
   const updateMode = async (newMode: string) => {
     setMode(newMode)
-    await fetch('/api/school/settings/attendance-mode', {
+    await fetch(`/api/school/settings/attendance-mode${apiParam}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode: newMode }),

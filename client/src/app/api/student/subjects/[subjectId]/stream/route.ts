@@ -1,22 +1,20 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
   params: Promise<{ subjectId: string }>
 }
 
-export async function GET(_req: Request, ctx: RouteContext) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'STUDENT') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+export async function GET(req: Request,routeCtx: RouteContext) {
+  const ctx = await getSchoolContext(req, ['STUDENT'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
-  const { subjectId } = await ctx.params
-  const institutionId = session.user.institutionId
+  const { subjectId } = await routeCtx.params
 
   const student = await prisma.student.findFirst({
-    where: { userId: session.user.id, institutionId },
+    where: { userId: ctx.userId, institutionId },
   })
   if (!student) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 })

@@ -4,9 +4,10 @@ import { useState } from 'react'
 import {
   Globe, Edit, ShieldCheck, CheckCircle2,
   Clock, AlertTriangle, Calendar, Users,
-  GraduationCap, Ticket,
+  GraduationCap, Ticket, ExternalLink,
 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { PLAN_COLORS } from '@/lib/colors'
 import { formatDistanceToNow } from 'date-fns'
@@ -321,6 +322,12 @@ export function InstitutionHero({
             >
               <Edit className="h-4 w-4 mr-1.5" />
               Edit
+            </Button>
+            <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-amber-950">
+              <Link href={`/super/institutions/${institution.id}/manage`}>
+                <ExternalLink className="h-4 w-4 mr-1.5" />
+                Manage School
+              </Link>
             </Button>
           </div>
         </div>

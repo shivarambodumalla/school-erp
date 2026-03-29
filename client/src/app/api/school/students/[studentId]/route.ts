@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 const STUDENT_SELECT = {
@@ -9,14 +9,26 @@ const STUDENT_SELECT = {
     dateOfBirth: true, gender: true, bloodGroup: true,
     nationality: true, religion: true, motherTongue: true,
     idProofType: true, idProofNumber: true,
-    classId: true, sectionId: true, createdAt: true,
+    createdAt: true,
     allergies: true, medicalConditions: true,
     emergencyDoctorName: true, emergencyDoctorPhone: true,
     transportMode: true, busRouteId: true,
     pickupStop: true, dropStop: true,
     boardingType: true, hostelRoom: true,
-    class: { select: { id: true, name: true, gradeLevel: true, academicYearId: true } },
-    section: { select: { id: true, name: true } },
+    sections: {
+        where: { status: 'ACTIVE' as const },
+        select: {
+            section: { select: { id: true, name: true } },
+            classYear: {
+                select: {
+                    id: true,
+                    academicYearId: true,
+                    classTemplate: { select: { id: true, name: true, gradeLevel: true } },
+                },
+            },
+        },
+        take: 1,
+    },
     admission: { select: { id: true, applicationNo: true, admissionNo: true, admissionType: true } },
     guardians: {
         select: {
@@ -29,11 +41,12 @@ const STUDENT_SELECT = {
 } as const
 
 export async function GET(
-    _req: NextRequest,
+    req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const isNumeric = /^\d+$/.test(params.studentId)
     const student = await prisma.student.findUnique({
@@ -43,11 +56,11 @@ export async function GET(
         select: { ...STUDENT_SELECT, institutionId: true },
     })
 
-    if (!student || student.class === null) {
+    if (!student) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    if (student.institutionId !== session.user.institutionId) {
+    if (student.institutionId !== institutionId) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
@@ -61,15 +74,14 @@ export async function PATCH(
     req: NextRequest,
     { params }: { params: { studentId: string } },
 ) {
-    const session = await auth()
-    if (!session || session.user.portalType !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-    }
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
 
     const isNum = /^\d+$/.test(params.studentId)
     const found = await prisma.student.findFirst({
         where: {
-            institutionId: session.user.institutionId,
+            institutionId: institutionId,
             ...(isNum ? { serialNo: parseInt(params.studentId, 10) } : { id: params.studentId }),
         },
         select: { id: true },
@@ -81,7 +93,7 @@ export async function PATCH(
     const allowedFields = [
         'firstName', 'middleName', 'lastName', 'dateOfBirth', 'gender',
         'bloodGroup', 'nationality', 'religion', 'motherTongue', 'photoUrl',
-        'idProofType', 'idProofNumber', 'rollNo', 'classId', 'sectionId',
+        'idProofType', 'idProofNumber', 'rollNo',
         'allergies', 'medicalConditions', 'emergencyDoctorName', 'emergencyDoctorPhone',
         'transportMode', 'busRouteId', 'pickupStop', 'dropStop',
         'boardingType', 'hostelRoom', 'status',
@@ -105,8 +117,8 @@ export async function PATCH(
 
     await prisma.auditLog.create({
         data: {
-            institutionId: session.user.institutionId,
-            userId: session.user.id,
+            institutionId: institutionId,
+            userId: ctx.userId,
             action: 'STUDENT_UPDATED',
             tableName: 'Student',
             recordId: resolvedId,

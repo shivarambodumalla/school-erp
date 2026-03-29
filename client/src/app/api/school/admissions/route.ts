@@ -1,15 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { auth } from '@/server/auth'
+import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { createAdmissionSchema } from '@/features/admissions/schemas/admissionSchema'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
-  if (!session || !['ADMIN', 'TEACHER'].includes(session.user.portalType)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const url = req.nextUrl.searchParams
   const status = url.get('status') || undefined
   const search = url.get('search') || undefined
@@ -59,12 +56,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: Request) {
-  const session = await auth()
-  if (!session || session.user.portalType !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  const institutionId = session.user.institutionId
+  const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
   const body = await req.json()
   const parsed = createAdmissionSchema.safeParse(body)
 
@@ -117,7 +111,7 @@ export async function POST(req: Request) {
         sectionId: d.sectionId,
         academicYearId: d.academicYearId,
         customFieldValues: d.customFieldValues ?? {},
-        createdById: session.user.id,
+        createdById: ctx.userId,
       },
       select: { id: true, applicationNo: true },
     })
@@ -125,7 +119,7 @@ export async function POST(req: Request) {
     await tx.auditLog.create({
       data: {
         institutionId,
-        userId: session.user.id,
+        userId: ctx.userId,
         action: 'ADMISSION_APPLIED',
         tableName: 'Admission',
         recordId: admission.id,
