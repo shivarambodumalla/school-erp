@@ -530,19 +530,50 @@ async function main(): Promise<void> {
 
     const staffRolesData = [
         {
-            name: 'Principal', description: 'Full access to all features', isSystemRole: true,
-            permissions: FEATURES.map(f => ({ feature: f, access: f === 'audit_log' ? 'VIEW' : 'FULL', scope: 'INSTITUTION' })),
+            name: 'Principal',
+            description: 'Highest authority. Full access to everything.',
+            isSystemRole: true,
+            permissions: FEATURES.map(f => ({ feature: f, access: 'FULL', scope: 'INSTITUTION' })),
         },
         {
-            name: 'Vice Principal', description: 'Full access except finance admin', isSystemRole: true,
-            permissions: FEATURES.map(f => ({
-                feature: f,
-                access: ['payroll', 'roles', 'settings', 'brand_theme'].includes(f) ? 'VIEW' : f === 'audit_log' ? 'VIEW' : 'FULL',
-                scope: 'INSTITUTION',
-            })),
+            name: 'Vice Principal',
+            description: 'Second in command. Full ops access except payroll and settings.',
+            isSystemRole: true,
+            permissions: [
+                { feature: 'classes', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'timetable', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'subjects', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'syllabus', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'student_profiles', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'attendance', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'grades', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'assignments', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'quizzes', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'behaviour', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'counsellor_notes', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'admissions', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'enrollment', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'announcements', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'parent_messages', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'notifications', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'fees', access: 'EDIT', scope: 'INSTITUTION' },
+                { feature: 'staff_profiles', access: 'EDIT', scope: 'INSTITUTION' },
+                { feature: 'leave', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'payroll', access: 'VIEW', scope: 'INSTITUTION' },
+                { feature: 'courses', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'vibe', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'documents', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'reports', access: 'FULL', scope: 'INSTITUTION' },
+                { feature: 'roles', access: 'VIEW', scope: 'INSTITUTION' },
+                { feature: 'settings', access: 'VIEW', scope: 'INSTITUTION' },
+                { feature: 'audit_log', access: 'VIEW', scope: 'INSTITUTION' },
+                { feature: 'brand_theme', access: 'VIEW', scope: 'INSTITUTION' },
+            ],
         },
         {
-            name: 'Head of Department', description: 'Department-level management', isSystemRole: true,
+            name: 'Head of Department',
+            description: 'Manages a department. Approves dept leave. Views dept performance.',
+            isSystemRole: true,
             permissions: [
                 { feature: 'classes', access: 'VIEW', scope: 'DEPARTMENT' },
                 { feature: 'timetable', access: 'VIEW', scope: 'INSTITUTION' },
@@ -564,7 +595,7 @@ async function main(): Promise<void> {
                 { feature: 'staff_profiles', access: 'VIEW', scope: 'DEPARTMENT' },
                 { feature: 'leave', access: 'EDIT', scope: 'DEPARTMENT' },
                 { feature: 'payroll', access: 'NONE', scope: 'OWN' },
-                { feature: 'courses', access: 'EDIT', scope: 'OWN' },
+                { feature: 'courses', access: 'FULL', scope: 'OWN' },
                 { feature: 'vibe', access: 'EDIT', scope: 'INSTITUTION' },
                 { feature: 'documents', access: 'VIEW', scope: 'DEPARTMENT' },
                 { feature: 'reports', access: 'VIEW', scope: 'DEPARTMENT' },
@@ -575,7 +606,9 @@ async function main(): Promise<void> {
             ],
         },
         {
-            name: 'Class Teacher', description: 'Manages their class students', isSystemRole: true,
+            name: 'Class Teacher',
+            description: 'Responsible for one class section. Primary contact for students and parents.',
+            isSystemRole: true,
             permissions: [
                 { feature: 'classes', access: 'VIEW', scope: 'OWN' },
                 { feature: 'timetable', access: 'VIEW', scope: 'INSTITUTION' },
@@ -608,7 +641,9 @@ async function main(): Promise<void> {
             ],
         },
         {
-            name: 'Subject Teacher', description: 'Teaches specific subjects', isSystemRole: true,
+            name: 'Subject Teacher',
+            description: 'Teaches specific subjects. Focuses on content delivery and assessment.',
+            isSystemRole: true,
             permissions: [
                 { feature: 'classes', access: 'VIEW', scope: 'OWN' },
                 { feature: 'timetable', access: 'VIEW', scope: 'INSTITUTION' },
@@ -641,7 +676,9 @@ async function main(): Promise<void> {
             ],
         },
         {
-            name: 'Admin Staff', description: 'Office administration', isSystemRole: true,
+            name: 'Admin Staff',
+            description: 'Office administration. Manages admissions, fees, records and timetable.',
+            isSystemRole: true,
             permissions: [
                 { feature: 'classes', access: 'FULL', scope: 'INSTITUTION' },
                 { feature: 'timetable', access: 'FULL', scope: 'INSTITUTION' },
@@ -673,18 +710,24 @@ async function main(): Promise<void> {
                 { feature: 'brand_theme', access: 'NONE', scope: 'OWN' },
             ],
         },
+        {
+            name: 'School Administrator',
+            description: 'Full access to everything. Assignable to multiple admins.',
+            isSystemRole: true,
+            permissions: FEATURES.map(f => ({ feature: f, access: 'FULL', scope: 'INSTITUTION' })),
+        },
     ]
 
     for (const role of staffRolesData) {
         await prisma.staffRole.upsert({
             where: { institutionId_name: { institutionId: stmarys.id, name: role.name } },
-            update: { permissions: JSON.stringify(role.permissions) },
+            update: { permissions: role.permissions },
             create: {
                 institutionId: stmarys.id,
                 name: role.name,
                 description: role.description,
                 isSystemRole: role.isSystemRole,
-                permissions: JSON.stringify(role.permissions),
+                permissions: role.permissions,
             },
         })
     }

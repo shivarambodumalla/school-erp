@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: onflows
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+        sync: false
+
+databases:
+  - name: onflows-db
+    region: singapore
+    plan: free

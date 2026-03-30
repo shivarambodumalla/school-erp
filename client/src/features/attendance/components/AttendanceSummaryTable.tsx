@@ -120,10 +120,10 @@ export function AttendanceSummaryTable({ sections }: Props) {
                 <th className="px-3 py-3 text-center font-medium">
                   Absent
                 </th>
-                <th className="px-3 py-3 text-center font-medium">
+                <th className="px-3 py-3 text-center font-medium hidden sm:table-cell">
                   Late
                 </th>
-                <th className="px-3 py-3 text-center font-medium">
+                <th className="px-3 py-3 text-center font-medium hidden sm:table-cell">
                   Total
                 </th>
                 <th className="px-3 py-3 text-center font-medium">
@@ -150,10 +150,10 @@ export function AttendanceSummaryTable({ sections }: Props) {
                   <td className="px-3 py-2 text-center">
                     {s.ABSENT}
                   </td>
-                  <td className="px-3 py-2 text-center">
+                  <td className="px-3 py-2 text-center hidden sm:table-cell">
                     {s.LATE}
                   </td>
-                  <td className="px-3 py-2 text-center">
+                  <td className="px-3 py-2 text-center hidden sm:table-cell">
                     {s.total}
                   </td>
                   <td className="px-3 py-2 text-center font-medium">

@@ -58,7 +58,7 @@ export function AuditLogClient({ logs }: Props) {
         )
     }
 
-    const toggleDate = (d: string) => {
+    const setDate = (d: string) => {
         setDateFilter(prev => prev === d ? '' : d)
     }
 
@@ -78,14 +78,14 @@ export function AuditLogClient({ logs }: Props) {
     return (
         <div className="space-y-6">
             {/* Toolbar: Title left | Search + Filter right */}
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h1 className="text-2xl font-bold tracking-tight shrink-0">Audit Log</h1>
                 <div className="flex items-center gap-2">
-                    <div className="relative">
+                    <div className="relative flex-1 sm:flex-none">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search..."
-                            className="pl-9 w-48 min-h-[44px]"
+                            className="pl-9 w-full sm:w-48"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -109,15 +109,16 @@ export function AuditLogClient({ logs }: Props) {
                             </div>
                             <div className="p-2 space-y-0.5">
                                 {DATE_FILTERS.map(d => (
-                                    <label key={d}
-                                        className="flex items-center gap-2.5 px-2 py-2 rounded-md
-                                            hover:bg-muted/50 cursor-pointer transition-colors">
+                                    <button key={d} type="button"
+                                        onClick={() => setDate(d)}
+                                        className="flex w-full items-center gap-2.5 px-2 py-2 rounded-md
+                                            hover:bg-muted/50 cursor-pointer transition-colors text-left">
                                         <span className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0
                                             ${dateFilter === d ? 'border-primary' : 'border-muted-foreground/40'}`}>
                                             {dateFilter === d && <span className="h-2 w-2 rounded-full bg-primary" />}
                                         </span>
                                         <span className="text-sm">{d}</span>
-                                    </label>
+                                    </button>
                                 ))}
                             </div>
                             {/* Action filter — checkbox (multi select) */}
@@ -157,9 +158,9 @@ export function AuditLogClient({ logs }: Props) {
                         <thead className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
                             <tr className="border-b">
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Action</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">User</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">User</th>
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Table</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Record</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">Record</th>
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
                             </tr>
                         </thead>
@@ -176,9 +177,9 @@ export function AuditLogClient({ logs }: Props) {
                                                 {log.action}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{log.userId.slice(0, 8)}…</td>
+                                        <td className="px-4 py-3 text-muted-foreground font-mono text-xs hidden sm:table-cell">{log.userId.slice(0, 8)}…</td>
                                         <td className="px-4 py-3 text-muted-foreground">{log.tableName}</td>
-                                        <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{log.recordId.slice(0, 8)}…</td>
+                                        <td className="px-4 py-3 text-muted-foreground font-mono text-xs hidden lg:table-cell">{log.recordId.slice(0, 8)}…</td>
                                         <td className="px-4 py-3 text-muted-foreground text-xs">
                                             {new Date(log.createdAt).toLocaleString()}
                                         </td>

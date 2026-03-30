@@ -77,9 +77,9 @@ export function PlatformUsersClient({ users, roles }: Props) {
                             <tr className="border-b bg-muted/50">
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Role</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Last Login</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Created</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Status</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Last Login</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">Created</th>
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                             </tr>
                         </thead>
@@ -99,15 +99,15 @@ export function PlatformUsersClient({ users, roles }: Props) {
                                             ))}
                                         </select>
                                     </td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-3 hidden sm:table-cell">
                                         <Badge variant={user.isActive ? 'default' : 'destructive'}>
                                             {user.isActive ? 'Active' : 'Inactive'}
                                         </Badge>
                                     </td>
-                                    <td className="px-4 py-3 text-muted-foreground text-xs">
+                                    <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">
                                         {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}
                                     </td>
-                                    <td className="px-4 py-3 text-muted-foreground text-xs">
+                                    <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">
                                         {new Date(user.createdAt).toLocaleDateString()}
                                     </td>
                                     <td className="px-4 py-3">

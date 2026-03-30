@@ -5,5 +5,21 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#C56447"
+  "theme_color": "#C56447",
+  "orientation": "any",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/images/logo-square.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo-square.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
 }

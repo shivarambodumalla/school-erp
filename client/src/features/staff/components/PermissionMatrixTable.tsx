@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { RotateCcw } from 'lucide-react'
 import {
@@ -24,12 +25,16 @@ export function PermissionMatrixTable({
   const safePerms = Array.isArray(permissions) ? permissions : []
   const permMap = new Map(safePerms.map((p) => [p.feature, p]))
 
-  const handleFieldChange = (
+  // Keep a ref to latest permissions so the callback doesn't need to be recreated
+  const permsRef = useRef(safePerms)
+  permsRef.current = safePerms
+
+  const handleFieldChange = useCallback((
     feature: string,
     field: 'access' | 'scope',
     value: string
   ) => {
-    const updated: Permission[] = safePerms.map((p) => {
+    const updated: Permission[] = permsRef.current.map((p) => {
       if (p.feature !== feature) return p
       if (field === 'access') {
         return { ...p, access: value as AccessLevel }
@@ -37,7 +42,7 @@ export function PermissionMatrixTable({
       return { ...p, scope: value as Permission['scope'] }
     })
     onChange(updated)
-  }
+  }, [onChange])
 
   const setAll = (access: AccessLevel) => {
     onChange(safePerms.map((p) => ({ ...p, access })))

@@ -62,7 +62,7 @@ export default async function ManagementLayout({
                 portalType={session.user.portalType}
                 logoUrl={institution?.logoUrl}
             />
-            <main className="flex-1 md:ml-64 p-4 md:p-6">
+            <main className="flex-1 md:ml-64 px-4 pb-4 pt-16 md:pt-6 md:px-6 md:pb-6">
                 {children}
             </main>
         </div>

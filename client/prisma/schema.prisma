@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Institution {
@@ -699,6 +700,7 @@ model Inquiry {
 
 model Admission {
   id            String          @id @default(cuid())
+  serialNo      Int             @unique @default(autoincrement())
   institutionId String
   institution   Institution     @relation(fields: [institutionId], references: [id])
   applicationNo String          @unique
@@ -916,6 +918,7 @@ model ClassTemplate {
 
 model ClassYear {
   id              String            @id @default(cuid())
+  serialNo        Int               @unique @default(autoincrement())
   institutionId   String
   classTemplateId String
   academicYearId  String
@@ -1557,6 +1560,7 @@ model StaffRole {
 
 model Staff {
   id              String      @id @default(cuid())
+  serialNo        Int         @unique @default(autoincrement())
   institutionId   String
   userId          String?     @unique
   employeeNo      String

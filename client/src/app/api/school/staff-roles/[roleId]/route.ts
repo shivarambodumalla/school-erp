@@ -47,13 +47,15 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       where: { id: roleId, institutionId },
     })
     if (!role) return json({ error: 'Role not found' }, { status: 404 })
-    if (role.isSystemRole) {
-      return json({ error: 'System roles cannot be modified' }, { status: 403 })
-    }
 
     const body = (await req.json()) as PatchBody
     const data: Record<string, unknown> = {}
-    if (body.name !== undefined) data.name = body.name.trim()
+    if (body.name !== undefined) {
+      if (role.isSystemRole) {
+        return json({ error: 'System role names cannot be changed' }, { status: 403 })
+      }
+      data.name = body.name.trim()
+    }
     if (body.description !== undefined)
       data.description = body.description?.trim() || null
     if (body.permissions !== undefined) data.permissions = body.permissions

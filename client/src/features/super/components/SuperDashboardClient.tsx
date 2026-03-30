@@ -76,8 +76,8 @@ export function SuperDashboardClient({ stats, recentInstitutions, planBreakdown 
                                 <tr className="border-b bg-muted/50">
                                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">School</th>
                                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Plan</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Students</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Users</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground hidden sm:table-cell">Students</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground hidden sm:table-cell">Users</th>
                                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
                                 </tr>
                             </thead>
@@ -95,8 +95,8 @@ export function SuperDashboardClient({ stats, recentInstitutions, planBreakdown 
                                                 {inst.planTier}
                                             </Badge>
                                         </td>
-                                        <td className="px-4 py-3 text-right">{inst._count.students}</td>
-                                        <td className="px-4 py-3 text-right">{inst._count.users}</td>
+                                        <td className="px-4 py-3 text-right hidden sm:table-cell">{inst._count.students}</td>
+                                        <td className="px-4 py-3 text-right hidden sm:table-cell">{inst._count.users}</td>
                                         <td className="px-4 py-3">
                                             <Badge variant={inst.isActive ? 'default' : 'destructive'}>
                                                 {inst.isActive ? 'Active' : 'Suspended'}

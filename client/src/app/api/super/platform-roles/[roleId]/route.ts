@@ -21,13 +21,6 @@ export async function PATCH(
     if (!role) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 })
     }
-    if (role.isSystemRole) {
-      return NextResponse.json(
-        { error: 'Cannot update system roles' },
-        { status: 403 }
-      )
-    }
-
     const body = await req.json()
     const data: {
       name?: string
@@ -36,7 +29,15 @@ export async function PATCH(
       masqueradeMode?: MasqueradeMode
     } = {}
 
-    if (typeof body.name === 'string') data.name = body.name
+    if (typeof body.name === 'string') {
+      if (role.isSystemRole) {
+        return NextResponse.json(
+          { error: 'System role names cannot be changed' },
+          { status: 403 }
+        )
+      }
+      data.name = body.name
+    }
     if (typeof body.description === 'string') data.description = body.description
     if (Array.isArray(body.permissions)) data.permissions = body.permissions
     if (

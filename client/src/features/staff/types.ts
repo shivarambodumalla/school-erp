@@ -133,6 +133,7 @@ export function summarizePermissions(permissions: Permission[]) {
 
 export interface StaffListItem {
   id: string
+  serialNo: number
   employeeNo: string
   firstName: string
   lastName: string

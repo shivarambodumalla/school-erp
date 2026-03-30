@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useInstitutionId } from '@/hooks/useInstitutionId'
-import { ArrowLeft, MoreHorizontal, Archive, Copy } from 'lucide-react'
+import { MoreHorizontal, Archive, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { SectionsTab } from './tabs/SectionsTab'
 import { SubjectsTab } from './tabs/SubjectsTab'
@@ -19,6 +18,13 @@ const STATUS_STYLES: Record<string, string> = {
   ARCHIVED: 'bg-gray-100 text-gray-600',
   DRAFT: 'bg-amber-100 text-amber-700',
 }
+
+const TABS = [
+  { key: 'sections', label: 'Sections' },
+  { key: 'subjects', label: 'Subjects' },
+  { key: 'students', label: 'Students' },
+  { key: 'promote', label: 'Promote' },
+] as const
 
 interface ClassYearProps {
   classYear: {
@@ -38,6 +44,7 @@ export function ClassYearClient({ classYear }: ClassYearProps) {
   const statusClass = STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT
   const [menuOpen, setMenuOpen] = useState(false)
   const [showClone, setShowClone] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>('sections')
 
   const handleArchive = async () => {
     if (!confirm(`Archive ${classTemplate.name} — ${academicYear.name}?`)) return
@@ -51,17 +58,13 @@ export function ClassYearClient({ classYear }: ClassYearProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 pt-2">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0"
-          onClick={() => router.push('/management/institution/classes')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-wrap flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h2 className="text-xl font-bold tracking-tight">
             {classTemplate.name} &mdash; {academicYear.name}
-          </h1>
+          </h2>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}`}>
             {status}
           </span>
@@ -92,34 +95,44 @@ export function ClassYearClient({ classYear }: ClassYearProps) {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="sections">
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="sections">Sections</TabsTrigger>
-          <TabsTrigger value="subjects">Subjects</TabsTrigger>
-          <TabsTrigger value="students">Students</TabsTrigger>
-          <TabsTrigger value="promote">Promote</TabsTrigger>
-        </TabsList>
+      {/* Tabs — full width line */}
+      <div className="border-b">
+        <div className="flex gap-0">
+          {TABS.map(tab => (
+            <button key={tab.key} type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors min-h-[44px]
+                ${activeTab === tab.key
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        <TabsContent value="sections">
+      {/* Tab content */}
+      <div>
+        {activeTab === 'sections' && (
           <SectionsTab classYearId={classYear.id} />
-        </TabsContent>
-        <TabsContent value="subjects">
+        )}
+        {activeTab === 'subjects' && (
           <SubjectsTab classYearId={classYear.id}
             sections={classYear.sections.map((s) => ({ id: s.id, name: s.name }))} />
-        </TabsContent>
-        <TabsContent value="students">
+        )}
+        {activeTab === 'students' && (
           <ClassStudentsTab
             classYearId={classYear.id}
             sections={classYear.sections.map((s) => ({ id: s.id, name: s.name }))}
           />
-        </TabsContent>
-        <TabsContent value="promote">
+        )}
+        {activeTab === 'promote' && (
           <PromoteTab classYearId={classYear.id}
             gradeLevel={classTemplate.gradeLevel}
             academicYearName={academicYear.name} />
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
 
       {showClone && (
         <CloneClassYearSheet

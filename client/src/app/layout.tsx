@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -19,6 +19,14 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  themeColor: '#C56447',
+}
 
 export const metadata: Metadata = {
   title: {
@@ -82,9 +90,12 @@ export default async function RootLayout({
             <MasqueradeBar />
             <MasqueradeReadOnlyOverlay />
             <Toaster
-              position="top-right"
+              position="top-center"
               richColors
               closeButton
+              toastOptions={{
+                className: 'sm:!right-0 sm:!left-auto',
+              }}
             />
           </ThemeProvider>
         </SessionProvider>

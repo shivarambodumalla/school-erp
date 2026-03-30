@@ -12,7 +12,7 @@ export default async function SuperLayout({ children }: { children: ReactNode })
         <div className="flex min-h-screen bg-background">
             <SuperSidebar userEmail={session.user.email ?? ''} />
             <div className="flex flex-col flex-1 md:ml-64">
-                <main className="flex-1 p-4 md:p-6">{children}</main>
+                <main className="flex-1 px-4 pb-4 pt-16 md:pt-6 md:px-6 md:pb-6">{children}</main>
             </div>
         </div>
     )

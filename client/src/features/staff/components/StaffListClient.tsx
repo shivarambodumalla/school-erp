@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { AddStaffSheet } from './AddStaffSheet'
 import { StaffDetailInline } from './StaffDetailInline'
 import type { StaffListItem } from '../types'
@@ -43,6 +42,7 @@ const STATUS_OPTIONS = ['ACTIVE', 'INACTIVE', 'ON_LEAVE', 'TERMINATED']
 
 interface StaffTab {
   id: string
+  serialNo: number
   firstName: string
   lastName: string
   employeeNo: string
@@ -143,19 +143,19 @@ export function StaffListClient() {
       return next
     })
     if (navigate) {
-      setActiveTab(tab.id)
-      updateUrl(tab.id)
+      setActiveTab(String(tab.serialNo))
+      updateUrl(String(tab.serialNo))
     }
   }, [updateUrl])
 
-  const closeTab = useCallback((tabId: string) => {
+  const closeTab = useCallback((serialNo: string) => {
     setOpenTabs(prev => {
-      const idx = prev.findIndex(t => t.id === tabId)
-      const next = prev.filter(t => t.id !== tabId)
+      const idx = prev.findIndex(t => String(t.serialNo) === serialNo)
+      const next = prev.filter(t => String(t.serialNo) !== serialNo)
       setActiveTab(current => {
-        if (current !== tabId) return current
+        if (current !== serialNo) return current
         const leftTab = idx > 0 ? prev[idx - 1] : null
-        const newActive = leftTab ? leftTab.id : 'all'
+        const newActive = leftTab ? String(leftTab.serialNo) : 'all'
         updateUrl(newActive === 'all' ? null : newActive)
         return newActive
       })
@@ -163,14 +163,14 @@ export function StaffListClient() {
     })
   }, [updateUrl])
 
-  const handleTabSwitch = useCallback((tabId: string) => {
-    setActiveTab(tabId)
-    updateUrl(tabId === 'all' ? null : tabId)
+  const handleTabSwitch = useCallback((tabKey: string) => {
+    setActiveTab(tabKey)
+    updateUrl(tabKey === 'all' ? null : tabKey)
   }, [updateUrl])
 
   const handleRowClick = useCallback((s: StaffListItem, e: MouseEvent) => {
     const tab: StaffTab = {
-      id: s.id, firstName: s.firstName,
+      id: s.id, serialNo: s.serialNo, firstName: s.firstName,
       lastName: s.lastName, employeeNo: s.employeeNo,
     }
     if (e.ctrlKey || e.metaKey) {
@@ -197,31 +197,34 @@ export function StaffListClient() {
                 }`}>
               All Staff
             </button>
-            {openTabs.map(t => (
+            {openTabs.map(t => {
+              const tabKey = String(t.serialNo)
+              return (
               <div key={t.id}
                 className={`shrink-0 flex items-center gap-1 pl-3 pr-1
                   h-10 border-b-2 transition-colors group
-                  ${activeTab === t.id
+                  ${activeTab === tabKey
                     ? 'border-primary text-foreground bg-muted/50'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}>
                 <button type="button"
-                  onClick={() => handleTabSwitch(t.id)}
+                  onClick={() => handleTabSwitch(tabKey)}
                   className="text-sm font-medium truncate max-w-[120px]"
                   title={`${t.firstName} ${t.lastName} — ${t.employeeNo}`}>
                   {t.firstName} {t.lastName}
                 </button>
                 <button type="button"
-                  onClick={(e) => { e.stopPropagation(); closeTab(t.id) }}
+                  onClick={(e) => { e.stopPropagation(); closeTab(tabKey) }}
                   className={`p-0.5 rounded transition-colors
-                    ${activeTab === t.id
+                    ${activeTab === tabKey
                       ? 'text-foreground/60 hover:text-foreground hover:bg-muted'
                       : 'text-muted-foreground/40 hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100'
                     }`}>
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
@@ -230,15 +233,15 @@ export function StaffListClient() {
       {activeTab === 'all' ? (
         <div className="space-y-4 pt-1">
           {/* Toolbar: Title left | Search + Filter + Add right */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h1 className="text-2xl font-bold tracking-tight shrink-0">Staff</h1>
             <div className="flex items-center gap-2">
-              <div className="relative">
+              <div className="relative flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2
                   h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search staff..." value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="pl-9 w-48 min-h-[44px]" />
+                  className="pl-9 w-full sm:w-48" />
               </div>
               <Popover>
                 <PopoverTrigger asChild>
@@ -279,8 +282,8 @@ export function StaffListClient() {
                   )}
                 </PopoverContent>
               </Popover>
-              <Button onClick={() => setSheetOpen(true)} className="min-h-[44px]">
-                <Plus className="h-4 w-4 mr-2" /> Add Staff
+              <Button onClick={() => setSheetOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" /> <span className="hidden sm:inline">Add Staff</span><span className="sm:hidden">Add</span>
               </Button>
             </div>
           </div>
@@ -296,9 +299,9 @@ export function StaffListClient() {
                 onRowClick={handleRowClick} />
 
               {/* Pagination */}
-              <div className="flex items-center justify-end gap-6 pt-3 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-6 pt-3 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <span>Rows per page:</span>
+                  <span className="hidden sm:inline">Rows per page:</span><span className="sm:hidden">Per page:</span>
                   <select value={pageSize}
                     onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}
                     className="h-8 rounded-md border border-input bg-background px-1.5 text-sm
@@ -334,7 +337,7 @@ export function StaffListClient() {
           />
         </div>
       ) : (
-        <StaffDetailInline staffId={activeTab} />
+        <StaffDetailInline staffId={openTabs.find(t => String(t.serialNo) === activeTab)?.id ?? activeTab} />
       )}
     </div>
   )

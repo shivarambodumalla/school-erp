@@ -3,8 +3,8 @@ import {
     CalendarDays, GraduationCap, Users, UserCheck,
     MessageCircle, CreditCard, BookOpen, Rss, Bus,
     ShieldCheck, FolderOpen, BarChart3, ClipboardList,
-    Ticket, Settings, AlertTriangle, SlidersHorizontal,
-    BookOpenCheck, CalendarOff, Banknote, Bell,
+    Ticket, Settings, AlertTriangle,
+    CalendarOff, Banknote,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PERMISSIONS, type Permission } from './permissions'
@@ -74,11 +74,6 @@ export const MANAGEMENT_NAV: NavGroup[] = [
             { label: 'Support', path: '/management/tickets', icon: Ticket, permission: PERMISSIONS.TICKETS_VIEW },
             { label: 'Risk Signals', path: '/management/risk', icon: AlertTriangle, permission: PERMISSIONS.SETTINGS_VIEW },
             { label: 'Settings', path: '/management/settings', icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },
-            { label: 'Admission Settings', path: '/management/settings/admissions', icon: SlidersHorizontal, permission: PERMISSIONS.SETTINGS_MANAGE },
-            { label: 'Academic Settings', path: '/management/settings/academics', icon: BookOpenCheck, permission: PERMISSIONS.SETTINGS_MANAGE },
-            { label: 'Staff Settings', path: '/management/settings/staff', icon: Users, permission: PERMISSIONS.SETTINGS_MANAGE },
-            { label: 'Fee Settings', path: '/management/settings/fees', icon: CreditCard, permission: PERMISSIONS.SETTINGS_MANAGE },
-            { label: 'Notifications', path: '/management/settings/notifications', icon: Bell, permission: PERMISSIONS.SETTINGS_MANAGE },
         ],
     },
 ]

@@ -56,7 +56,7 @@ export default function LoginPage(): JSX.Element {
                 {/* Logo + Branding */}
                 <div className="text-center space-y-3">
                     <Image
-                        src="/logo-square.svg"
+                        src="/images/logo-square.svg"
                         alt="Onflows"
                         width={64}
                         height={64}

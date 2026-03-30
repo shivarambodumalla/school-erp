@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   }
 
   // Find or create payment
-  let payment = body.paymentId
+  const payment = body.paymentId
     ? await prisma.feePayment.findUnique({ where: { id: body.paymentId } })
     : await prisma.feePayment.findFirst({
         where: {

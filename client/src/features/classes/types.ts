@@ -1,5 +1,6 @@
 export interface ClassActiveYear {
   id: string
+  serialNo: number
   status: string
   sectionCount: number
   studentCount: number

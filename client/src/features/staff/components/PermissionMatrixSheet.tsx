@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AlertTriangle, Copy } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +21,6 @@ interface PermissionMatrixSheetProps {
   role: StaffRoleListItem | null
   readOnly: boolean
   onSave: (roleId: string, permissions: Permission[]) => Promise<void>
-  onClone?: (role: StaffRoleListItem) => void
 }
 
 export function PermissionMatrixSheet({
@@ -30,7 +29,6 @@ export function PermissionMatrixSheet({
   role,
   readOnly,
   onSave,
-  onClone,
 }: PermissionMatrixSheetProps) {
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [saving, setSaving] = useState(false)
@@ -80,27 +78,16 @@ export function PermissionMatrixSheet({
         {role?.isSystemRole && (
           <div
             className="mt-4 flex items-start gap-3 rounded-lg border
-              border-amber-200 bg-amber-50 p-3 text-sm text-amber-800
-              dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+              border-blue-200 bg-blue-50 p-3 text-sm text-blue-800
+              dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200"
           >
             <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-medium">System role</p>
+              <p className="font-medium">Built-in role</p>
               <p className="text-xs mt-0.5">
-                System roles cannot be edited. Clone this role to create an
-                editable copy.
+                Permissions are customizable, but the role name cannot be changed.
               </p>
             </div>
-            {onClone && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="shrink-0 gap-1.5 min-h-[44px]"
-                onClick={() => onClone(role)}
-              >
-                <Copy className="h-4 w-4" /> Clone Role
-              </Button>
-            )}
           </div>
         )}
 

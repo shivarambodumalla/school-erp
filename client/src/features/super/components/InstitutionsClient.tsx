@@ -129,7 +129,7 @@ export function InstitutionsClient({ initialData }: Props) {
   return (
     <div className="space-y-6">
       {/* Toolbar: Title left | Search + Filter + Add right */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="shrink-0">
           <h1 className="text-2xl font-bold tracking-tight">Institutions</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -137,14 +137,14 @@ export function InstitutionsClient({ initialData }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2
               h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 w-48 min-h-[44px]"
+              className="pl-9 w-full sm:w-48"
             />
           </div>
           <Popover>
@@ -226,7 +226,7 @@ export function InstitutionsClient({ initialData }: Props) {
                   </span>
                 </th>
                 <th className="text-left px-4 py-3 font-medium
-                  text-muted-foreground text-xs uppercase tracking-wide">
+                  text-muted-foreground text-xs uppercase tracking-wide hidden lg:table-cell">
                   Board
                 </th>
                 <th
@@ -242,7 +242,7 @@ export function InstitutionsClient({ initialData }: Props) {
                 <th
                   className="text-left px-4 py-3 font-medium
                     text-muted-foreground text-xs uppercase tracking-wide
-                    cursor-pointer select-none"
+                    cursor-pointer select-none hidden sm:table-cell"
                   onClick={() => handleSort('students')}
                 >
                   <span className="flex items-center">
@@ -252,7 +252,7 @@ export function InstitutionsClient({ initialData }: Props) {
                 <th
                   className="text-left px-4 py-3 font-medium
                     text-muted-foreground text-xs uppercase tracking-wide
-                    cursor-pointer select-none"
+                    cursor-pointer select-none hidden sm:table-cell"
                   onClick={() => handleSort('users')}
                 >
                   <span className="flex items-center">
@@ -262,7 +262,7 @@ export function InstitutionsClient({ initialData }: Props) {
                 <th
                   className="text-left px-4 py-3 font-medium
                     text-muted-foreground text-xs uppercase tracking-wide
-                    cursor-pointer select-none"
+                    cursor-pointer select-none hidden md:table-cell"
                   onClick={() => handleSort('createdAt')}
                 >
                   <span className="flex items-center">
@@ -341,7 +341,7 @@ export function InstitutionsClient({ initialData }: Props) {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                      <td className="px-4 py-3 text-sm text-muted-foreground hidden lg:table-cell">
                         {inst.board}
                       </td>
                       <td className="px-4 py-3">
@@ -354,13 +354,13 @@ export function InstitutionsClient({ initialData }: Props) {
                           {inst.planTier}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium">
+                      <td className="px-4 py-3 text-sm font-medium hidden sm:table-cell">
                         {inst._count.students.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium">
+                      <td className="px-4 py-3 text-sm font-medium hidden sm:table-cell">
                         {inst._count.users}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">
                         {new Date(inst.createdAt).toLocaleDateString(
                           'en-IN',
                           { day: '2-digit', month: 'short', year: 'numeric' }

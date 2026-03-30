@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import {
   Select,
   SelectContent,
@@ -19,7 +20,7 @@ interface PermissionRowProps {
   onChange: (feature: string, field: 'access' | 'scope', value: string) => void
 }
 
-export function PermissionRow({
+export const PermissionRow = memo(function PermissionRow({
   featureKey,
   label,
   permission,
@@ -28,7 +29,7 @@ export function PermissionRow({
 }: PermissionRowProps) {
   return (
     <tr className="border-b last:border-0">
-      <td className="py-2.5 pr-3 text-sm">{label}</td>
+      <td className="py-2.5 px-3 text-sm">{label}</td>
       {ACCESS_LEVELS.map((level) => (
         <td key={level} className="py-2.5 text-center">
           <label className="inline-flex items-center justify-center">
@@ -46,22 +47,22 @@ export function PermissionRow({
           </label>
         </td>
       ))}
-      <td className="py-2.5 pl-3">
+      <td className="py-2.5 px-3">
         <Select
           value={permission.scope}
           onValueChange={(v) => onChange(featureKey, 'scope', v)}
           disabled={readOnly || permission.access === 'NONE'}
         >
-          <SelectTrigger className="h-8 w-24 text-xs">
+          <SelectTrigger className="h-8 w-[140px] text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">All</SelectItem>
-            <SelectItem value="OWN">Own</SelectItem>
-            <SelectItem value="SECTION">Section</SelectItem>
+            <SelectItem value="ALL">All records</SelectItem>
+            <SelectItem value="OWN">Only their own</SelectItem>
+            <SelectItem value="SECTION">Their section only</SelectItem>
           </SelectContent>
         </Select>
       </td>
     </tr>
   )
-}
+})

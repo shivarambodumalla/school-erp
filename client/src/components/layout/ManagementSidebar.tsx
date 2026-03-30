@@ -1,10 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { LogOut, Menu } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { ThemeToggle } from '@/components/theme-toggle'
+import {
+    Sheet,
+    SheetContent,
+    SheetTitle,
+} from '@/components/ui/sheet'
 import {
     MANAGEMENT_NAV,
     getAuthorisedNav,
@@ -32,6 +38,7 @@ export function ManagementSidebar({
 }: ManagementSidebarProps): JSX.Element {
     const pathname = usePathname()
     const authorisedNav = getAuthorisedNav(MANAGEMENT_NAV, permissions)
+    const [mobileOpen, setMobileOpen] = useState(false)
 
     const manageBase = isSuperAdminManaging && managingInstitutionId
         ? `/super/institutions/${managingInstitutionId}/manage`
@@ -39,16 +46,13 @@ export function ManagementSidebar({
 
     function resolvePath(path: string): string {
         if (!manageBase) return path
-        // /management/dashboard -> /super/institutions/[id]/manage
-        // /management/students -> /super/institutions/[id]/manage/students
         const suffix = path.replace('/management', '')
         if (suffix === '/dashboard') return manageBase
         return manageBase + suffix
     }
 
-    return (
-        <aside className={`hidden md:flex flex-col fixed left-0 h-full w-64 border-r bg-background z-30
-            ${isSuperAdminManaging ? 'top-12 border-l-4 border-l-amber-500' : 'top-0'}`}>
+    const navContent = (
+        <>
             {/* Logo + School name + role */}
             <div className="p-4 border-b space-y-2.5">
                 {logoUrl ? (
@@ -78,6 +82,7 @@ export function ManagementSidebar({
                                     <Link
                                         key={item.path}
                                         href={href}
+                                        onClick={() => setMobileOpen(false)}
                                         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg
                                             text-sm transition-colors min-h-[44px]
                                             ${isActive
@@ -104,6 +109,7 @@ export function ManagementSidebar({
                         </p>
                         <Link
                             href={`/super/institutions/${managingInstitutionId}`}
+                            onClick={() => setMobileOpen(false)}
                             className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
                                 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950
                                 flex-1 transition-colors min-h-[44px] font-medium"
@@ -133,6 +139,47 @@ export function ManagementSidebar({
                     </>
                 )}
             </div>
-        </aside>
+        </>
+    )
+
+    return (
+        <>
+            {/* Mobile header bar */}
+            <div className={`md:hidden fixed left-0 right-0 z-20 h-14 border-b bg-background
+                flex items-center gap-3 px-4
+                ${isSuperAdminManaging ? 'top-12' : 'top-0'}`}>
+                <button
+                    type="button"
+                    onClick={() => setMobileOpen(true)}
+                    className="flex items-center justify-center h-10 w-10 rounded-lg
+                        hover:bg-muted transition-colors -ml-1"
+                    aria-label="Open navigation"
+                >
+                    <Menu className="h-5 w-5" />
+                </button>
+                <div className="flex-1 min-w-0">
+                    {logoUrl ? (
+                        <img src={logoUrl} alt={institutionName} className="h-5 max-w-[120px] object-contain" />
+                    ) : (
+                        <img src="/images/logo-wide.svg" alt="Onflows" className="h-5" />
+                    )}
+                </div>
+                <ThemeToggle />
+            </div>
+
+            {/* Mobile Sheet drawer */}
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                <SheetContent side="left" className="p-0 w-[280px] sm:max-w-[280px] flex flex-col">
+                    <SheetTitle className="sr-only">Navigation</SheetTitle>
+                    {navContent}
+                </SheetContent>
+            </Sheet>
+
+            {/* Desktop sidebar (unchanged) */}
+            <aside className={`hidden md:flex flex-col fixed left-0 h-full w-64 border-r bg-background z-30
+                ${isSuperAdminManaging ? 'top-12 border-l-4 border-l-amber-500' : 'top-0'}`}>
+                {navContent}
+            </aside>
+        </>
     )
 }

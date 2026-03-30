@@ -35,6 +35,7 @@ export async function GET(req: Request) {
       where,
       select: {
         id: true,
+        serialNo: true,
         employeeNo: true,
         firstName: true,
         lastName: true,

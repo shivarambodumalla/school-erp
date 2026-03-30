@@ -9,6 +9,7 @@ import { RoleCard } from './RoleCard'
 import { RolesEmptyState } from './RolesEmptyState'
 import { PermissionMatrixSheet } from './PermissionMatrixSheet'
 import { CreateRoleSheet } from './CreateRoleSheet'
+import { RoleViewDrawer } from './RoleViewDrawer'
 
 export function StaffRolesClient() {
   const [roles, setRoles] = useState<StaffRoleListItem[]>([])
@@ -16,8 +17,12 @@ export function StaffRolesClient() {
   const [createOpen, setCreateOpen] = useState(false)
   const [cloneFrom, setCloneFrom] = useState<StaffRoleListItem | null>(null)
   const [matrixRole, setMatrixRole] = useState<StaffRoleListItem | null>(null)
-  const [matrixReadOnly, setMatrixReadOnly] = useState(true)
+  const [matrixReadOnly, setMatrixReadOnly] = useState(false)
   const [matrixOpen, setMatrixOpen] = useState(false)
+
+  // View drawer state
+  const [viewRole, setViewRole] = useState<StaffRoleListItem | null>(null)
+  const [viewOpen, setViewOpen] = useState(false)
 
   const fetchRoles = useCallback(async () => {
     try {
@@ -31,13 +36,13 @@ export function StaffRolesClient() {
 
   useEffect(() => { fetchRoles() }, [fetchRoles])
 
-  const handleView = (role: StaffRoleListItem) => {
-    setMatrixRole(role)
-    setMatrixReadOnly(true)
-    setMatrixOpen(true)
+  const handleCardClick = (role: StaffRoleListItem) => {
+    setViewRole(role)
+    setViewOpen(true)
   }
 
   const handleEdit = (role: StaffRoleListItem) => {
+    setViewOpen(false)
     setMatrixRole(role)
     setMatrixReadOnly(false)
     setMatrixOpen(true)
@@ -52,6 +57,7 @@ export function StaffRolesClient() {
       })
       if (res.ok) {
         toast.success(`Role "${role.name}" deleted`)
+        setViewOpen(false)
         fetchRoles()
       } else {
         const err = (await res.json()) as { error: string }
@@ -79,6 +85,7 @@ export function StaffRolesClient() {
   }
 
   const handleClone = (role: StaffRoleListItem) => {
+    setViewOpen(false)
     setMatrixOpen(false)
     setCloneFrom(role)
     setCreateOpen(true)
@@ -98,7 +105,7 @@ export function StaffRolesClient() {
             Manage roles and granular permissions for your staff
           </p>
         </div>
-        <Button onClick={handleCreateOpen} className="min-h-[44px] gap-1.5">
+        <Button onClick={handleCreateOpen} className="gap-1.5">
           <Plus className="h-4 w-4" /> Create Role
         </Button>
       </div>
@@ -106,7 +113,7 @@ export function StaffRolesClient() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-48 rounded-xl bg-muted animate-pulse" />
+            <div key={i} className="h-40 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
       ) : roles.length === 0 ? (
@@ -117,7 +124,7 @@ export function StaffRolesClient() {
             <RoleCard
               key={role.id}
               role={role}
-              onView={handleView}
+              onClick={handleCardClick}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
@@ -125,15 +132,26 @@ export function StaffRolesClient() {
         </div>
       )}
 
+      {/* View-only drawer */}
+      <RoleViewDrawer
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+        role={viewRole}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onClone={handleClone}
+      />
+
+      {/* Edit permissions sheet */}
       <PermissionMatrixSheet
         open={matrixOpen}
         onClose={() => setMatrixOpen(false)}
         role={matrixRole}
         readOnly={matrixReadOnly}
         onSave={handleSavePermissions}
-        onClone={handleClone}
       />
 
+      {/* Create role sheet */}
       <CreateRoleSheet
         open={createOpen}
         onClose={() => setCreateOpen(false)}

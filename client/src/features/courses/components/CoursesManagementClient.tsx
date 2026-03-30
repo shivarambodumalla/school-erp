@@ -22,7 +22,7 @@ interface CourseItem {
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'ARCHIVED']
 
 export function CoursesManagementClient() {
-  const { apiParam, iid } = useInstitutionId()
+  const { iid } = useInstitutionId()
   const [courses, setCourses] = useState<CourseItem[]>([])
   const [statuses, setStatuses] = useState<string[]>([])
   const [search, setSearch] = useState('')
@@ -62,14 +62,14 @@ export function CoursesManagementClient() {
   return (
     <div className="space-y-6">
       {/* Toolbar: Title left | Search + Filter + Add right */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight shrink-0">Courses</h1>
         <div className="flex items-center gap-2">
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search courses..." value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 w-48 min-h-[44px]" />
+              className="pl-9 w-full sm:w-48" />
           </div>
           <Popover>
             <PopoverTrigger asChild>

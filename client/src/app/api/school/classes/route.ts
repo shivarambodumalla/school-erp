@@ -32,6 +32,7 @@ export async function GET(req: Request) {
         activeYear: activeYear
           ? {
               id: activeYear.id,
+              serialNo: activeYear.serialNo,
               status: activeYear.status,
               sectionCount: activeYear.sections.length,
               studentCount: activeYear.studentSections.length,

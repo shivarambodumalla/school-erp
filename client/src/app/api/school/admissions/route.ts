@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
       orderBy: { appliedAt: 'desc' },
       select: {
         id: true,
+        serialNo: true,
         applicationNo: true,
         admissionNo: true,
         status: true,

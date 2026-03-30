@@ -12,6 +12,7 @@ import { AdmissionDetailInline } from './AdmissionDetailInline'
 
 export interface AdmissionListItem {
   id: string
+  serialNo: number
   applicationNo: string
   admissionNo: string | null
   status: string
@@ -39,6 +40,7 @@ export interface Inquiry {
 
 interface AdmissionTab {
   id: string
+  serialNo: number
   firstName: string
   lastName: string
   applicationNo: string
@@ -111,19 +113,19 @@ export function AdmissionsPipelineClient() {
       return next
     })
     if (navigate) {
-      setActiveTab(tab.id)
-      updateUrl(tab.id)
+      setActiveTab(String(tab.serialNo))
+      updateUrl(String(tab.serialNo))
     }
   }, [updateUrl])
 
-  const closeTab = useCallback((tabId: string) => {
+  const closeTab = useCallback((tabKey: string) => {
     setOpenTabs(prev => {
-      const idx = prev.findIndex(t => t.id === tabId)
-      const next = prev.filter(t => t.id !== tabId)
+      const idx = prev.findIndex(t => String(t.serialNo) === tabKey)
+      const next = prev.filter(t => String(t.serialNo) !== tabKey)
       setActiveTab(current => {
-        if (current !== tabId) return current
+        if (current !== tabKey) return current
         const leftTab = idx > 0 ? prev[idx - 1] : null
-        const newActive = leftTab ? leftTab.id : 'all'
+        const newActive = leftTab ? String(leftTab.serialNo) : 'all'
         updateUrl(newActive === 'all' ? null : newActive)
         return newActive
       })
@@ -131,14 +133,14 @@ export function AdmissionsPipelineClient() {
     })
   }, [updateUrl])
 
-  const handleTabSwitch = useCallback((tabId: string) => {
-    setActiveTab(tabId)
-    updateUrl(tabId === 'all' ? null : tabId)
+  const handleTabSwitch = useCallback((tabKey: string) => {
+    setActiveTab(tabKey)
+    updateUrl(tabKey === 'all' ? null : tabKey)
   }, [updateUrl])
 
   const handleAdmissionClick = useCallback((a: AdmissionListItem, e: MouseEvent) => {
     const tab: AdmissionTab = {
-      id: a.id, firstName: a.firstName,
+      id: a.id, serialNo: a.serialNo, firstName: a.firstName,
       lastName: a.lastName, applicationNo: a.applicationNo,
     }
     if (e.ctrlKey || e.metaKey) {
@@ -162,28 +164,31 @@ export function AdmissionsPipelineClient() {
                   : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
               All Admissions
             </button>
-            {openTabs.map(t => (
+            {openTabs.map(t => {
+              const tabKey = String(t.serialNo)
+              return (
               <div key={t.id}
                 className={`shrink-0 flex items-center gap-1 pl-3 pr-1 h-10
                   border-b-2 transition-colors group
-                  ${activeTab === t.id
+                  ${activeTab === tabKey
                     ? 'border-primary text-foreground bg-muted/50'
                     : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
-                <button type="button" onClick={() => handleTabSwitch(t.id)}
+                <button type="button" onClick={() => handleTabSwitch(tabKey)}
                   className="text-sm font-medium truncate max-w-[120px]"
                   title={`${t.firstName} ${t.lastName} — ${t.applicationNo}`}>
                   {t.firstName} {t.lastName}
                 </button>
                 <button type="button"
-                  onClick={(e) => { e.stopPropagation(); closeTab(t.id) }}
+                  onClick={(e) => { e.stopPropagation(); closeTab(tabKey) }}
                   className={`p-0.5 rounded transition-colors
-                    ${activeTab === t.id
+                    ${activeTab === tabKey
                       ? 'text-foreground/60 hover:text-foreground hover:bg-muted'
                       : 'text-muted-foreground/40 hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100'}`}>
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
@@ -201,12 +206,12 @@ export function AdmissionsPipelineClient() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="relative">
+              <div className="relative flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4
                   text-muted-foreground" />
                 <Input placeholder="Search..." value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="pl-9 w-48 min-h-[44px]" />
+                  className="pl-9 w-full sm:w-48" />
               </div>
               <button onClick={() => setShowInquirySheet(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-2
@@ -255,7 +260,7 @@ export function AdmissionsPipelineClient() {
           )}
         </div>
       ) : (
-        <AdmissionDetailInline admissionId={activeTab} />
+        <AdmissionDetailInline admissionId={openTabs.find(t => String(t.serialNo) === activeTab)?.id ?? activeTab} />
       )}
 
       {showInquirySheet && (
