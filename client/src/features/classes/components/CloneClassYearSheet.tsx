@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Portal } from '@/components/ui/portal'
 import { toast } from 'sonner'
 
 interface CloneClassYearSheetProps {
@@ -57,7 +58,7 @@ export function CloneClassYearSheet({ classYearId, className, onClose }: CloneCl
   }
 
   return (
-    <>
+    <Portal>
       <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
       <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-background border-l shadow-xl flex flex-col">
         <div className="flex items-center justify-between p-4 border-b">
@@ -116,6 +117,6 @@ export function CloneClassYearSheet({ classYearId, className, onClose }: CloneCl
           </Button>
         </div>
       </div>
-    </>
+    </Portal>
   )
 }

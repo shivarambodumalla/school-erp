@@ -5,6 +5,7 @@ import { Link2, Loader2, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Portal } from '@/components/ui/portal'
 
 interface SearchResult {
     id: string
@@ -58,7 +59,8 @@ export function LinkSiblingModal({ studentId, onClose }: Props) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-background rounded-xl border shadow-lg w-full max-w-md p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h3 className="font-semibold">Link Sibling</h3>
@@ -103,6 +105,7 @@ export function LinkSiblingModal({ studentId, onClose }: Props) {
                     <Button variant="ghost" onClick={onClose}>Close</Button>
                 </div>
             </div>
-        </div>
+            </div>
+        </Portal>
     )
 }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { GraduationCap, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Portal } from '@/components/ui/portal'
 
 interface ClassItem {
   id: string; name: string
@@ -23,7 +24,8 @@ export function EnrollModal({ classes, acting, onConfirm, onClose }: Props) {
   const selectedClass = classes.find(c => c.id === classId)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <Portal>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-background rounded-xl border shadow-lg w-full max-w-md p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Enroll Student</h3>
@@ -70,6 +72,7 @@ export function EnrollModal({ classes, acting, onConfirm, onClose }: Props) {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </Portal>
   )
 }

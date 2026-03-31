@@ -83,6 +83,7 @@ model Institution {
 
   // Staff module relations
   departments              Department[]
+  deptAnnouncements        DeptAnnouncement[]
   staffRoles               StaffRole[]
   staff                    Staff[]
   staffLeaveTypes          StaffLeaveType[]
@@ -107,6 +108,15 @@ model Institution {
   notifications            Notification[]
   notificationTemplates    NotificationTemplate[]
   notificationPreferences  NotificationPreference[]
+
+  // LMS relations
+  rubrics              Rubric[]
+  questionBanks        QuestionBank[]
+  questionBankItems    QuestionBankItem[]
+  groupSets            GroupSet[]
+  subjectResources     SubjectResource[]
+  subjectAnnouncements SubjectAnnouncement[]
+  subjectExportJobs    SubjectExportJob[]
 }
 
 model User {
@@ -125,6 +135,9 @@ model User {
   // Notifications
   notifications          Notification[]
   notificationPreference NotificationPreference?
+
+  // Departments
+  deptAnnouncements      DeptAnnouncement[]
 
   @@unique([institutionId, email])
 }
@@ -198,6 +211,13 @@ model Student {
   courseEnrollments CourseEnrollment[]
   feePayments      FeePayment[]
   feeConcessions   FeeConcession[]
+
+  // LMS relations
+  moduleItemProgress               StudentModuleItemProgress[]
+  studentNotes                     StudentNote[]
+  subjectAssignmentSubmissions     SubjectAssignmentSubmission[]
+  subjectGroupMemberships          SubjectGroupMember[]
+  subjectCertificates              SubjectCertificate[]
 
   @@unique([institutionId, admissionNo])
 }
@@ -1027,6 +1047,19 @@ model Subject {
   hasOnlineContent Boolean          @default(false)
   canPreviewFiles  Boolean          @default(true)
   canDownloadFiles Boolean          @default(false)
+
+  // LMS fields
+  logo               String?
+  color              String          @default("#6366f1")
+  description        String?
+  enrollmentType     EnrollmentType  @default(AUTO)
+  showGradesToStudents Boolean       @default(true)
+  allowLateSubmission Boolean        @default(false)
+  completionTrackingEnabled Boolean  @default(true)
+  subjectStartDate   DateTime?
+  coTeachers         String[]        @default([])
+  teachingAssistants String[]        @default([])
+
   createdAt        DateTime         @default(now())
   institution      Institution      @relation(fields: [institutionId], references: [id])
   classYear        ClassYear        @relation(fields: [classYearId], references: [id])
@@ -1038,6 +1071,23 @@ model Subject {
   examSchedules    ExamSchedule[]
   timetableSlots   TimetableSlot[]
   homeworkLogs     HomeworkLog[]
+
+  // LMS relations
+  modules            SubjectModule[]
+  moduleItems        SubjectModuleItem[] @relation("SubjectModuleItems")
+  discussions        SubjectDiscussion[]
+  assignments        SubjectAssignment[]
+  liveClasses        SubjectLiveClass[]
+  groupSets          GroupSet[]
+  resources          SubjectResource[]
+  announcements      SubjectAnnouncement[]
+  certificates       SubjectCertificate[]
+  gradebookConfig    SubjectGradebookConfig?
+  exportJobs         SubjectExportJob[]
+  rubrics            Rubric[]
+  questionBanks      QuestionBank[]
+  moduleItemProgress StudentModuleItemProgress[]
+  studentNotes       StudentNote[]
 
   @@unique([classYearId, sectionId, name])
 }
@@ -1117,33 +1167,47 @@ enum AttachmentType {
 // ─── Assignments ───
 
 model Assignment {
-  id                  String                 @id @default(cuid())
-  subjectPostId       String                 @unique
-  dueDate             DateTime
-  totalMarks          Int                    @default(100)
-  allowLateSubmission Boolean                @default(false)
-  instructions        String?
-  subjectPost         SubjectPost            @relation(fields: [subjectPostId], references: [id])
-  submissions         AssignmentSubmission[]
+  id                   String                 @id @default(cuid())
+  subjectPostId        String                 @unique
+  dueDate              DateTime
+  totalMarks           Int                    @default(100)
+  allowLateSubmission  Boolean                @default(false)
+  instructions         String?
+  latePenaltyPercent   Int                    @default(0)
+  maxAttempts          Int                    @default(1)
+  isGroupAssignment    Boolean                @default(false)
+  groupSetId           String?
+  rubricId             String?
+  hasPeerAssessment    Boolean                @default(false)
+  hasSimilarityCheck   Boolean                @default(false)
+  similarityThreshold  Int                    @default(70)
+  subjectPost          SubjectPost            @relation(fields: [subjectPostId], references: [id])
+  submissions          AssignmentSubmission[]
 }
 
 model AssignmentSubmission {
-  id            String           @id @default(cuid())
-  assignmentId  String
-  studentId     String
-  fileUrl       String?
-  notes         String?
-  submittedAt   DateTime         @default(now())
-  isLate        Boolean          @default(false)
-  marksObtained Decimal?         @db.Decimal(5, 2)
-  feedback      String?
-  gradedById    String?
-  gradedAt      DateTime?
-  status        SubmissionStatus @default(SUBMITTED)
-  assignment    Assignment       @relation(fields: [assignmentId], references: [id])
-  student       Student          @relation(fields: [studentId], references: [id])
+  id              String           @id @default(cuid())
+  assignmentId    String
+  studentId       String
+  groupId         String?
+  attempt         Int              @default(1)
+  fileUrl         String?
+  fileUrls        String[]         @default([])
+  textContent     String?
+  notes           String?
+  submittedAt     DateTime         @default(now())
+  isLate          Boolean          @default(false)
+  marksObtained   Decimal?         @db.Decimal(5, 2)
+  feedback        String?
+  returnReason    String?
+  gradedById      String?
+  gradedAt        DateTime?
+  similarityScore Int?
+  status          SubmissionStatus @default(SUBMITTED)
+  assignment      Assignment       @relation(fields: [assignmentId], references: [id])
+  student         Student          @relation(fields: [studentId], references: [id])
 
-  @@unique([assignmentId, studentId])
+  @@unique([assignmentId, studentId, attempt])
 }
 
 enum SubmissionStatus {
@@ -1530,17 +1594,46 @@ enum StaffAttendanceStatus {
   LATE
 }
 
+enum DepartmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model Department {
-  id            String      @id @default(cuid())
-  institutionId String
-  name          String
-  description   String?
-  hodId         String?
-  createdAt     DateTime    @default(now())
-  institution   Institution @relation(fields: [institutionId], references: [id])
-  staff         Staff[]
+  id              String           @id @default(cuid())
+  institutionId   String
+  name            String
+  description     String?
+  color           String           @default("#6366f1")
+  avatarUrl       String?
+  status          DepartmentStatus @default(ACTIVE)
+  hodId           String?
+  deputyHodId     String?
+  hodSince        DateTime?
+  subjectNames    String[]         @default([])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  institution     Institution      @relation(fields: [institutionId], references: [id])
+  hod             Staff?           @relation("DepartmentHOD", fields: [hodId], references: [id])
+  deputyHod       Staff?           @relation("DepartmentDeputyHOD", fields: [deputyHodId], references: [id])
+  staff           Staff[]          @relation("StaffDepartment")
+  announcements   DeptAnnouncement[]
 
   @@unique([institutionId, name])
+}
+
+model DeptAnnouncement {
+  id            String     @id @default(cuid())
+  institutionId String
+  departmentId  String
+  title         String
+  content       String
+  createdById   String
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  department    Department  @relation(fields: [departmentId], references: [id])
+  createdBy     User        @relation(fields: [createdById], references: [id])
 }
 
 model StaffRole {
@@ -1581,7 +1674,9 @@ model Staff {
 
   institution      Institution           @relation(fields: [institutionId], references: [id])
   user             User?                 @relation(fields: [userId], references: [id])
-  department       Department?           @relation(fields: [departmentId], references: [id])
+  department       Department?           @relation("StaffDepartment", fields: [departmentId], references: [id])
+  hodOf            Department[]          @relation("DepartmentHOD")
+  deputyHodOf      Department[]          @relation("DepartmentDeputyHOD")
   primaryRole      StaffRole?            @relation("PrimaryRole", fields: [primaryRoleId], references: [id])
   reportsTo        Staff?                @relation("StaffHierarchy", fields: [reportsToId], references: [id])
   directReports    Staff[]               @relation("StaffHierarchy")
@@ -1814,4 +1909,466 @@ model NotificationPreference {
   quietHoursEnd   String?
   user            User        @relation(fields: [userId], references: [id])
   institution     Institution @relation(fields: [institutionId], references: [id])
+}
+
+// ─── LMS Enums ───────────────────────────────────────────────
+
+enum EnrollmentType {
+  AUTO
+  MANUAL
+}
+
+enum SubjectModuleItemType {
+  LINK
+  TEXT
+  FILE
+  VIDEO
+  ASSIGNMENT
+  QUIZ
+  DISCUSSION
+  LIVE_CLASS
+  ANNOUNCEMENT
+}
+
+enum DripTrigger {
+  ENROLLMENT
+  START_DATE
+  COMPLETION
+}
+
+enum CompletionType {
+  VIEW
+  SUBMIT
+  SCORE_MIN
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum LiveClassPlatform {
+  ZOOM
+  GOOGLE_MEET
+  TEAMS
+  OTHER
+}
+
+enum GroupAssignmentType {
+  RANDOM
+  SELF_SELECT
+  MANUAL
+}
+
+enum RoundingMethod {
+  NEAREST
+  FLOOR
+  CEILING
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+// ─── Subject Modules (LMS) ──────────────────────────────────
+
+model SubjectModule {
+  id            String              @id @default(cuid())
+  subjectId     String
+  title         String
+  description   String?
+  order         Int                 @default(0)
+  isLocked      Boolean             @default(false)
+  lockMessage   String?
+  isPublished   Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  subject       Subject             @relation(fields: [subjectId], references: [id])
+  items         SubjectModuleItem[]
+}
+
+model SubjectModuleItem {
+  id              String                      @id @default(cuid())
+  subjectId       String
+  moduleId        String
+  type            SubjectModuleItemType
+  title           String
+  description     String?
+  order           Int                         @default(0)
+  content         Json                        @default("{}")
+  isPublished     Boolean                     @default(true)
+  scheduledAt     DateTime?
+  dripDays        Int?
+  dripTrigger     DripTrigger?
+  completionType  CompletionType              @default(VIEW)
+  minScore        Int?
+  estimatedMinutes Int?
+  createdById     String
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  subject         Subject                     @relation("SubjectModuleItems", fields: [subjectId], references: [id])
+  module          SubjectModule               @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress        StudentModuleItemProgress[]
+  notes           StudentNote[]
+  discussion      SubjectDiscussion?
+  assignment      SubjectAssignment?
+  liveClass       SubjectLiveClass?
+}
+
+// ─── Progress Tracking ──────────────────────────────────────
+
+model StudentModuleItemProgress {
+  id               String         @id @default(cuid())
+  studentId        String
+  moduleItemId     String
+  subjectId        String
+  status           ProgressStatus @default(NOT_STARTED)
+  completedAt      DateTime?
+  timeSpentSeconds Int            @default(0)
+  lastAccessedAt   DateTime?
+  student          Student        @relation(fields: [studentId], references: [id])
+  moduleItem       SubjectModuleItem @relation(fields: [moduleItemId], references: [id], onDelete: Cascade)
+  subject          Subject        @relation(fields: [subjectId], references: [id])
+
+  @@unique([studentId, moduleItemId])
+}
+
+model StudentNote {
+  id           String            @id @default(cuid())
+  studentId    String
+  moduleItemId String
+  subjectId    String
+  content      String
+  updatedAt    DateTime          @updatedAt
+  createdAt    DateTime          @default(now())
+  student      Student           @relation(fields: [studentId], references: [id])
+  moduleItem   SubjectModuleItem @relation(fields: [moduleItemId], references: [id], onDelete: Cascade)
+  subject      Subject           @relation(fields: [subjectId], references: [id])
+
+  @@unique([studentId, moduleItemId])
+}
+
+// ─── Subject Assignments (LMS) ──────────────────────────────
+
+model SubjectAssignment {
+  id                   String                          @id @default(cuid())
+  moduleItemId         String                          @unique
+  subjectId            String
+  dueDate              DateTime
+  totalMarks           Int                             @default(100)
+  allowLateSubmission  Boolean                         @default(false)
+  latePenaltyPercent   Int                             @default(0)
+  maxAttempts          Int                             @default(1)
+  instructions         String?
+  isGroupAssignment    Boolean                         @default(false)
+  groupSetId           String?
+  rubricId             String?
+  hasPeerAssessment    Boolean                         @default(false)
+  hasSimilarityCheck   Boolean                         @default(false)
+  similarityThreshold  Int                             @default(70)
+  moduleItem           SubjectModuleItem               @relation(fields: [moduleItemId], references: [id], onDelete: Cascade)
+  subject              Subject                         @relation(fields: [subjectId], references: [id])
+  submissions          SubjectAssignmentSubmission[]
+  peerAssessment       PeerAssessment?                 @relation("SubjectAssignmentPeerAssessment")
+}
+
+model SubjectAssignmentSubmission {
+  id               String           @id @default(cuid())
+  assignmentId     String
+  studentId        String
+  groupId          String?
+  attempt          Int              @default(1)
+  fileUrls         String[]         @default([])
+  textContent      String?
+  submittedAt      DateTime         @default(now())
+  isLate           Boolean          @default(false)
+  status           SubmissionStatus @default(SUBMITTED)
+  marksObtained    Decimal?         @db.Decimal(5, 2)
+  feedback         String?
+  returnReason     String?
+  gradedById       String?
+  gradedAt         DateTime?
+  similarityScore  Int?
+  assignment       SubjectAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student          Student          @relation(fields: [studentId], references: [id])
+  similarityResult SimilarityCheckResult?
+
+  @@unique([assignmentId, studentId, attempt])
+}
+
+// ─── Rubrics ────────────────────────────────────────────────
+
+model Rubric {
+  id            String   @id @default(cuid())
+  institutionId String
+  subjectId     String?
+  name          String
+  description   String?
+  criteria      Json     @default("[]")
+  isShared      Boolean  @default(false)
+  createdById   String
+  createdAt     DateTime @default(now())
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  subject       Subject?    @relation(fields: [subjectId], references: [id])
+}
+
+// ─── Question Bank ──────────────────────────────────────────
+
+model QuestionBank {
+  id            String             @id @default(cuid())
+  institutionId String
+  subjectId     String?
+  name          String
+  description   String?
+  isShared      Boolean            @default(false)
+  createdById   String
+  createdAt     DateTime           @default(now())
+  institution   Institution        @relation(fields: [institutionId], references: [id])
+  subject       Subject?           @relation(fields: [subjectId], references: [id])
+  questions     QuestionBankItem[]
+}
+
+model QuestionBankItem {
+  id              String          @id @default(cuid())
+  questionBankId  String
+  institutionId   String
+  type            QuestionType
+  text            String
+  options         Json            @default("[]")
+  correctAnswer   String?
+  explanation     String?
+  marks           Int             @default(1)
+  difficultyLevel DifficultyLevel @default(MEDIUM)
+  tags            String[]        @default([])
+  subjectName     String?
+  topicTag        String?
+  timesUsed       Int             @default(0)
+  createdById     String
+  createdAt       DateTime        @default(now())
+  questionBank    QuestionBank    @relation(fields: [questionBankId], references: [id], onDelete: Cascade)
+  institution     Institution     @relation(fields: [institutionId], references: [id])
+}
+
+// ─── Discussions ────────────────────────────────────────────
+
+model SubjectDiscussion {
+  id             String                    @id @default(cuid())
+  moduleItemId   String                    @unique
+  subjectId      String
+  prompt         String
+  allowAnonymous Boolean                   @default(false)
+  closedAt       DateTime?
+  moduleItem     SubjectModuleItem         @relation(fields: [moduleItemId], references: [id], onDelete: Cascade)
+  subject        Subject                   @relation(fields: [subjectId], references: [id])
+  replies        SubjectDiscussionReply[]
+}
+
+model SubjectDiscussionReply {
+  id            String            @id @default(cuid())
+  discussionId  String
+  userId        String
+  subjectId     String
+  content       String
+  parentReplyId String?
+  isBestAnswer  Boolean           @default(false)
+  upvotes       Int               @default(0)
+  isAnonymous   Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  discussion    SubjectDiscussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  parent        SubjectDiscussionReply?  @relation("ReplyThread", fields: [parentReplyId], references: [id])
+  children      SubjectDiscussionReply[] @relation("ReplyThread")
+}
+
+// ─── Live Class ─────────────────────────────────────────────
+
+model SubjectLiveClass {
+  id              String            @id @default(cuid())
+  moduleItemId    String            @unique
+  subjectId       String
+  platform        LiveClassPlatform
+  meetUrl         String
+  scheduledAt     DateTime
+  durationMinutes Int               @default(60)
+  agenda          String?
+  recordingUrl    String?
+  createdAt       DateTime          @default(now())
+  moduleItem      SubjectModuleItem @relation(fields: [moduleItemId], references: [id], onDelete: Cascade)
+  subject         Subject           @relation(fields: [subjectId], references: [id])
+}
+
+// ─── Groups ─────────────────────────────────────────────────
+
+model GroupSet {
+  id              String              @id @default(cuid())
+  subjectId       String
+  institutionId   String
+  name            String
+  assignmentType  GroupAssignmentType
+  minSize         Int                 @default(2)
+  maxSize         Int                 @default(5)
+  createdAt       DateTime            @default(now())
+  subject         Subject             @relation(fields: [subjectId], references: [id])
+  institution     Institution         @relation(fields: [institutionId], references: [id])
+  groups          SubjectGroup[]
+}
+
+model SubjectGroup {
+  id         String               @id @default(cuid())
+  groupSetId String
+  subjectId  String
+  name       String
+  createdAt  DateTime             @default(now())
+  groupSet   GroupSet             @relation(fields: [groupSetId], references: [id], onDelete: Cascade)
+  members    SubjectGroupMember[]
+}
+
+model SubjectGroupMember {
+  id        String       @id @default(cuid())
+  groupId   String
+  studentId String
+  joinedAt  DateTime     @default(now())
+  group     SubjectGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student   Student      @relation(fields: [studentId], references: [id])
+
+  @@unique([groupId, studentId])
+}
+
+// ─── Peer Assessment ────────────────────────────────────────
+
+model PeerAssessment {
+  id                  String                       @id @default(cuid())
+  assignmentId        String                       @unique
+  subjectId           String
+  rubricId            String?
+  peersToReview       Int                          @default(2)
+  dueDate             DateTime
+  allowSelfAssessment Boolean                      @default(false)
+  assignment          SubjectAssignment            @relation("SubjectAssignmentPeerAssessment", fields: [assignmentId], references: [id], onDelete: Cascade)
+  submissions         PeerAssessmentSubmission[]
+}
+
+model PeerAssessmentSubmission {
+  id               String         @id @default(cuid())
+  peerAssessmentId String
+  reviewerId       String
+  revieweeId       String
+  scores           Json           @default("[]")
+  overallComment   String?
+  submittedAt      DateTime?
+  peerAssessment   PeerAssessment @relation(fields: [peerAssessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([peerAssessmentId, reviewerId, revieweeId])
+}
+
+// ─── Gradebook Config ───────────────────────────────────────
+
+model SubjectGradebookConfig {
+  id                       String        @id @default(cuid())
+  subjectId                String        @unique
+  weightageRules           Json          @default("[]")
+  passingPercent           Int           @default(40)
+  showWeightageToStudents  Boolean       @default(true)
+  roundingMethod           RoundingMethod @default(NEAREST)
+  subject                  Subject       @relation(fields: [subjectId], references: [id])
+}
+
+// ─── Resource Library ───────────────────────────────────────
+
+model SubjectResource {
+  id            String      @id @default(cuid())
+  subjectId     String
+  institutionId String
+  name          String
+  fileUrl       String
+  fileName      String
+  fileSize      Int?
+  mimeType      String?
+  description   String?
+  uploadedById  String
+  downloadCount Int         @default(0)
+  createdAt     DateTime    @default(now())
+  subject       Subject     @relation(fields: [subjectId], references: [id])
+  institution   Institution @relation(fields: [institutionId], references: [id])
+}
+
+// ─── Certificates ───────────────────────────────────────────
+
+model SubjectCertificate {
+  id                String   @id @default(cuid())
+  subjectId         String
+  studentId         String
+  issuedAt          DateTime @default(now())
+  completionPercent Int
+  fileUrl           String?
+  issuedById        String
+  subject           Subject  @relation(fields: [subjectId], references: [id])
+  student           Student  @relation(fields: [studentId], references: [id])
+
+  @@unique([subjectId, studentId])
+}
+
+// ─── Announcements ──────────────────────────────────────────
+
+model SubjectAnnouncement {
+  id            String                     @id @default(cuid())
+  subjectId     String
+  institutionId String
+  title         String
+  content       String
+  isUrgent      Boolean                    @default(false)
+  isPinned      Boolean                    @default(false)
+  expiresAt     DateTime?
+  createdById   String
+  createdAt     DateTime                   @default(now())
+  subject       Subject                    @relation(fields: [subjectId], references: [id])
+  institution   Institution                @relation(fields: [institutionId], references: [id])
+  reads         SubjectAnnouncementRead[]
+}
+
+model SubjectAnnouncementRead {
+  id              String              @id @default(cuid())
+  announcementId  String
+  userId          String
+  readAt          DateTime            @default(now())
+  announcement    SubjectAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+}
+
+// ─── Export/Import ──────────────────────────────────────────
+
+model SubjectExportJob {
+  id            String       @id @default(cuid())
+  subjectId     String
+  institutionId String
+  status        ExportStatus @default(PENDING)
+  fileUrl       String?
+  exportedById  String
+  createdAt     DateTime     @default(now())
+  completedAt   DateTime?
+  subject       Subject      @relation(fields: [subjectId], references: [id])
+  institution   Institution  @relation(fields: [institutionId], references: [id])
+}
+
+// ─── Similarity Check ───────────────────────────────────────
+
+model SimilarityCheckResult {
+  id                   String                       @id @default(cuid())
+  submissionId         String                       @unique
+  checkScore           Int
+  matchedSubmissionIds String[]                     @default([])
+  checkedAt            DateTime                     @default(now())
+  flagged              Boolean                      @default(false)
+  submission           SubjectAssignmentSubmission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 }

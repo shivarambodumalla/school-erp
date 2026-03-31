@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { useRouter } from 'next/navigation'
-import { Plus, ArrowRight, Pencil, Trash2, X } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -12,9 +12,10 @@ import type { SubjectData } from '../../types'
 interface SubjectsTabProps {
   classYearId: string
   sections?: { id: string; name: string }[]
+  onOpenSubject?: (subjectId: string, subjectName: string) => void
 }
 
-export function SubjectsTab({ classYearId, sections }: SubjectsTabProps) {
+export function SubjectsTab({ classYearId, sections, onOpenSubject }: SubjectsTabProps) {
   const router = useRouter()
   const { apiParam } = useInstitutionId()
   const [subjects, setSubjects] = useState<SubjectData[]>([])
@@ -78,7 +79,9 @@ export function SubjectsTab({ classYearId, sections }: SubjectsTabProps) {
             </thead>
             <tbody>
               {subjects.map((s) => (
-                <tr key={s.id} className="border-b last:border-0 hover:bg-muted/30">
+                <tr key={s.id}
+                  className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"
+                  onClick={() => onOpenSubject ? onOpenSubject(s.id, s.name) : router.push(`/management/subjects/${s.id}`)}>
                   <td className="px-4 py-3 font-medium">{s.name}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{s.code ?? '—'}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{s.weeklyPeriods}</td>
@@ -86,16 +89,12 @@ export function SubjectsTab({ classYearId, sections }: SubjectsTabProps) {
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-9 w-9"
-                        onClick={() => setEditId(s.id)} title="Edit">
+                        onClick={(e) => { e.stopPropagation(); setEditId(s.id) }} title="Edit">
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-9 w-9 text-red-500 hover:text-red-600"
-                        onClick={() => handleDelete(s.id, s.name)} title="Delete">
+                        onClick={(e) => { e.stopPropagation(); handleDelete(s.id, s.name) }} title="Delete">
                         <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="min-h-[44px]"
-                        onClick={() => router.push(`/management/subjects/${s.id}`)}>
-                        Open <ArrowRight className="h-3.5 w-3.5 ml-1" />
                       </Button>
                     </div>
                   </td>
@@ -231,20 +230,7 @@ function EditSubjectForm({ classYearId, subject, onClose, onDone }: {
 }
 
 /* ── Shared helpers ── */
-function Overlay({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <>
-      <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-background border-l shadow-xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onClose}><X className="h-4 w-4" /></Button>
-        </div>
-        <div className="p-4 flex-1 overflow-y-auto">{children}</div>
-      </div>
-    </>
-  )
-}
+import { OverlayPanel as Overlay } from '@/components/ui/overlay-panel'
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><label className="text-sm font-medium mb-1 block">{label}</label>{children}</div>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Portal } from '@/components/ui/portal'
 import type { StudentGuardian } from '../../types'
 
 interface Props {
@@ -68,7 +69,8 @@ export function AddGuardianSheet({ studentId, guardian, hasFather, hasMother, on
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-background rounded-xl border shadow-lg w-full max-w-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto">
                 <div className="flex items-center justify-between">
                     <h3 className="font-semibold">{isEdit ? 'Edit' : 'Add'} Guardian</h3>
@@ -120,7 +122,8 @@ export function AddGuardianSheet({ studentId, guardian, hasFather, hasMother, on
                     </Button>
                 </div>
             </div>
-        </div>
+            </div>
+        </Portal>
     )
 }
 

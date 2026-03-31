@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Portal } from '@/components/ui/portal'
 import { toast } from 'sonner'
 
 interface UploadedDoc {
@@ -208,7 +209,8 @@ function UploadDocumentSheet({ studentId, docType, onClose, onUploaded }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50">
+    <Portal>
+      <div className="fixed inset-0 z-50 flex justify-end bg-black/50">
       <div className="bg-background w-full max-w-sm h-full border-l shadow-xl
         flex flex-col animate-in slide-in-from-right">
         <div className="flex items-center justify-between p-4 border-b">
@@ -248,7 +250,8 @@ function UploadDocumentSheet({ studentId, docType, onClose, onUploaded }: {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </Portal>
   )
 }
 

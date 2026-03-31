@@ -5,6 +5,7 @@ import { X, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Portal } from '@/components/ui/portal'
 import { toast } from 'sonner'
 
 interface Props {
@@ -51,7 +52,8 @@ export function InquirySheet({ onClose, onCreated }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50">
+    <Portal>
+      <div className="fixed inset-0 z-50 flex justify-end bg-black/50">
       <div className="bg-background w-full max-w-sm h-full border-l shadow-xl
         flex flex-col animate-in slide-in-from-right">
         <div className="flex items-center justify-between p-4 border-b">
@@ -104,6 +106,7 @@ export function InquirySheet({ onClose, onCreated }: Props) {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </Portal>
   )
 }

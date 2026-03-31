@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Portal } from '@/components/ui/portal'
 import { Plus, X } from 'lucide-react'
 import { TicketDetail } from './TicketDetail'
 import { createTicket } from '@/features/tickets/actions/ticketActions'
@@ -154,7 +155,8 @@ export function TicketsClient({ tickets, currentUserId, isSuperAdmin = false }: 
 
             {/* Create Form Modal */}
             {showForm && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <Portal>
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-background rounded-xl border w-full max-w-md p-6 space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="font-semibold text-lg">Raise a Support Ticket</h2>
@@ -194,7 +196,8 @@ export function TicketsClient({ tickets, currentUserId, isSuperAdmin = false }: 
                             </div>
                         </form>
                     </div>
-                </div>
+                    </div>
+                </Portal>
             )}
         </div>
     )

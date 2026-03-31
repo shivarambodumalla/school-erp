@@ -16,13 +16,14 @@ export async function generateMetadata(): Promise<Metadata> {
         select: { faviconUrl: true, name: true },
     })
 
-    if (!institution?.faviconUrl) return {}
-
     return {
-        icons: {
-            icon: institution.faviconUrl,
-            apple: institution.faviconUrl,
-        },
+        ...(institution?.name ? { title: { default: institution.name, template: `%s | ${institution.name}` } } : {}),
+        ...(institution?.faviconUrl ? {
+            icons: {
+                icon: institution.faviconUrl,
+                apple: institution.faviconUrl,
+            },
+        } : {}),
     }
 }
 

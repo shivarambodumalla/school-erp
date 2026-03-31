@@ -1,6 +1,3 @@
-'use client'
-
-import { useEffect } from 'react'
 import { hexToHsl } from '@/lib/colorUtils'
 
 interface ThemeInjectorProps {
@@ -74,31 +71,27 @@ function buildCssVars(primaryHex: string, secondaryHex: string | null, dark: boo
   return vars
 }
 
+function buildCss(primaryColor: string, secondaryColor: string | null): string {
+  const lightVars = buildCssVars(primaryColor, secondaryColor, false)
+  const darkVars = buildCssVars(primaryColor, secondaryColor, true)
+
+  const lightRules = Object.entries(lightVars)
+    .map(([prop, value]) => `${prop}:${value}`)
+    .join(';')
+  const darkRules = Object.entries(darkVars)
+    .map(([prop, value]) => `${prop}:${value}`)
+    .join(';')
+
+  return `:root{${lightRules}}.dark{${darkRules}}`
+}
+
 export function ThemeInjector({ primaryColor, secondaryColor }: ThemeInjectorProps) {
-  useEffect(() => {
-    const lightVars = buildCssVars(primaryColor, secondaryColor ?? null, false)
-    const darkVars = buildCssVars(primaryColor, secondaryColor ?? null, true)
+  const css = buildCss(primaryColor, secondaryColor ?? null)
 
-    // Build CSS rules that respect the .dark selector
-    const lightRules = Object.entries(lightVars)
-      .map(([prop, value]) => `  ${prop}: ${value};`)
-      .join('\n')
-    const darkRules = Object.entries(darkVars)
-      .map(([prop, value]) => `  ${prop}: ${value};`)
-      .join('\n')
-
-    const style = document.createElement('style')
-    style.id = 'theme-injector'
-    style.textContent = `:root {\n${lightRules}\n}\n.dark {\n${darkRules}\n}`
-
-    // Remove previous injection if any
-    document.getElementById('theme-injector')?.remove()
-    document.head.appendChild(style)
-
-    return () => {
-      style.remove()
-    }
-  }, [primaryColor, secondaryColor])
-
-  return null
+  return (
+    <style
+      id="theme-injector"
+      dangerouslySetInnerHTML={{ __html: css }}
+    />
+  )
 }

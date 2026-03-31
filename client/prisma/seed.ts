@@ -733,15 +733,19 @@ async function main(): Promise<void> {
     }
 
     // ── Departments ──
-    const departmentNames = [
-        'Science Department', 'Mathematics Department', 'Languages Department',
-        'Social Studies Department', 'Arts & Sports Department', 'Administration',
+    const departmentsData = [
+        { name: 'Science Department', color: '#10b981', description: 'Manages Physics, Chemistry, Biology', subjectNames: ['Physics', 'Chemistry', 'Biology'] },
+        { name: 'Mathematics Department', color: '#3b82f6', description: 'Manages Maths and Statistics', subjectNames: ['Mathematics', 'Statistics'] },
+        { name: 'Languages Department', color: '#f59e0b', description: 'Manages English, Hindi, Tamil', subjectNames: ['English', 'Hindi'] },
+        { name: 'Social Studies Department', color: '#8b5cf6', description: 'Manages History, Geography, Civics', subjectNames: ['History', 'Geography', 'Civics'] },
+        { name: 'Arts & Sports Department', color: '#ec4899', description: 'Manages PE, Arts, Music', subjectNames: ['Physical Education', 'Arts', 'Music'] },
+        { name: 'Administration', color: '#64748b', description: 'School administration and operations', subjectNames: [] },
     ]
-    for (const name of departmentNames) {
+    for (const dept of departmentsData) {
         await prisma.department.upsert({
-            where: { institutionId_name: { institutionId: stmarys.id, name } },
-            update: {},
-            create: { institutionId: stmarys.id, name },
+            where: { institutionId_name: { institutionId: stmarys.id, name: dept.name } },
+            update: { color: dept.color, description: dept.description, subjectNames: dept.subjectNames },
+            create: { institutionId: stmarys.id, name: dept.name, color: dept.color, description: dept.description, subjectNames: dept.subjectNames },
         })
     }
 

@@ -2,6 +2,7 @@
 
 import { Download, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Portal } from '@/components/ui/portal'
 
 interface Props {
     documentType: string
@@ -26,7 +27,8 @@ export function DocumentPreviewModal({ documentType, studentName, student, insti
         .filter(Boolean).join(', ')
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto">
                 <div className="flex items-center justify-between p-4 border-b no-print">
                     <h3 className="font-semibold">{documentType}</h3>
@@ -87,6 +89,7 @@ export function DocumentPreviewModal({ documentType, studentName, student, insti
                     </Button>
                 </div>
             </div>
-        </div>
+            </div>
+        </Portal>
     )
 }

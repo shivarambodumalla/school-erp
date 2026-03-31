@@ -14,9 +14,10 @@ import type { SectionData } from '../../types'
 
 interface SectionsTabProps {
   classYearId: string
+  onViewStudents?: (sectionId: string) => void
 }
 
-export function SectionsTab({ classYearId }: SectionsTabProps) {
+export function SectionsTab({ classYearId, onViewStudents }: SectionsTabProps) {
   const { apiParam } = useInstitutionId()
   const [sections, setSections] = useState<SectionData[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,7 +59,7 @@ export function SectionsTab({ classYearId }: SectionsTabProps) {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sections.map((s) => (
-            <SectionCard key={s.id} section={s} />
+            <SectionCard key={s.id} section={s} onViewStudents={onViewStudents} />
           ))}
         </div>
       )}
@@ -71,10 +72,15 @@ export function SectionsTab({ classYearId }: SectionsTabProps) {
   )
 }
 
-function SectionCard({ section }: { section: SectionData }) {
+function SectionCard({ section, onViewStudents }: {
+  section: SectionData
+  onViewStudents?: (sectionId: string) => void
+}) {
   return (
-    <div className="rounded-xl border bg-card p-4 space-y-2
-      hover:shadow-sm transition-shadow">
+    <button type="button"
+      onClick={() => onViewStudents?.(section.id)}
+      className="rounded-xl border bg-card p-4 space-y-2 text-left w-full
+        hover:shadow-sm hover:border-primary/30 transition-all cursor-pointer">
       <p className="font-semibold text-base">{section.name}</p>
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <span className="flex items-center gap-1">
@@ -85,7 +91,7 @@ function SectionCard({ section }: { section: SectionData }) {
           <span>/ {section.maxStrength} max</span>
         )}
       </div>
-    </div>
+    </button>
   )
 }
 

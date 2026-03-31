@@ -9,9 +9,12 @@ export async function GET(req: NextRequest,routeCtx: Ctx) {
     if (isApiError(ctx)) return ctx
     const { institutionId } = ctx
   const { staffId } = await routeCtx.params
+  const isNumeric = /^\d+$/.test(staffId)
 
-  const staff = await prisma.staff.findUnique({
-    where: { id: staffId },
+  const staff = await prisma.staff.findFirst({
+    where: isNumeric
+      ? { serialNo: parseInt(staffId, 10), institutionId }
+      : { id: staffId, institutionId },
     include: {
       user: { select: { id: true, email: true, lastLoginAt: true } },
       department: { select: { id: true, name: true } },
@@ -132,5 +135,42 @@ export async function PATCH(req: NextRequest,routeCtx: Ctx) {
     select: { id: true, firstName: true, lastName: true },
   })
 
-  return NextResponse.json(updated)
+  // HOD fallback: clear HOD/deputy roles when staff is deactivated or terminated
+  let hodFallbackApplied = false
+  let affectedDepartments: { id: string; name: string }[] = []
+
+  const newStatus = data.status as string | undefined
+  if (newStatus === 'INACTIVE' || newStatus === 'TERMINATED') {
+    const hodDepts = await prisma.department.findMany({
+      where: {
+        OR: [{ hodId: staffId }, { deputyHodId: staffId }],
+        institutionId,
+      },
+      select: { id: true, name: true, hodId: true, deputyHodId: true },
+    })
+
+    for (const dept of hodDepts) {
+      if (dept.hodId === staffId) {
+        await prisma.department.update({
+          where: { id: dept.id },
+          data: { hodId: null, hodSince: null },
+        })
+        await prisma.staff.updateMany({
+          where: { reportsToId: staffId, departmentId: dept.id },
+          data: { reportsToId: null },
+        })
+      }
+      if (dept.deputyHodId === staffId) {
+        await prisma.department.update({
+          where: { id: dept.id },
+          data: { deputyHodId: null },
+        })
+      }
+    }
+
+    hodFallbackApplied = hodDepts.length > 0
+    affectedDepartments = hodDepts.map((d) => ({ id: d.id, name: d.name }))
+  }
+
+  return NextResponse.json({ ...updated, hodFallbackApplied, affectedDepartments })
 }

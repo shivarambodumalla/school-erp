@@ -33,6 +33,74 @@ tRPC, NextAuth v5, PostgreSQL, Prisma
 - RULE-005: service/repository pattern always
 - RULE-006: Mobile first — 44px minimum tap targets
 - RULE-007: UX audit every UI change (see UX Design Skill below)
+- RULE-008: URL routing conventions (see URL & Navigation Rules below)
+
+## URL & Navigation Rules
+
+All navigation MUST use path segments. Never query params for resource IDs.
+
+### Route Patterns (management portal)
+```
+/management/dashboard
+/management/students/[id]           ← cuid or serialNo (numeric)
+/management/staff/[id]              ← cuid or serialNo (numeric)
+/management/departments/[id]        ← cuid
+/management/departments/[id]/edit
+/management/institution/classes/[id] ← cuid (classYearId)
+/management/subjects/[id]           ← cuid
+/management/subjects/[id]/gradebook
+/management/courses/[id]            ← cuid
+/management/admissions/[id]         ← cuid
+/management/admissions/new
+/management/staff/roles             ← list (no ID)
+/management/staff/payroll           ← list (no ID)
+/management/staff/leaves            ← list (no ID)
+/management/settings                ← settings root
+/management/settings/[subpage]      ← branding, admissions, etc.
+```
+
+### Route Patterns (super admin portal)
+```
+/super/dashboard
+/super/institutions/[id]            ← cuid
+/super/institutions/[id]/manage     ← manages as school admin
+/super/institutions/[id]/edit
+/super/users
+/super/roles
+/super/tickets
+/super/analytics
+/super/settings
+```
+
+### Route Patterns (consumer portal)
+```
+/consumer/dashboard
+/consumer/subjects/[id]             ← cuid
+/consumer/subjects/[id]/quiz/[quizId]
+/consumer/courses/[id]              ← cuid
+/consumer/grades
+/consumer/homework
+/consumer/fees
+/consumer/bus
+/consumer/profile
+```
+
+### Rules
+1. **Always path segments** — `/resource/[id]`, never `?id=xxx`
+2. **Query params OK for UI state** — `?tab=overview`, `?status=active` are fine
+3. **Prefer serialNo in URLs** when the model has one (Staff, Student) — API routes must accept both cuid and serialNo via `isNumeric` check
+4. **Dynamic route folders** use descriptive param names: `[deptId]`, `[staffId]`, `[studentId]`
+5. **Page route files** — every `[param]` folder must have `page.tsx` + `loading.tsx` + `error.tsx`
+6. **Link components** — use `<Link href={...}>` for static nav, `router.push()` for programmatic
+7. **No hardcoded IDs in URLs** — always use variables: `` `/management/staff/${staff.id}` ``
+8. **API routes mirror page routes** — `/api/school/departments/[deptId]` matches `/management/departments/[deptId]`
+
+### When Adding New Features
+1. Add the route pattern to this list
+2. Create the `[param]` folder with page.tsx + loading.tsx + error.tsx
+3. If the model has serialNo, make the API accept both cuid and numeric
+4. Add nav item to `src/lib/nav.ts` in the correct group
+5. All links from cards, tables, lists use path segments with the record's id
 
 ## UX Design Skill
 

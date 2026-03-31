@@ -5,6 +5,7 @@ import { ArrowRightLeft, Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Portal } from '@/components/ui/portal'
 
 interface ClassItem {
     id: string
@@ -52,7 +53,8 @@ export function TransferClassModal({ studentId, currentClassId, onClose, onTrans
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-background rounded-xl border shadow-lg w-full max-w-md p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h3 className="font-semibold">Transfer to New Class</h3>
@@ -99,6 +101,7 @@ export function TransferClassModal({ studentId, currentClassId, onClose, onTrans
                     </Button>
                 </div>
             </div>
-        </div>
+            </div>
+        </Portal>
     )
 }

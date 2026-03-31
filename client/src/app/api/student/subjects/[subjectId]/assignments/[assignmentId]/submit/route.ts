@@ -28,12 +28,10 @@ export async function POST(req: Request,routeCtx: RouteContext) {
     return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
   }
 
-  const existing = await prisma.assignmentSubmission.findUnique({
+  const existing = await prisma.assignmentSubmission.findFirst({
     where: {
-      assignmentId_studentId: {
-        assignmentId,
-        studentId: student.id,
-      },
+      assignmentId,
+      studentId: student.id,
     },
   })
   if (existing) {

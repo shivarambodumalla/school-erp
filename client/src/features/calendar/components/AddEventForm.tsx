@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Portal } from '@/components/ui/portal'
 import { X } from 'lucide-react'
 import { createCalendarEvent } from '@/features/calendar/actions/calendarActions'
 
@@ -46,7 +47,8 @@ export function AddEventForm({ onClose }: Props) {
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <Portal>
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-background rounded-xl border w-full max-w-md p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="font-semibold text-lg">Add Event</h2>
@@ -93,6 +95,7 @@ export function AddEventForm({ onClose }: Props) {
                     </div>
                 </form>
             </div>
-        </div>
+            </div>
+        </Portal>
     )
 }
