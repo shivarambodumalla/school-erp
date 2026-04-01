@@ -15,6 +15,7 @@ interface ClassYearSummary {
 
 interface ClassSwitcherItem {
   id: string
+  serialNo: number
   classTemplate: { name: string; gradeLevel: number }
   academicYear: { name: string }
 }
@@ -151,7 +152,7 @@ export function ClassPageLeftPanel({
               <button
                 key={cls.id}
                 type="button"
-                onClick={() => handleClassSwitch(cls.id)}
+                onClick={() => handleClassSwitch(String(cls.serialNo))}
                 className={`w-full flex flex-col items-start rounded-md px-3 min-h-[44px] py-2 text-sm transition-colors ${
                   cls.id === classYearId
                     ? 'bg-primary/10 text-primary font-medium'

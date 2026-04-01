@@ -1,3 +1,6 @@
+import { auth } from '@/server/auth'
+import { redirect, notFound } from 'next/navigation'
+import { resolveClassYearId } from '@/lib/resolve-id'
 import { SubjectClasswork } from '@/features/subjects/components/SubjectClasswork'
 
 interface Props {
@@ -5,7 +8,12 @@ interface Props {
 }
 
 export default async function SubjectClassworkPage({ params }: Props) {
-  const { subjectId } = await params
+  const session = await auth()
+  if (!session) redirect('/auth/login')
+
+  const { classYearId: rawId, subjectId } = await params
+  const classYearId = await resolveClassYearId(rawId, session.user.institutionId)
+  if (!classYearId) notFound()
 
   return <SubjectClasswork subjectId={subjectId} />
 }

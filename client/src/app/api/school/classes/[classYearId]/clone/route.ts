@@ -149,7 +149,7 @@ export async function POST(
       }
     }
 
-    return NextResponse.json({ newClassYearId: newClassYear.id }, { status: 201 })
+    return NextResponse.json({ newClassYearId: newClassYear.id, serialNo: newClassYear.serialNo }, { status: 201 })
   } catch (err) {
     console.error('POST /api/school/classes/[classYearId]/clone error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

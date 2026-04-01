@@ -46,10 +46,10 @@ export function CloneClassYearSheet({ classYearId, className, onClose }: CloneCl
       body: JSON.stringify({ targetAcademicYearId: targetYearId, cloneSubjects, cloneContent }),
     })
     if (res.ok) {
-      const data = await res.json() as { newClassYearId: string }
+      const data = await res.json() as { newClassYearId: string; serialNo: number }
       toast.success(`${className} cloned as Draft`)
       onClose()
-      router.push(`/management/institution/classes/${data.newClassYearId}`)
+      router.push(`/management/institution/classes/${data.serialNo}`)
     } else {
       const e = await res.json()
       toast.error(e.error ?? 'Clone failed')

@@ -52,7 +52,7 @@ export function ClassCard({ data }: ClassCardProps) {
       {/* Manage link */}
       {activeYear ? (
         <Link
-          href={`/management/institution/classes/${activeYear.id}`}
+          href={`/management/institution/classes/${activeYear.serialNo}`}
           className="inline-flex items-center gap-1 text-sm font-medium
             text-primary hover:underline min-h-[44px]"
         >

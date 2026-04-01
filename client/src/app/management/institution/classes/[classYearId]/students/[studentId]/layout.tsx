@@ -1,5 +1,6 @@
 import { auth } from '@/server/auth'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveClassYearId } from '@/lib/resolve-id'
 import { ClassTabBar } from '@/features/classes/components/ClassTabBar'
 import { StudentSubTabBar } from '@/features/classes/components/StudentSubTabBar'
 import { EnsureTabSync } from '@/features/classes/components/EnsureTabSync'
@@ -16,7 +17,9 @@ export default async function StudentDetailLayout({ params, children }: Props) {
   const portal = session.user.portalType
   if (portal !== 'ADMIN' && portal !== 'TEACHER') redirect('/management/dashboard')
 
-  const { classYearId, studentId } = await params
+  const { classYearId: rawId, studentId } = await params
+  const classYearId = await resolveClassYearId(rawId, session.user.institutionId)
+  if (!classYearId) notFound()
 
   return (
     <div className="space-y-0">

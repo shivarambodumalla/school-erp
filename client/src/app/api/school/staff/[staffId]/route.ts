@@ -20,10 +20,10 @@ export async function GET(req: NextRequest,routeCtx: Ctx) {
       department: { select: { id: true, name: true } },
       primaryRole: { select: { id: true, name: true } },
       reportsTo: {
-        select: { id: true, firstName: true, lastName: true, designation: true },
+        select: { id: true, serialNo: true, firstName: true, lastName: true, designation: true },
       },
       directReports: {
-        select: { id: true, firstName: true, lastName: true, designation: true },
+        select: { id: true, serialNo: true, firstName: true, lastName: true, designation: true },
       },
       secondaryRoles: {
         include: { staffRole: { select: { id: true, name: true } } },

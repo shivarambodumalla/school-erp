@@ -1,5 +1,6 @@
 import { auth } from '@/server/auth'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveClassYearId } from '@/lib/resolve-id'
 import { SectionsTab } from '@/features/classes/components/tabs/SectionsTab'
 
 interface Props {
@@ -11,7 +12,9 @@ export default async function ClassOverviewPage({ params }: Props) {
   if (!session) redirect('/auth/login')
   if (session.user.portalType !== 'ADMIN') redirect('/management/dashboard')
 
-  const { classYearId } = await params
+  const { classYearId: rawId } = await params
+  const classYearId = await resolveClassYearId(rawId, session.user.institutionId)
+  if (!classYearId) notFound()
 
   return <SectionsTab classYearId={classYearId} />
 }

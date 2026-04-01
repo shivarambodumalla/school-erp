@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { resolveClassYearId } from '@/lib/resolve-id'
 import { ClassTabBar } from '@/features/classes/components/ClassTabBar'
 import { SubjectHeader } from '@/features/classes/components/pages/SubjectHeader'
 import { SubjectSubTabBar } from '@/features/classes/components/SubjectSubTabBar'
@@ -19,8 +20,10 @@ export default async function SubjectDetailLayout({ params, children }: Props) {
   const portal = session.user.portalType
   if (portal !== 'ADMIN' && portal !== 'TEACHER') redirect('/management/dashboard')
 
-  const { classYearId, subjectId } = await params
+  const { classYearId: rawId, subjectId } = await params
   const institutionId = session.user.institutionId
+  const classYearId = await resolveClassYearId(rawId, institutionId)
+  if (!classYearId) notFound()
 
   const subject = await prisma.subject.findFirst({
     where: { id: subjectId, institutionId, classYearId },

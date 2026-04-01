@@ -1,5 +1,6 @@
 import { auth } from '@/server/auth'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveClassYearId } from '@/lib/resolve-id'
 import { SubjectsListContent } from '@/features/classes/components/pages/SubjectsListContent'
 
 interface Props {
@@ -11,7 +12,9 @@ export default async function ClassSubjectsPage({ params }: Props) {
   if (!session) redirect('/auth/login')
   if (session.user.portalType !== 'ADMIN') redirect('/management/dashboard')
 
-  const { classYearId } = await params
+  const { classYearId: rawId } = await params
+  const classYearId = await resolveClassYearId(rawId, session.user.institutionId)
+  if (!classYearId) notFound()
 
   return <SubjectsListContent classYearId={classYearId} />
 }

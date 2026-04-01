@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
+import { resolveClassYearId } from '@/lib/resolve-id'
 import { ClassPageLeftPanel } from '@/features/classes/components/ClassPageLeftPanel'
 import type { ReactNode } from 'react'
 
@@ -14,8 +15,10 @@ export default async function ClassYearLayout({ params, children }: Props) {
   if (!session) redirect('/auth/login')
   if (session.user.portalType !== 'ADMIN') redirect('/management/dashboard')
 
-  const { classYearId } = await params
+  const { classYearId: rawId } = await params
   const institutionId = session.user.institutionId
+  const classYearId = await resolveClassYearId(rawId, institutionId)
+  if (!classYearId) notFound()
 
   const classYear = await prisma.classYear.findFirst({
     where: { id: classYearId, institutionId },
@@ -32,6 +35,7 @@ export default async function ClassYearLayout({ params, children }: Props) {
     where: { institutionId, academicYear: { isCurrent: true } },
     select: {
       id: true,
+      serialNo: true,
       classTemplate: { select: { name: true, gradeLevel: true } },
       academicYear: { select: { name: true } },
     },

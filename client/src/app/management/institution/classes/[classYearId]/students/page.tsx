@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { resolveClassYearId } from '@/lib/resolve-id'
 import { StudentsListContent } from '@/features/classes/components/pages/StudentsListContent'
 
 interface Props {
@@ -12,8 +13,10 @@ export default async function ClassStudentsPage({ params }: Props) {
   if (!session) redirect('/auth/login')
   if (session.user.portalType !== 'ADMIN') redirect('/management/dashboard')
 
-  const { classYearId } = await params
+  const { classYearId: rawId } = await params
   const institutionId = session.user.institutionId
+  const classYearId = await resolveClassYearId(rawId, institutionId)
+  if (!classYearId) notFound()
 
   const sections = await prisma.section.findMany({
     where: { classYearId, institutionId },

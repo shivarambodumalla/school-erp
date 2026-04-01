@@ -12,12 +12,11 @@ export default async function GradesPage() {
 
   const classYears = await prisma.classYear.findMany({
     where: { institutionId, status: 'ACTIVE' },
-    include: {
+    select: {
+      id: true,
+      serialNo: true,
       classTemplate: { select: { name: true } },
-      subjects: {
-        select: { id: true, name: true },
-        orderBy: { name: 'asc' },
-      },
+      subjects: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
     },
     orderBy: { classTemplate: { gradeLevel: 'asc' } },
   })
@@ -54,7 +53,7 @@ export default async function GradesPage() {
                   {cy.classTemplate.name}
                 </h3>
                 <Link
-                  href={`/management/institution/classes/${cy.id}/gradebook`}
+                  href={`/management/institution/classes/${cy.serialNo}/gradebook`}
                   className="text-sm text-primary
                     hover:underline min-h-[44px]
                     flex items-center"

@@ -74,7 +74,7 @@ export function ClassesClient() {
 
   const handleClick = (cls: ClassTemplate) => {
     if (!cls.activeYear) return
-    router.push(`/management/institution/classes/${cls.activeYear.id}`)
+    router.push(`/management/institution/classes/${cls.activeYear.serialNo}`)
   }
 
   return (
