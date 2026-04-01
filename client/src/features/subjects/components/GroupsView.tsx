@@ -67,14 +67,6 @@ interface GroupSet {
   _count: { groups: number; members: number }
 }
 
-interface AvailableStudent {
-  id: string
-  firstName: string
-  lastName: string
-  admissionNo: string
-  photoUrl: string | null
-}
-
 // ─── Constants ───
 
 const ASSIGNMENT_TYPE_LABELS: Record<AssignmentType, string> = {

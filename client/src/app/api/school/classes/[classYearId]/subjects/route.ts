@@ -26,6 +26,7 @@ export async function GET(
       where: { classYearId, institutionId },
       select: {
         id: true,
+        serialNo: true,
         name: true,
         code: true,
         weeklyPeriods: true,

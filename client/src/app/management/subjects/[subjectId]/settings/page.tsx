@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth'
 import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveSubjectId } from '@/lib/resolve-id'
 import { SubjectSettingsView } from '@/features/subjects/components/SubjectSettingsView'
 
 interface Props {
@@ -18,7 +19,9 @@ export default async function SubjectSettingsPage({ params }: Props) {
   }
 
   const institutionId = session.user.institutionId
-  const { subjectId } = await params
+  const { subjectId: rawId } = await params
+  const subjectId = await resolveSubjectId(rawId, institutionId)
+  if (!subjectId) notFound()
 
   const subject = await prisma.subject.findFirst({
     where: { id: subjectId, institutionId },

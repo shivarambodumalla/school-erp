@@ -1,5 +1,6 @@
 import { auth } from '@/server/auth'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveSubjectId } from '@/lib/resolve-id'
 import { ItemDetailClient } from '@/features/subjects/components/items/ItemDetailClient'
 
 interface Props {
@@ -14,7 +15,9 @@ export default async function ItemDetailPage({
     redirect('/auth/login')
   }
 
-  const { subjectId, itemId } = await params
+  const { subjectId: rawId, itemId } = await params
+  const subjectId = await resolveSubjectId(rawId, session.user.institutionId)
+  if (!subjectId) notFound()
 
   return (
     <ItemDetailClient

@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth'
 import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveSubjectId } from '@/lib/resolve-id'
 import { SubmissionsClient } from '@/features/subjects/components/SubmissionsClient'
 import type { SubmissionData } from '@/features/subjects/types'
 
@@ -21,7 +22,9 @@ export default async function SubmissionsPage({
   }
 
   const institutionId = session.user.institutionId
-  const { subjectId, postId } = await params
+  const { subjectId: rawId, postId } = await params
+  const subjectId = await resolveSubjectId(rawId, institutionId)
+  if (!subjectId) notFound()
 
   const post = await prisma.subjectPost.findFirst({
     where: { id: postId, subjectId, institutionId },

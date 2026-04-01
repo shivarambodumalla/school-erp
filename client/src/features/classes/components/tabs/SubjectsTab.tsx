@@ -12,7 +12,7 @@ import type { SubjectData } from '../../types'
 interface SubjectsTabProps {
   classYearId: string
   sections?: { id: string; name: string }[]
-  onOpenSubject?: (subjectId: string, subjectName: string) => void
+  onOpenSubject?: (subjectId: string, subjectName: string, serialNo: number) => void
 }
 
 export function SubjectsTab({ classYearId, sections, onOpenSubject }: SubjectsTabProps) {
@@ -81,7 +81,7 @@ export function SubjectsTab({ classYearId, sections, onOpenSubject }: SubjectsTa
               {subjects.map((s) => (
                 <tr key={s.id}
                   className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"
-                  onClick={() => onOpenSubject ? onOpenSubject(s.id, s.name) : router.push(`/management/subjects/${s.id}`)}>
+                  onClick={() => onOpenSubject ? onOpenSubject(s.id, s.name, s.serialNo) : router.push(`/management/subjects/${s.id}`)}>
                   <td className="px-4 py-3 font-medium">{s.name}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{s.code ?? '—'}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{s.weeklyPeriods}</td>

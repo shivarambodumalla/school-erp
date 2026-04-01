@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth'
 import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveSubjectId } from '@/lib/resolve-id'
 import { CertificateViewer } from '@/features/subjects/components/CertificateViewer'
 
 interface Props {
@@ -16,7 +17,9 @@ export default async function CertificatePage({
   }
 
   const institutionId = session.user.institutionId
-  const { subjectId } = await params
+  const { subjectId: rawId } = await params
+  const subjectId = await resolveSubjectId(rawId, institutionId)
+  if (!subjectId) notFound()
 
   // Fetch the subject details
   const subject = await prisma.subject.findFirst({

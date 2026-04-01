@@ -1,12 +1,9 @@
 import { auth } from '@/server/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { resolveClassYearId } from '@/lib/resolve-id'
-import { ClassTabBar } from '@/features/classes/components/ClassTabBar'
-import { SubjectHeader } from '@/features/classes/components/pages/SubjectHeader'
-import { SubjectSubTabBar } from '@/features/classes/components/SubjectSubTabBar'
+import { resolveClassYearId, resolveSubjectId } from '@/lib/resolve-id'
+import { SubjectMiniLeftNav } from '@/features/classes/components/SubjectMiniLeftNav'
 import { EnsureTabSync } from '@/features/classes/components/EnsureTabSync'
-import type { SubjectDetail } from '@/features/subjects/types'
 import type { ReactNode } from 'react'
 
 interface Props {
@@ -17,71 +14,55 @@ interface Props {
 export default async function SubjectDetailLayout({ params, children }: Props) {
   const session = await auth()
   if (!session) redirect('/auth/login')
-  const portal = session.user.portalType
-  if (portal !== 'ADMIN' && portal !== 'TEACHER') redirect('/management/dashboard')
+  if (session.user.portalType !== 'ADMIN' && session.user.portalType !== 'TEACHER')
+    redirect('/management/dashboard')
 
-  const { classYearId: rawId, subjectId } = await params
+  const { classYearId: rawClassId, subjectId: rawSubjectId } = await params
   const institutionId = session.user.institutionId
-  const classYearId = await resolveClassYearId(rawId, institutionId)
+  const classYearId = await resolveClassYearId(rawClassId, institutionId)
   if (!classYearId) notFound()
+  const subjectId = await resolveSubjectId(rawSubjectId, institutionId)
+  if (!subjectId) notFound()
 
   const subject = await prisma.subject.findFirst({
     where: { id: subjectId, institutionId, classYearId },
     include: {
-      classYear: {
-        include: { classTemplate: true, academicYear: true },
-      },
-      section: true,
+      classYear: { select: { serialNo: true } },
+      section: { select: { name: true } },
       teachers: {
-        include: { user: { select: { id: true, email: true } } },
+        include: { user: { select: { email: true } } },
       },
-      _count: { select: { posts: true, gradeEntries: true } },
     },
   })
 
   if (!subject) notFound()
 
-  const data: SubjectDetail = {
-    id: subject.id,
-    name: subject.name,
-    code: subject.code,
-    weeklyPeriods: subject.weeklyPeriods,
-    hasOnlineContent: subject.hasOnlineContent,
-    canPreviewFiles: subject.canPreviewFiles,
-    canDownloadFiles: subject.canDownloadFiles,
-    classYear: {
-      id: subject.classYear.id,
-      classTemplate: {
-        id: subject.classYear.classTemplate.id,
-        name: subject.classYear.classTemplate.name,
-      },
-      academicYear: {
-        id: subject.classYear.academicYear.id,
-        name: subject.classYear.academicYear.name,
-      },
-    },
-    section: subject.section
-      ? { id: subject.section.id, name: subject.section.name }
-      : null,
-    teachers: subject.teachers.map((t) => ({
-      id: t.id,
-      isPrimary: t.isPrimary,
-      user: { id: t.user.id, email: t.user.email },
-    })),
-    _count: subject._count,
-  }
-
   return (
-    <div className="space-y-0">
+    <>
       <EnsureTabSync
         classYearId={classYearId}
         type="subject"
-        item={{ id: data.id, name: data.name }}
+        item={{ id: subject.id, serialNo: subject.serialNo, name: subject.name }}
       />
-      <ClassTabBar classYearId={classYearId} type="subject" activeId={subjectId} />
-      <SubjectHeader subject={data} classYearId={classYearId} />
-      <SubjectSubTabBar classYearId={classYearId} subjectId={subjectId} />
-      <div className="pt-4">{children}</div>
-    </div>
+      <div className="flex min-h-[calc(100vh-6rem)]">
+        <SubjectMiniLeftNav
+          subjectId={subjectId}
+          classSerialNo={subject.classYear.serialNo}
+          subject={{
+            name: subject.name,
+            code: subject.code,
+            color: subject.color,
+            teachers: subject.teachers.map(t => ({
+              email: t.user.email,
+              isPrimary: t.isPrimary,
+            })),
+            section: subject.section?.name ?? null,
+          }}
+        />
+        <div className="flex-1 min-w-0 p-4 md:p-6">
+          {children}
+        </div>
+      </div>
+    </>
   )
 }

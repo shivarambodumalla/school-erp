@@ -493,12 +493,11 @@ function RubricPreview({
   name,
   description,
   criteria,
-  onExitPreview,
 }: {
   name: string
   description: string
   criteria: RubricCriterion[]
-  onExitPreview: () => void
+  onExitPreview?: () => void
 }) {
   const totalPoints = criteria.reduce((acc, c) => acc + c.maxPoints, 0)
 

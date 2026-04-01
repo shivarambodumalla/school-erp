@@ -1,5 +1,6 @@
 import { auth } from '@/server/auth'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveSubjectId } from '@/lib/resolve-id'
 import { GroupsView } from '@/features/subjects/components/GroupsView'
 
 interface Props {
@@ -17,7 +18,9 @@ export default async function GroupsPage({ params }: Props) {
     redirect('/auth/login')
   }
 
-  const { subjectId } = await params
+  const { subjectId: rawId } = await params
+  const subjectId = await resolveSubjectId(rawId, session.user.institutionId)
+  if (!subjectId) notFound()
 
   return <GroupsView subjectId={subjectId} />
 }

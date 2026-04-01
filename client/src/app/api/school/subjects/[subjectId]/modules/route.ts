@@ -9,14 +9,21 @@ export async function GET(req: Request, ctx: RouteContext) {
   const result = await getSchoolContext(req, ['ADMIN', 'TEACHER', 'STUDENT'])
   if (isApiError(result)) return result
   const { institutionId } = result
-  const { subjectId } = await ctx.params
+  const { subjectId: rawId } = await ctx.params
+  const isNumeric = /^\d+$/.test(rawId)
 
   const subject = await prisma.subject.findFirst({
-    where: { id: subjectId, institutionId },
+    where: {
+      ...(isNumeric ? { serialNo: parseInt(rawId, 10) } : { id: rawId }),
+      institutionId,
+    },
+    select: { id: true },
   })
   if (!subject) {
     return NextResponse.json({ error: 'Subject not found' }, { status: 404 })
   }
+
+  const subjectId = subject.id
 
   const modules = await prisma.subjectModule.findMany({
     where: { subjectId },

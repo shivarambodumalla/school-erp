@@ -1,5 +1,6 @@
 import { auth } from '@/server/auth'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveSubjectId } from '@/lib/resolve-id'
 import { NotebookView } from '@/features/subjects/components/NotebookView'
 
 interface Props {
@@ -12,7 +13,9 @@ export default async function NotebookPage({ params }: Props) {
     redirect('/auth/login')
   }
 
-  const { subjectId } = await params
+  const { subjectId: rawId } = await params
+  const subjectId = await resolveSubjectId(rawId, session.user.institutionId)
+  if (!subjectId) notFound()
 
   return <NotebookView subjectId={subjectId} />
 }

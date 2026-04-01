@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth'
 import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
+import { resolveSubjectId } from '@/lib/resolve-id'
 import { SubjectContentsView } from '@/features/subjects/components/SubjectContentsView'
 
 interface Props {
@@ -9,25 +10,15 @@ interface Props {
 
 export default async function SubjectPage({ params }: Props) {
   const session = await auth()
-  if (!session) {
-    redirect('/auth/login')
-  }
+  if (!session) redirect('/auth/login')
 
-  const institutionId = session.user.institutionId
-  const { subjectId } = await params
-
-  const subject = await prisma.subject.findFirst({
-    where: { id: subjectId, institutionId },
-    select: { id: true },
-  })
-
-  if (!subject) {
-    redirect('/management/academic')
-  }
+  const { subjectId: rawId } = await params
+  const subjectId = await resolveSubjectId(rawId, session.user.institutionId)
+  if (!subjectId) notFound()
 
   return (
     <SubjectContentsView
-      subjectId={subject.id}
+      subjectId={subjectId}
       portalType={session.user.portalType}
     />
   )

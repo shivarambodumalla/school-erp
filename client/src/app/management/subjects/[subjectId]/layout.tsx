@@ -18,8 +18,20 @@ export default async function SubjectLmsLayout({ params, children }: Props) {
     redirect('/management/dashboard')
   }
 
-  const { subjectId } = await params
+  const { subjectId: rawSubjectId } = await params
   const institutionId = session.user.institutionId
+
+  // Resolve serialNo to CUID if numeric
+  const isNumeric = /^\d+$/.test(rawSubjectId)
+  const subjectId = isNumeric
+    ? await (async () => {
+        const s = await prisma.subject.findFirst({
+          where: { serialNo: parseInt(rawSubjectId, 10), institutionId },
+          select: { id: true },
+        })
+        return s?.id ?? rawSubjectId
+      })()
+    : rawSubjectId
 
   const subject = await prisma.subject.findFirst({
     where: { id: subjectId, institutionId },

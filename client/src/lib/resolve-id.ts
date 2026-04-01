@@ -40,6 +40,18 @@ export async function resolveStaffId(rawId: string, institutionId: string): Prom
   return rawId
 }
 
+export async function resolveSubjectId(rawId: string, institutionId: string): Promise<string | null> {
+  const isNumeric = /^\d+$/.test(rawId)
+  if (isNumeric) {
+    const subject = await prisma.subject.findFirst({
+      where: { serialNo: parseInt(rawId, 10), institutionId },
+      select: { id: true },
+    })
+    return subject?.id ?? null
+  }
+  return rawId
+}
+
 export async function resolveAdmissionId(rawId: string, institutionId: string): Promise<string | null> {
   const isNumeric = /^\d+$/.test(rawId)
   if (isNumeric) {

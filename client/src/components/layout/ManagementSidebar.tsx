@@ -53,16 +53,13 @@ export function ManagementSidebar({
 
     const navContent = (
         <>
-            {/* Logo + School name + role */}
-            <div className="p-4 border-b space-y-2.5">
+            {/* Logo */}
+            <div className="px-4 border-b flex items-center h-[57px]">
                 {logoUrl ? (
-                    <img src={logoUrl} alt={institutionName} className="h-6 max-w-[140px] object-contain" />
+                    <img src={logoUrl} alt={institutionName} className="h-8 max-w-[160px] object-contain" />
                 ) : (
-                    <img src="/images/logo-wide.svg" alt="Onflows" className="h-6" />
+                    <img src="/images/logo-wide.svg" alt="Onflows" className="h-8" />
                 )}
-                <p className="text-xs text-muted-foreground truncate">
-                    {institutionName} · {isSuperAdminManaging ? 'SUPER ADMIN' : portalType.replace('_', ' ')}
-                </p>
             </div>
 
             {/* Nav groups */}
@@ -120,9 +117,14 @@ export function ManagementSidebar({
                     </>
                 ) : (
                     <>
-                        <p className="text-xs text-muted-foreground truncate px-3 mb-1">
-                            {userEmail}
-                        </p>
+                        <div className="flex items-center gap-1.5 px-3 mb-1">
+                            <p className="text-xs text-muted-foreground truncate">
+                                {userEmail}
+                            </p>
+                            <span className="shrink-0 rounded bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-medium">
+                                {portalType.replace('_', ' ')}
+                            </span>
+                        </div>
                         <div className="flex items-center gap-1">
                             <button
                                 type="button"

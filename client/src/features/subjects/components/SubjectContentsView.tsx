@@ -110,10 +110,9 @@ function TeacherContentsView({
         setModules([])
         return
       }
-      const data = (await res.json()) as {
-        modules: SubjectModule[]
-      }
-      setModules(data.modules)
+      const data = await res.json()
+      const list = Array.isArray(data) ? data : (data.modules ?? [])
+      setModules(list as SubjectModule[])
     } catch {
       setModules([])
     } finally {
@@ -845,14 +844,13 @@ function StudentContentsView({
         setModules([])
         return
       }
-      const data = (await res.json()) as {
-        modules: ModuleWithProgress[]
-        totalItems: number
-        completedItems: number
-      }
-      setModules(data.modules)
-      setTotalItems(data.totalItems)
-      setCompletedItems(data.completedItems)
+      const raw = await res.json()
+      const data = Array.isArray(raw)
+        ? { modules: raw as ModuleWithProgress[], totalItems: 0, completedItems: 0 }
+        : (raw as { modules: ModuleWithProgress[]; totalItems: number; completedItems: number })
+      setModules(data.modules ?? [])
+      setTotalItems(data.totalItems ?? 0)
+      setCompletedItems(data.completedItems ?? 0)
     } catch {
       setModules([])
     } finally {
@@ -966,7 +964,6 @@ function StudentContentsView({
             <StudentModuleCard
               key={mod.id}
               module={mod}
-              subjectId={subjectId}
               onToggleComplete={handleToggleComplete}
               onNavigate={(itemId) =>
                 router.push(
@@ -985,12 +982,10 @@ function StudentContentsView({
 
 function StudentModuleCard({
   module: mod,
-  subjectId,
   onToggleComplete,
   onNavigate,
 }: {
   module: ModuleWithProgress
-  subjectId: string
   onToggleComplete: (
     itemId: string,
     completed: boolean

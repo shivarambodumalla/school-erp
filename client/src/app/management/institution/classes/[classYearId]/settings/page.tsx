@@ -1,16 +1,14 @@
 import { auth } from '@/server/auth'
-import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
 import { resolveClassYearId } from '@/lib/resolve-id'
-import { ClassDetailTabBar } from '@/features/classes/components/ClassDetailTabBar'
-import type { ReactNode } from 'react'
+import { ClassSettingsView } from '@/features/classes/components/ClassSettingsView'
 
 interface Props {
   params: Promise<{ classYearId: string }>
-  children: ReactNode
 }
 
-export default async function ClassYearLayout({ params, children }: Props) {
+export default async function ClassSettingsPage({ params }: Props) {
   const session = await auth()
   if (!session) redirect('/auth/login')
   if (session.user.portalType !== 'ADMIN') redirect('/management/dashboard')
@@ -23,23 +21,22 @@ export default async function ClassYearLayout({ params, children }: Props) {
   const classYear = await prisma.classYear.findFirst({
     where: { id: classYearId, institutionId },
     select: {
-      serialNo: true,
+      id: true,
       classTemplate: { select: { name: true, gradeLevel: true } },
+      academicYear: { select: { name: true } },
     },
   })
 
   if (!classYear) notFound()
 
   return (
-    <div className="-mx-4 md:-mx-6 -mt-4 md:-mt-6 -mb-4 md:-mb-6">
-      <ClassDetailTabBar
-        serialNo={classYear.serialNo}
+    <div className="px-4 md:px-6 py-4">
+      <ClassSettingsView
+        classYearId={classYearId}
         className={classYear.classTemplate.name}
         gradeLevel={classYear.classTemplate.gradeLevel}
+        academicYearName={classYear.academicYear.name}
       />
-      {/* Spacer for fixed tab bar */}
-      <div className="h-[57px]" />
-      {children}
     </div>
   )
 }

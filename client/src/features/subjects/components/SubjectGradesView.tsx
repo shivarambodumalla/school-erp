@@ -74,7 +74,7 @@ interface Props {
 }
 
 export function SubjectGradesView({ subjectId }: Props) {
-  const { apiParam, addParams } = useInstitutionId()
+  const { addParams } = useInstitutionId()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<GradesData | null>(null)
   const [showConfig, setShowConfig] = useState(false)

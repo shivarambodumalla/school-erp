@@ -1038,6 +1038,7 @@ enum PromotionStatus {
 
 model Subject {
   id               String           @id @default(cuid())
+  serialNo         Int              @unique @default(autoincrement())
   institutionId    String
   classYearId      String
   sectionId        String?

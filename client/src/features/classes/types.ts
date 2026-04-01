@@ -29,6 +29,7 @@ export interface SubjectTeacher {
 
 export interface SubjectData {
   id: string
+  serialNo: number
   name: string
   code: string | null
   weeklyPeriods: number
