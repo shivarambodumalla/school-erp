@@ -10,6 +10,7 @@ import {
   Search, Plus, ChevronRight, SlidersHorizontal,
   ArrowUpDown, ArrowUp, ArrowDown,
 } from 'lucide-react'
+import { TABLE_CONTAINER_CLASS, TABLE_HEADER_CLASS, LIST_PAGE_CLASS } from '@/lib/table-constants'
 import { PLAN_COLORS } from '@/lib/colors'
 import { AddInstitutionDrawer } from
   '@/app/super/institutions/_components/AddInstitutionDrawer'
@@ -127,9 +128,9 @@ export function InstitutionsClient({ initialData }: Props) {
   const activeFilterCount = plans.length + statusFilters.length
 
   return (
-    <div className="space-y-6">
+    <div className={`${LIST_PAGE_CLASS} gap-3`}>
       {/* Toolbar: Title left | Search + Filter + Add right */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div className="shrink-0">
           <h1 className="text-2xl font-bold tracking-tight">Institutions</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -210,10 +211,10 @@ export function InstitutionsClient({ initialData }: Props) {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border bg-card">
-        <div className="overflow-auto max-h-[calc(100vh-240px)]">
+      <div className="bg-card">
+        <div className={TABLE_CONTAINER_CLASS}>
           <table className="w-full text-sm">
-            <thead className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
+            <thead className={TABLE_HEADER_CLASS}>
               <tr className="border-b">
                 <th
                   className="text-left px-4 py-3 font-medium

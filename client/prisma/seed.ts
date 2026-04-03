@@ -474,7 +474,7 @@ async function main(): Promise<void> {
         create: {
             institutionId: stmarys.id,
             employeeNoPrefix: 'EMP',
-            employeeNoCurrentSeq: 1004,
+            employeeNoCurrentSeq: 1054,
             documentTypes: JSON.stringify([
                 'Appointment Letter', 'Qualification Certificate', 'ID Proof',
                 'PAN Card', 'Bank Details', 'Previous Experience Letter',
@@ -807,6 +807,100 @@ async function main(): Promise<void> {
         })
     }
 
+    // ── Bulk Staff (50 additional) for table testing ──
+    const socialDept = await prisma.department.findUnique({
+        where: { institutionId_name: { institutionId: stmarys.id, name: 'Social Studies Department' } },
+    })
+    const artsDept = await prisma.department.findUnique({
+        where: { institutionId_name: { institutionId: stmarys.id, name: 'Arts & Sports Department' } },
+    })
+    const adminDept = await prisma.department.findUnique({
+        where: { institutionId_name: { institutionId: stmarys.id, name: 'Administration' } },
+    })
+    const adminStaffRole = await prisma.staffRole.findUnique({
+        where: { institutionId_name: { institutionId: stmarys.id, name: 'Admin Staff' } },
+    })
+
+    const bulkStaffData: { firstName: string; lastName: string; designation: string; deptId: string | null; roleId: string | null; status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' }[] = [
+        { firstName: 'Ananya', lastName: 'Sharma', designation: 'Physics Teacher', deptId: scienceDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Vikram', lastName: 'Singh', designation: 'Chemistry Teacher', deptId: scienceDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Meera', lastName: 'Patel', designation: 'Biology Teacher', deptId: scienceDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Rohan', lastName: 'Gupta', designation: 'Maths Teacher', deptId: mathsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Kavita', lastName: 'Menon', designation: 'Statistics Teacher', deptId: mathsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Arun', lastName: 'Pillai', designation: 'English Teacher', deptId: langsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Deepa', lastName: 'Iyer', designation: 'Hindi Teacher', deptId: langsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Suresh', lastName: 'Reddy', designation: 'History Teacher', deptId: socialDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Lakshmi', lastName: 'Naidu', designation: 'Geography Teacher', deptId: socialDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Ramesh', lastName: 'Verma', designation: 'Civics Teacher', deptId: socialDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Pooja', lastName: 'Desai', designation: 'PE Teacher', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Kiran', lastName: 'Joshi', designation: 'Music Teacher', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Sanjay', lastName: 'Mishra', designation: 'Art Teacher', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Neha', lastName: 'Agarwal', designation: 'Office Manager', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Amit', lastName: 'Tiwari', designation: 'Accounts Officer', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Ritu', lastName: 'Saxena', designation: 'Receptionist', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Manish', lastName: 'Bhatt', designation: 'Lab Assistant', deptId: scienceDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Geeta', lastName: 'Chauhan', designation: 'Library Head', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Rajesh', lastName: 'Pandey', designation: 'Sports Coach', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Savita', lastName: 'Kulkarni', designation: 'Dance Teacher', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ON_LEAVE' },
+        { firstName: 'Dinesh', lastName: 'Yadav', designation: 'IT Coordinator', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Smita', lastName: 'Jain', designation: 'Counsellor', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Vivek', lastName: 'Srivastava', designation: 'Physics Teacher', deptId: scienceDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Asha', lastName: 'Mohan', designation: 'Chemistry Teacher', deptId: scienceDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'INACTIVE' },
+        { firstName: 'Prakash', lastName: 'Nair', designation: 'Maths Teacher', deptId: mathsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Usha', lastName: 'Rao', designation: 'English Teacher', deptId: langsDept?.id ?? null, roleId: classTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Hemant', lastName: 'Dubey', designation: 'Hindi Teacher', deptId: langsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Nandini', lastName: 'Bose', designation: 'History Teacher', deptId: socialDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ON_LEAVE' },
+        { firstName: 'Manoj', lastName: 'Kapoor', designation: 'Geography Teacher', deptId: socialDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Rekha', lastName: 'Malhotra', designation: 'Biology Teacher', deptId: scienceDept?.id ?? null, roleId: classTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Gaurav', lastName: 'Mehta', designation: 'Maths Teacher', deptId: mathsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Swati', lastName: 'Chopra', designation: 'English Teacher', deptId: langsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Pankaj', lastName: 'Rastogi', designation: 'Computer Teacher', deptId: adminDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Jaya', lastName: 'Krishnan', designation: 'Librarian', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Tarun', lastName: 'Sethi', designation: 'Physics Teacher', deptId: scienceDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Pallavi', lastName: 'Goswami', designation: 'Chemistry Teacher', deptId: scienceDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Ajay', lastName: 'Thakur', designation: 'PE Teacher', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Bhavna', lastName: 'Dixit', designation: 'Music Teacher', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'INACTIVE' },
+        { firstName: 'Nitin', lastName: 'Awasthi', designation: 'Science Lab Tech', deptId: scienceDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Shweta', lastName: 'Bansal', designation: 'Nurse', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Rahul', lastName: 'Trivedi', designation: 'Security Head', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Priti', lastName: 'Choudhary', designation: 'Accounts Clerk', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Vijay', lastName: 'Rathore', designation: 'Transport Incharge', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Manju', lastName: 'Sinha', designation: 'Maths Teacher', deptId: mathsDept?.id ?? null, roleId: classTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Alok', lastName: 'Saxena', designation: 'Hindi Teacher', deptId: langsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ON_LEAVE' },
+        { firstName: 'Divya', lastName: 'Hegde', designation: 'Civics Teacher', deptId: socialDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Siddharth', lastName: 'Patil', designation: 'Art Teacher', deptId: artsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Anjali', lastName: 'Mukherjee', designation: 'Exam Controller', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Harish', lastName: 'Garg', designation: 'Store Keeper', deptId: adminDept?.id ?? null, roleId: adminStaffRole?.id ?? null, status: 'ACTIVE' },
+        { firstName: 'Padma', lastName: 'Venkatesh', designation: 'Sanskrit Teacher', deptId: langsDept?.id ?? null, roleId: subjectTeacherRole?.id ?? null, status: 'ACTIVE' },
+    ]
+
+    const joiningDates = [
+        '2020-04-01', '2021-06-15', '2022-01-10', '2022-07-01', '2023-03-20',
+        '2023-06-01', '2023-09-01', '2024-01-05', '2024-04-15', '2024-06-01',
+    ]
+
+    for (let i = 0; i < bulkStaffData.length; i++) {
+        const s = bulkStaffData[i]
+        const empNo = `EMP${1004 + i}`
+        await prisma.staff.upsert({
+            where: { institutionId_employeeNo: { institutionId: stmarys.id, employeeNo: empNo } },
+            update: {},
+            create: {
+                institutionId: stmarys.id,
+                employeeNo: empNo,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                designation: s.designation,
+                joiningDate: new Date(joiningDates[i % joiningDates.length]),
+                status: s.status,
+                departmentId: s.deptId,
+                primaryRoleId: s.roleId,
+                phone: `98${String(10000000 + i).slice(0, 8)}`,
+                personalEmail: `${s.firstName.toLowerCase()}.${s.lastName.toLowerCase()}@gmail.com`,
+            },
+        })
+    }
+
     // eslint-disable-next-line no-console -- seed script output
     console.log('✅ Seeded: 3 class templates, 3 class years, 7 sections, 25 students enrolled')
     // eslint-disable-next-line no-console -- seed script output
@@ -814,7 +908,7 @@ async function main(): Promise<void> {
     // eslint-disable-next-line no-console -- seed script output
     console.log('✅ 1 course (Spoken English), 3 posts, 2 enrollments (Arjun + Priya)')
     // eslint-disable-next-line no-console -- seed script output
-    console.log('✅ Staff: 6 roles, 6 departments, 5 leave types, 3 staff records')
+    console.log('✅ Staff: 6 roles, 6 departments, 5 leave types, 53 staff records (3 + 50 bulk)')
 
     // ── Fee Module ──
     await prisma.feeSettings.upsert({

@@ -2,7 +2,6 @@ import { auth } from '@/server/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { resolveClassYearId } from '@/lib/resolve-id'
-import { StudentSubTabBar } from '@/features/classes/components/StudentSubTabBar'
 import { EnsureTabSync } from '@/features/classes/components/EnsureTabSync'
 import type { ReactNode } from 'react'
 
@@ -23,10 +22,12 @@ export default async function StudentDetailLayout({ params, children }: Props) {
 
   const studentSection = await prisma.studentSection.findFirst({
     where: { student: { id: studentId } },
-    select: { student: { select: { firstName: true } } },
+    select: { student: { select: { firstName: true, lastName: true } } },
   })
 
-  const studentName = studentSection?.student.firstName ?? `Student`
+  const studentName = studentSection
+    ? `${studentSection.student.firstName} ${studentSection.student.lastName}`
+    : 'Student'
 
   return (
     <>
@@ -35,8 +36,7 @@ export default async function StudentDetailLayout({ params, children }: Props) {
         type="student"
         item={{ id: studentId, name: studentName }}
       />
-      <StudentSubTabBar classYearId={classYearId} studentId={studentId} />
-      <div className="pt-4">{children}</div>
+      {children}
     </>
   )
 }

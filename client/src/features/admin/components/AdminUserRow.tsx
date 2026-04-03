@@ -2,7 +2,7 @@
 
 import { TableRow, TableCell } from '@/components/ui/table'
 import { ChevronRight } from 'lucide-react'
-import { ROLE_COLORS, PLAN_COLORS, getAvatarColor } from '@/lib/colors'
+import { ROLE_COLORS, PLAN_COLORS, generateColor } from '@/lib/colors'
 
 export interface Institution {
     id: string
@@ -48,9 +48,10 @@ export function AdminUserRow({ user, onClick }: AdminUserRowProps): JSX.Element 
             <TableCell>
                 <div className="flex items-center gap-3">
                     <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${getAvatarColor(user.email)}`}
+                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: generateColor(user.email) }}
                     >
-                        <span className="text-white text-xs font-semibold">
+                        <span className="text-gray-800 text-xs font-semibold">
                             {getInitials(user.email)}
                         </span>
                     </div>

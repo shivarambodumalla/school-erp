@@ -7,6 +7,17 @@
     text-wrap: balance;
   }
 
+  /* List page frame: fills viewport minus management layout padding.
+     Only the table body scrolls — toolbar and pagination stay fixed. */
+  .list-page-frame {
+    height: calc(100vh - 80px); /* mobile: pt-16 (64px) + pb-4 (16px) */
+  }
+  @media (min-width: 768px) {
+    .list-page-frame {
+      height: calc(100vh - 48px); /* desktop: pt-6 (24px) + pb-6 (24px) */
+    }
+  }
+
   /* Safe-area padding for notched devices (PWA) */
   .pt-safe {
     padding-top: env(safe-area-inset-top);

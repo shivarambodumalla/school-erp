@@ -13,6 +13,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { AddClassSheet } from './AddClassSheet'
+import { TABLE_CONTAINER_CLASS, TABLE_HEADER_CLASS, LIST_PAGE_CLASS } from '@/lib/table-constants'
+import { SortableHeader, toggleSort, sortData, type SortDir } from '@/components/shared/SortableHeader'
+import { generateColor } from '@/lib/colors'
 import type { ClassTemplate } from '../types'
 
 const STATUS_OPTIONS = ['ACTIVE', 'ARCHIVED', 'DRAFT']
@@ -32,6 +35,16 @@ export function ClassesClient() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [statuses, setStatuses] = useState<string[]>([])
+
+  /* Sort */
+  const [sortField, setSortField] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<SortDir>(null)
+
+  const handleSort = (field: string) => {
+    const { field: f, dir: d } = toggleSort(field, sortField, sortDir)
+    setSortField(f)
+    setSortDir(d)
+  }
 
   const fetchClasses = useCallback(async () => {
     setLoading(true)
@@ -78,10 +91,17 @@ export function ClassesClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`${LIST_PAGE_CLASS} gap-3`}>
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight shrink-0">Classes</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight shrink-0">Classes</h1>
+          {classes.length > 0 && (
+            <span className="inline-flex items-center justify-center rounded-full bg-primary/15 text-primary px-3 py-0.5 text-sm font-semibold">
+              {classes.length}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2
@@ -136,7 +156,7 @@ export function ClassesClient() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 shrink-0">
         <StatCard icon={<GraduationCap className="h-5 w-5" />}
           label="Total Classes" value={classes.length} loading={loading} />
         <StatCard icon={<LayoutGrid className="h-5 w-5" />}
@@ -166,19 +186,28 @@ export function ClassesClient() {
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border overflow-auto max-h-[calc(100vh-340px)]">
+        <div className={TABLE_CONTAINER_CLASS}>
           <table className="w-full text-sm">
-            <thead className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
+            <thead className={TABLE_HEADER_CLASS}>
               <tr className="border-b">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Class</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Grade</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Sections</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Students</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
+                <SortableHeader label="Class" field="name" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Grade" field="gradeLevel" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Sections" field="sectionCount" currentField={sortField} currentDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Students" field="studentCount" currentField={sortField} currentDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Status" field="status" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
               </tr>
             </thead>
             <tbody>
-              {filtered.map(cls => {
+              {sortData(
+                filtered.map(c => ({
+                  ...c,
+                  sectionCount: c.activeYear?.sectionCount ?? 0,
+                  studentCount: c.activeYear?.studentCount ?? 0,
+                  status: c.activeYear?.status ?? 'DRAFT',
+                })),
+                sortField,
+                sortDir,
+              ).map(cls => {
                 const status = cls.activeYear?.status ?? 'DRAFT'
                 const hasYear = !!cls.activeYear
                 return (
@@ -188,8 +217,8 @@ export function ClassesClient() {
                       ${hasYear ? 'cursor-pointer hover:bg-muted/50' : 'opacity-60'}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary
-                          flex items-center justify-center text-sm font-bold shrink-0">
+                        <div className="h-9 w-9 rounded-lg flex items-center justify-center text-sm font-bold text-gray-800 shrink-0"
+                          style={{ backgroundColor: generateColor(cls.name) }}>
                           {cls.gradeLevel}
                         </div>
                         <span className="font-medium">{cls.name}</span>

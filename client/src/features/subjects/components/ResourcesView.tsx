@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { usePortal } from '@/hooks/usePortal'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import {
   Plus,
   Loader2,
@@ -187,6 +188,7 @@ interface Props {
 export function ResourcesView({ subjectId }: Props) {
   const { addParams } = useInstitutionId()
   const { isTeacher, isAdmin } = usePortal()
+  const confirm = useConfirm()
   const isEditor = isTeacher || isAdmin
   const [resources, setResources] = useState<SubjectResource[]>([])
   const [loading, setLoading] = useState(true)
@@ -222,7 +224,13 @@ export function ResourcesView({ subjectId }: Props) {
   }, [fetchResources])
 
   const handleDelete = async (resourceId: string) => {
-    if (!confirm('Delete this resource?')) return
+    const ok = await confirm({
+      title: 'Delete Resource',
+      description: 'Are you sure you want to delete this resource?',
+      destructive: true,
+      confirmLabel: 'Delete',
+    })
+    if (!ok) return
     try {
       const params = new URLSearchParams()
       addParams(params)

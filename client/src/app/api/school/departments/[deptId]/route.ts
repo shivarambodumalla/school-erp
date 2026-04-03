@@ -28,6 +28,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
           orderBy: { createdAt: 'desc' },
           include: { createdBy: { select: { email: true } } },
         },
+        _count: { select: { staff: true, announcements: true } },
       },
     })
 

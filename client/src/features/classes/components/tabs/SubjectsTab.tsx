@@ -7,6 +7,9 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { TABLE_CONTAINER_WITH_TABS_CLASS, TABLE_HEADER_CLASS } from '@/lib/table-constants'
+import { SortableHeader, toggleSort, sortData, type SortDir } from '@/components/shared/SortableHeader'
 import type { SubjectData } from '../../types'
 
 interface SubjectsTabProps {
@@ -18,10 +21,21 @@ interface SubjectsTabProps {
 export function SubjectsTab({ classYearId, sections, onOpenSubject }: SubjectsTabProps) {
   const router = useRouter()
   const { apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const [subjects, setSubjects] = useState<SubjectData[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
+
+  /* Sort */
+  const [sortField, setSortField] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<SortDir>(null)
+
+  const handleSort = (field: string) => {
+    const { field: f, dir: d } = toggleSort(field, sortField, sortDir)
+    setSortField(f)
+    setSortDir(d)
+  }
 
   const fetchSubjects = useCallback(async () => {
     setLoading(true)
@@ -35,7 +49,14 @@ export function SubjectsTab({ classYearId, sections, onOpenSubject }: SubjectsTa
   useEffect(() => { fetchSubjects() }, [fetchSubjects])
 
   const handleDelete = async (subjectId: string, name: string) => {
-    if (!confirm(`Delete subject "${name}"? This only works if there are no posts or grades.`)) return
+    const ok = await confirm({
+      title: 'Delete Subject',
+      description: `Delete subject "${name}"?`,
+      note: 'This only works if there are no posts or grades.',
+      destructive: true,
+      confirmLabel: 'Delete',
+    })
+    if (!ok) return
     const res = await fetch(`/api/school/classes/${classYearId}/subjects/${subjectId}${apiParam}`, { method: 'DELETE' })
     if (res.ok) { toast.success(`${name} deleted`); fetchSubjects() }
     else { const e = await res.json(); toast.error(e.error ?? 'Cannot delete') }
@@ -66,19 +87,19 @@ export function SubjectsTab({ classYearId, sections, onOpenSubject }: SubjectsTa
       ) : subjects.length === 0 ? (
         <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">No subjects yet.</div>
       ) : (
-        <div className="rounded-xl border overflow-hidden">
+        <div className={TABLE_CONTAINER_WITH_TABS_CLASS}>
           <table className="w-full text-sm">
-            <thead className="bg-muted/50">
+            <thead className={TABLE_HEADER_CLASS}>
               <tr className="border-b">
-                <th className="text-left px-4 py-3 font-medium">Subject</th>
-                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Code</th>
-                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Periods/wk</th>
+                <SortableHeader label="Subject" field="name" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Code" field="code" currentField={sortField} currentDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Periods/wk" field="weeklyPeriods" currentField={sortField} currentDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
                 <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Teacher</th>
                 <th className="text-right px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {subjects.map((s) => (
+              {sortData(subjects, sortField, sortDir).map((s) => (
                 <tr key={s.id}
                   className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"
                   onClick={() => onOpenSubject ? onOpenSubject(s.id, s.name, s.serialNo) : router.push(`/management/subjects/${s.id}`)}>

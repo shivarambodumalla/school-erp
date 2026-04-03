@@ -9,7 +9,6 @@ import type { Inquiry, AdmissionListItem } from './AdmissionsPipelineClient'
 const COLUMNS: { status: string; label: string; color: string }[] = [
   { status: 'APPLIED', label: 'Applied', color: 'border-blue-400' },
   { status: 'ADMITTED', label: 'Admitted', color: 'border-emerald-400' },
-  { status: 'ENROLLED', label: 'Enrolled', color: 'border-violet-400' },
 ]
 
 interface Props {
@@ -29,7 +28,7 @@ export function AdmissionsKanban({ admissions, inquiries, openedIds, onOpen, onN
   const unconverted = inquiries.filter(i => !i.convertedToAdmissionId)
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Inquiry column */}
       <div className="rounded-xl border-t-2 border-amber-400 bg-muted/30 p-3 space-y-3">
         <div className="flex items-center justify-between">

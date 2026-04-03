@@ -57,7 +57,29 @@ export const MASQUERADE_MODE_COLORS: Record<string, string> = {
     DISABLED: 'bg-gray-100 text-gray-600',
 }
 
-// Avatar background colors (generated from name hash)
+/**
+ * Generate a vivid HSL color from a name string.
+ * Uses a simple hash (djb2) for good distribution — similar names get distinct colors.
+ * Deterministic — same name always produces the same color.
+ * Returns an `hsl(...)` string for use in inline `style`.
+ */
+export function generateColor(name: string): string {
+    let hash = 5381
+    for (let i = 0; i < name.length; i++) {
+        hash = ((hash << 5) + hash + name.charCodeAt(i)) | 0
+    }
+    const hue = ((hash % 360) + 360) % 360
+    return `hsl(${hue}, 75%, 75%)`
+}
+
+/**
+ * Get initials from first and last name (max 2 chars).
+ */
+export function getInitials(firstName: string, lastName: string): string {
+    return `${firstName[0] ?? ''}${lastName[0] ?? ''}`.toUpperCase()
+}
+
+// Legacy — kept for AdminUsersTable portal-type colors (not name-based)
 export const AVATAR_COLORS = [
     'bg-blue-500',
     'bg-violet-500',
@@ -69,6 +91,7 @@ export const AVATAR_COLORS = [
     'bg-teal-500',
 ]
 
+/** @deprecated Use generateColor() instead */
 export function getAvatarColor(name: string): string {
     const index = name.charCodeAt(0) % AVATAR_COLORS.length
     return AVATAR_COLORS[index] ?? 'bg-gray-500'

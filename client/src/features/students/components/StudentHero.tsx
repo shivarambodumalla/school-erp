@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDistanceToNow } from 'date-fns'
-import { getAvatarColor } from '@/lib/colors'
+import { generateColor, getInitials } from '@/lib/colors'
 import { StudentHeroActions } from './StudentHeroActions'
 import type { StudentProfile } from '../types'
 
@@ -9,10 +9,6 @@ interface Props {
     student: StudentProfile
     editMode: boolean
     onEditToggle: () => void
-}
-
-function getInitials(first: string, last: string) {
-    return `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase()
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -43,8 +39,8 @@ export function StudentHero({ student, editMode, onEditToggle }: Props) {
                         className="h-20 w-20 rounded-xl object-cover"
                     />
                 ) : (
-                    <div className={`h-20 w-20 rounded-xl flex items-center justify-center
-                        text-white text-xl font-bold ${getAvatarColor(s.firstName)}`}>
+                    <div className="h-20 w-20 rounded-xl flex items-center justify-center
+                        text-gray-800 text-xl font-bold" style={{ backgroundColor: generateColor(s.firstName) }}>
                         {initials}
                     </div>
                 )}

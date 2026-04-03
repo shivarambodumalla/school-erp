@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import {
   Sheet,
   SheetContent,
@@ -57,6 +58,7 @@ function getPerms(role: Role): string[] {
 }
 
 export function PlatformRolesClient({ roles }: Props) {
+    const confirm = useConfirm()
     const [showForm, setShowForm] = useState(false)
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
@@ -91,8 +93,15 @@ export function PlatformRolesClient({ roles }: Props) {
         })
     }
 
-    function handleDelete(role: Role) {
-        if (!window.confirm(`Delete role "${role.name}"? This cannot be undone.`)) return
+    async function handleDelete(role: Role) {
+        const ok = await confirm({
+            title: 'Delete Role',
+            description: `Delete role "${role.name}"?`,
+            note: 'This action cannot be undone.',
+            destructive: true,
+            confirmLabel: 'Delete',
+        })
+        if (!ok) return
         startTransition(async () => {
             await deletePlatformRole(role.id)
             setViewOpen(false)

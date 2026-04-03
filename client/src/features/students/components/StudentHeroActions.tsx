@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Pencil, CreditCard, MoreHorizontal, ArrowRightLeft, Link2, UserX, Printer, FileText, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { TransferClassModal } from './TransferClassModal'
 import { LinkSiblingModal } from './LinkSiblingModal'
 import type { StudentProfile } from '../types'
@@ -17,12 +18,18 @@ interface Props {
 
 export function StudentHeroActions({ student, editMode, onEditToggle }: Props) {
     const router = useRouter()
+    const confirm = useConfirm()
     const [showMenu, setShowMenu] = useState(false)
     const [showTransfer, setShowTransfer] = useState(false)
     const [showSibling, setShowSibling] = useState(false)
 
     async function handleMarkInactive() {
-        if (!confirm('Mark this student as inactive?')) return
+        const ok = await confirm({
+            title: 'Mark Inactive',
+            description: 'Mark this student as inactive?',
+            confirmLabel: 'Mark Inactive',
+        })
+        if (!ok) return
         const res = await fetch(`/api/school/students/${student.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },

@@ -59,17 +59,19 @@ export function StudentDetailInline({ studentId }: Props) {
   }
 
   return (
-    <div className="space-y-6 pt-2">
-      <StudentHero
-        student={student}
-        editMode={editMode}
-        onEditToggle={() => setEditMode(!editMode)}
-      />
-      <StudentTabs
-        student={student}
-        portalType="ADMIN"
-        onStudentUpdated={handleSaved}
-      />
+    <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="space-y-6 pt-2 pb-6">
+        <StudentHero
+          student={student}
+          editMode={editMode}
+          onEditToggle={() => setEditMode(!editMode)}
+        />
+        <StudentTabs
+          student={student}
+          portalType="ADMIN"
+          onStudentUpdated={handleSaved}
+        />
+      </div>
     </div>
   )
 }

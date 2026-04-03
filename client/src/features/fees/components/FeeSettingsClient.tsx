@@ -10,11 +10,13 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import type { FeeSettingsData, FeeCategory } from '../types'
 import { FREQ_LABELS } from '../types'
 
 export function FeeSettingsClient() {
   const { apiParam, addParams } = useInstitutionId()
+  const confirm = useConfirm()
   const [settings, setSettings] = useState<FeeSettingsData | null>(null)
   const [categories, setCategories] = useState<FeeCategory[]>([])
 
@@ -42,7 +44,14 @@ export function FeeSettingsClient() {
   }
 
   const deleteCategory = async (id: string) => {
-    if (!confirm('Delete this fee category?')) return
+    const ok = await confirm({
+      title: 'Delete Fee Category',
+      description: 'Are you sure you want to delete this fee category?',
+      destructive: true,
+      confirmLabel: 'Delete',
+      note: 'This action cannot be undone.',
+    })
+    if (!ok) return
     const res = await fetch(`/api/school/fees/categories/${id}${apiParam}`, { method: 'DELETE' })
     if (res.ok) { toast.success('Deleted'); fetchCategories() }
     else { const err = await res.json().catch(() => ({})) as { error?: string }; toast.error(err.error ?? 'Cannot delete') }

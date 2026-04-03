@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from '@/components/ui/sheet'
@@ -86,6 +87,7 @@ function ClassInfoCard({
 
 function SectionsManagementCard({ classYearId }: { classYearId: string }) {
   const { apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const [sections, setSections] = useState<SectionData[]>([])
   const [loading, setLoading] = useState(true)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -102,7 +104,14 @@ function SectionsManagementCard({ classYearId }: { classYearId: string }) {
   useEffect(() => { fetchSections() }, [fetchSections])
 
   const handleDelete = async (sectionId: string, sectionName: string) => {
-    if (!confirm(`Delete section "${sectionName}"? Students in this section will be unassigned.`)) return
+    const ok = await confirm({
+      title: 'Delete Section',
+      description: `Delete section "${sectionName}"?`,
+      note: 'Students in this section will be unassigned.',
+      destructive: true,
+      confirmLabel: 'Delete',
+    })
+    if (!ok) return
     try {
       const res = await fetch(
         `/api/school/classes/${classYearId}/sections${apiParam ? apiParam + '&' : '?'}sectionId=${sectionId}`,
@@ -283,6 +292,7 @@ function PromoteStudentsCard({
   academicYearName: string
 }) {
   const { apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const [expanded, setExpanded] = useState(false)
   const [students, setStudents] = useState<PromoteStudent[]>([])
   const [loading, setLoading] = useState(false)
@@ -345,7 +355,14 @@ function PromoteStudentsCard({
   const detainedCount = Object.values(decisions).filter(d => d === 'DETAINED').length
 
   const handleConfirm = async () => {
-    if (!confirm(`Promote ${promotedCount} and detain ${detainedCount} students? This cannot be undone.`)) return
+    const ok = await confirm({
+      title: 'Confirm Promotions',
+      description: `Promote ${promotedCount} and detain ${detainedCount} students?`,
+      note: 'This action cannot be undone. Review each student carefully.',
+      destructive: true,
+      confirmLabel: 'Confirm',
+    })
+    if (!ok) return
     const list = Object.entries(decisions).map(([studentId, status]) => ({
       studentId, status,
       ...(status === 'PROMOTED' && sectionChoices[studentId]

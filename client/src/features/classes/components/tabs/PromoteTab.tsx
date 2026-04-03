@@ -5,6 +5,7 @@ import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { AlertTriangle, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import type { PromoteStudent } from '../../types'
 
 interface PromoteTabProps {
@@ -23,6 +24,7 @@ interface NextClassInfo {
 
 export function PromoteTab({ classYearId, gradeLevel, academicYearName }: PromoteTabProps) {
   const { apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const [students, setStudents] = useState<PromoteStudent[]>([])
   const [loading, setLoading] = useState(true)
   const [decisions, setDecisions] = useState<Record<string, Decision>>({})
@@ -82,7 +84,14 @@ export function PromoteTab({ classYearId, gradeLevel, academicYearName }: Promot
   const detainedCount = Object.values(decisions).filter(d => d === 'DETAINED').length
 
   const handleConfirm = async () => {
-    if (!confirm(`Promote ${promotedCount} and detain ${detainedCount} students? This cannot be undone.`)) return
+    const ok = await confirm({
+      title: 'Confirm Promotions',
+      description: `Promote ${promotedCount} and detain ${detainedCount} students?`,
+      note: 'This action cannot be undone. Review each student carefully.',
+      destructive: true,
+      confirmLabel: 'Confirm',
+    })
+    if (!ok) return
     const list = Object.entries(decisions).map(([studentId, status]) => ({
       studentId, status,
       ...(status === 'PROMOTED' && sectionChoices[studentId] ? { toSectionId: sectionChoices[studentId] } : {}),

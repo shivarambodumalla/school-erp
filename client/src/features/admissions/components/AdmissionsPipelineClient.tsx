@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { Plus, Search, MessageSquarePlus, X, Archive } from 'lucide-react'
+import { LIST_PAGE_CLASS } from '@/lib/table-constants'
 import { Input } from '@/components/ui/input'
 import { AdmissionsKanban } from './AdmissionsKanban'
 import { InquirySheet } from './InquirySheet'
@@ -47,6 +48,22 @@ interface AdmissionTab {
 }
 
 const MAX_TABS = 10
+const TABS_STORAGE_KEY = 'onflows-admissions-open-tabs'
+
+function loadTabsFromStorage(): AdmissionTab[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(TABS_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as AdmissionTab[]
+    return Array.isArray(parsed) ? parsed : []
+  } catch { return [] }
+}
+
+function saveTabsToStorage(tabs: AdmissionTab[]) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(TABS_STORAGE_KEY, JSON.stringify(tabs))
+}
 
 export function AdmissionsPipelineClient() {
   const router = useRouter()
@@ -61,26 +78,30 @@ export function AdmissionsPipelineClient() {
   const [showInquirySheet, setShowInquirySheet] = useState(false)
 
   // Tab state — URL ?id is source of truth for active tab
-  const urlTabId = searchParams.get('id')
-  const [activeTab, setActiveTab] = useState(urlTabId ?? 'all')
+  const activeTab = searchParams.get('id') ?? 'all'
   const [openTabs, setOpenTabs] = useState<AdmissionTab[]>([])
   const openedIds = new Set(openTabs.map(t => t.id))
   const hasOpenTabs = openTabs.length > 0
+  const [tabsLoaded, setTabsLoaded] = useState(false)
 
-  // Sync activeTab from URL on mount / URL change
+  // Load tabs from localStorage on mount (client only — avoids hydration mismatch)
   useEffect(() => {
-    const id = searchParams.get('id')
-    if (id) setActiveTab(id)
-    else setActiveTab('all')
-  }, [searchParams])
+    setOpenTabs(loadTabsFromStorage())
+    setTabsLoaded(true)
+  }, [])
 
-  const updateUrl = useCallback((tabId: string | null) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (tabId) params.set('id', tabId)
+  // Persist tabs to localStorage whenever they change (skip initial mount)
+  useEffect(() => {
+    if (tabsLoaded) saveTabsToStorage(openTabs)
+  }, [openTabs, tabsLoaded])
+
+  const setActiveTab = useCallback((tabId: string) => {
+    const params = new URLSearchParams(window.location.search)
+    if (tabId && tabId !== 'all') params.set('id', tabId)
     else params.delete('id')
     const qs = params.toString()
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false })
-  }, [router, pathname, searchParams])
+  }, [router, pathname])
 
   const fetchData = useCallback(() => {
     const params = new URLSearchParams()
@@ -101,9 +122,10 @@ export function AdmissionsPipelineClient() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Filter out rejected — they live on /management/admissions/rejected
-  const activeAdmissions = admissions.filter(a => a.status !== 'REJECTED')
-  const rejectedCount = admissions.length - activeAdmissions.length
+  // Filter out rejected + enrolled — rejected live on /management/admissions/rejected, enrolled are now in Students
+  const activeAdmissions = admissions.filter(a => a.status !== 'REJECTED' && a.status !== 'ENROLLED')
+  const rejectedCount = admissions.filter(a => a.status === 'REJECTED').length
+  const enrolledCount = admissions.filter(a => a.status === 'ENROLLED').length
 
   const openAdmission = useCallback((tab: AdmissionTab, navigate: boolean) => {
     setOpenTabs(prev => {
@@ -114,29 +136,25 @@ export function AdmissionsPipelineClient() {
     })
     if (navigate) {
       setActiveTab(String(tab.serialNo))
-      updateUrl(String(tab.serialNo))
     }
-  }, [updateUrl])
+  }, [setActiveTab])
 
   const closeTab = useCallback((tabKey: string) => {
     setOpenTabs(prev => {
       const idx = prev.findIndex(t => String(t.serialNo) === tabKey)
       const next = prev.filter(t => String(t.serialNo) !== tabKey)
-      setActiveTab(current => {
-        if (current !== tabKey) return current
+      if (activeTab === tabKey) {
         const leftTab = idx > 0 ? prev[idx - 1] : null
         const newActive = leftTab ? String(leftTab.serialNo) : 'all'
-        updateUrl(newActive === 'all' ? null : newActive)
-        return newActive
-      })
+        setActiveTab(newActive)
+      }
       return next
     })
-  }, [updateUrl])
+  }, [activeTab, setActiveTab])
 
   const handleTabSwitch = useCallback((tabKey: string) => {
     setActiveTab(tabKey)
-    updateUrl(tabKey === 'all' ? null : tabKey)
-  }, [updateUrl])
+  }, [setActiveTab])
 
   const handleAdmissionClick = useCallback((a: AdmissionListItem, e: MouseEvent) => {
     const tab: AdmissionTab = {
@@ -151,13 +169,13 @@ export function AdmissionsPipelineClient() {
   }, [openAdmission])
 
   return (
-    <div>
-      {/* Tab bar — only when user has opened tabs from pipeline */}
+    <div className={LIST_PAGE_CLASS} style={{ height: 'calc(100vh - 24px)' }}>
+      {/* Tab bar */}
       {hasOpenTabs && (
-        <div className="sticky top-0 z-10 bg-background -mt-4 md:-mt-6 -mx-4 md:-mx-6 overflow-hidden">
-          <div className="flex items-center border-b overflow-x-auto scrollbar-none px-4 md:px-6">
+        <div className="fixed top-0 left-0 md:left-64 right-0 z-20 border-b bg-background h-[57px]">
+          <div className="flex items-stretch h-full overflow-x-auto scrollbar-none px-4 md:px-6">
             <button type="button" onClick={() => handleTabSwitch('all')}
-              className={`shrink-0 flex items-center gap-2 px-4 h-10 text-sm font-medium
+              className={`shrink-0 flex items-center gap-2 px-4 text-sm font-medium
                 border-b-2 transition-colors
                 ${activeTab === 'all'
                   ? 'border-primary text-foreground'
@@ -166,11 +184,12 @@ export function AdmissionsPipelineClient() {
             </button>
             {openTabs.map(t => {
               const tabKey = String(t.serialNo)
+              const isActive = activeTab === tabKey
               return (
               <div key={t.id}
-                className={`shrink-0 flex items-center gap-1 pl-3 pr-1 h-10
+                className={`shrink-0 flex items-center gap-1 pl-3 pr-1
                   border-b-2 transition-colors group
-                  ${activeTab === tabKey
+                  ${isActive
                     ? 'border-primary text-foreground bg-muted/50'
                     : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 <button type="button" onClick={() => handleTabSwitch(tabKey)}
@@ -180,8 +199,8 @@ export function AdmissionsPipelineClient() {
                 </button>
                 <button type="button"
                   onClick={(e) => { e.stopPropagation(); closeTab(tabKey) }}
-                  className={`p-0.5 rounded transition-colors
-                    ${activeTab === tabKey
+                  className={`p-1 rounded transition-colors min-h-[28px] min-w-[28px] flex items-center justify-center
+                    ${isActive
                       ? 'text-foreground/60 hover:text-foreground hover:bg-muted'
                       : 'text-muted-foreground/40 hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100'}`}>
                   <X className="h-3.5 w-3.5" />
@@ -192,18 +211,20 @@ export function AdmissionsPipelineClient() {
           </div>
         </div>
       )}
+      {hasOpenTabs && <div className="h-[57px] shrink-0" />}
 
       {/* Content */}
       {activeTab === 'all' ? (
-        <div className="space-y-4 pt-1">
+        <div className="flex flex-col gap-3 flex-1 min-h-0">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight">Admissions</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {activeAdmissions.length} application{activeAdmissions.length !== 1 ? 's' : ''}
-                <span className="hidden sm:inline"> · Click to open · Ctrl+Click for background</span>
-              </p>
+              {activeAdmissions.length > 0 && (
+                <span className="inline-flex items-center justify-center rounded-full bg-primary/15 text-primary px-3 py-0.5 text-sm font-semibold">
+                  {activeAdmissions.length}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <div className="relative flex-1 sm:flex-none">
@@ -260,7 +281,24 @@ export function AdmissionsPipelineClient() {
           )}
         </div>
       ) : (
-        <AdmissionDetailInline admissionId={openTabs.find(t => String(t.serialNo) === activeTab)?.id ?? activeTab} />
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="pb-6">
+            <AdmissionDetailInline
+              admissionId={openTabs.find(t => String(t.serialNo) === activeTab)?.id ?? activeTab}
+              onStatusChange={(admId, newStatus) => {
+                setAdmissions(prev => prev.map(a =>
+                  a.id === admId ? { ...a, status: newStatus } : a
+                ))
+                if (newStatus === 'ENROLLED' || newStatus === 'REJECTED') {
+                  const tab = openTabs.find(t => t.id === admId)
+                  if (tab) {
+                    closeTab(String(tab.serialNo))
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
       )}
 
       {showInquirySheet && (

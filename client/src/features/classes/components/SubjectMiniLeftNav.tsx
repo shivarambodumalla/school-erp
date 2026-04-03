@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BookOpen, Users } from 'lucide-react'
+import { generateColor } from '@/lib/colors'
 
 interface SubjectMiniLeftNavProps {
   subjectId: string
@@ -61,8 +62,8 @@ export function SubjectMiniLeftNav({
         {/* Color avatar + name */}
         <div className="flex items-start gap-3">
           <div
-            className="h-12 w-12 rounded-xl shrink-0 flex items-center justify-center text-white text-lg font-bold"
-            style={{ backgroundColor: subject.color }}
+            className="h-12 w-12 rounded-xl shrink-0 flex items-center justify-center text-gray-800 text-lg font-bold"
+            style={{ backgroundColor: generateColor(subject.name) }}
           >
             {subject.name.charAt(0)}
           </div>

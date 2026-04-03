@@ -8,6 +8,7 @@ import { MasqueradeBar } from "@/components/shared/MasqueradeBar";
 import { MasqueradeFrame } from "@/components/shared/MasqueradeFrame";
 import { MasqueradeReadOnlyOverlay } from "@/components/shared/MasqueradeReadOnlyOverlay";
 import { Toaster } from 'sonner'
+import { ConfirmProvider } from '@/components/ui/confirm-dialog'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -85,7 +86,9 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <ConfirmProvider>
+              {children}
+            </ConfirmProvider>
             <MasqueradeFrame />
             <MasqueradeBar />
             <MasqueradeReadOnlyOverlay />

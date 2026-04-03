@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Portal } from '@/components/ui/portal'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 interface UploadedDoc {
   id: string; documentTypeConfigId: string | null; documentTypeName: string
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export function StudentDocumentsTab({ studentId, isAdmin }: Props) {
+  const confirm = useConfirm()
   const [docTypes, setDocTypes] = useState<DocType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -46,7 +48,14 @@ export function StudentDocumentsTab({ studentId, isAdmin }: Props) {
   useEffect(() => { fetchDocs() }, [fetchDocs])
 
   async function handleDelete(docId: string) {
-    if (!confirm('Delete this document?')) return
+    const ok = await confirm({
+      title: 'Delete Document',
+      description: 'Are you sure you want to delete this document?',
+      destructive: true,
+      confirmLabel: 'Delete',
+      note: 'This action cannot be undone.',
+    })
+    if (!ok) return
     const res = await fetch(
       `/api/school/students/${studentId}/documents/${docId}`,
       { method: 'DELETE' },

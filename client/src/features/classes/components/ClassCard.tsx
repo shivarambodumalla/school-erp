@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { LayoutGrid, Users, ArrowRight } from 'lucide-react'
+import { generateColor } from '@/lib/colors'
 import type { ClassTemplate } from '../types'
 
 const STATUS_STYLES: Record<string, string> = {
@@ -24,8 +25,8 @@ export function ClassCard({ data }: ClassCardProps) {
       hover:shadow-md transition-shadow">
       {/* Top row: grade badge + status */}
       <div className="flex items-start justify-between">
-        <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary
-          flex items-center justify-center text-lg font-bold shrink-0">
+        <div className="h-12 w-12 rounded-lg flex items-center justify-center text-lg font-bold text-gray-800 shrink-0"
+          style={{ backgroundColor: generateColor(name) }}>
           {gradeLevel}
         </div>
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full

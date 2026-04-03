@@ -1,20 +1,8 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
+import { generateColor, getInitials } from '@/lib/colors'
 import type { StaffListItem } from '../types'
-
-const AVATAR_COLORS = [
-  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-  'bg-amber-500', 'bg-rose-500', 'bg-indigo-500',
-]
-
-function getColor(name: string) {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length] ?? 'bg-gray-500'
-}
-
-function getInitials(f: string, l: string) {
-  return `${f[0] ?? ''}${l[0] ?? ''}`.toUpperCase()
-}
 
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: 'bg-green-100 text-green-700',
@@ -45,8 +33,8 @@ export function StaffTable({ staff, onRowClick }: {
               className="border-b last:border-0 cursor-pointer hover:bg-muted/50 transition-colors">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <div className={`h-8 w-8 rounded-full shrink-0 flex items-center justify-center
-                    text-white text-xs font-bold ${getColor(s.firstName)}`}>
+                  <div className="h-8 w-8 rounded-full shrink-0 flex items-center justify-center
+                    text-gray-800 text-xs font-bold" style={{ backgroundColor: generateColor(s.firstName) }}>
                     {getInitials(s.firstName, s.lastName)}
                   </div>
                   <span className="font-medium">{s.firstName} {s.lastName}</span>
@@ -83,8 +71,8 @@ export function StaffCards({ staff, onCardClick }: {
         <button key={s.id} type="button" onClick={() => onCardClick(s.id)}
           className="rounded-xl border p-4 text-left hover:bg-muted/50 transition-colors">
           <div className="flex items-center gap-3">
-            <div className={`h-10 w-10 rounded-full shrink-0 flex items-center justify-center
-              text-white text-sm font-bold ${getColor(s.firstName)}`}>
+            <div className="h-10 w-10 rounded-full shrink-0 flex items-center justify-center
+              text-gray-800 text-sm font-bold" style={{ backgroundColor: generateColor(s.firstName) }}>
               {getInitials(s.firstName, s.lastName)}
             </div>
             <div className="min-w-0">

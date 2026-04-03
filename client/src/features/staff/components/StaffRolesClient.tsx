@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import type { Permission, StaffRoleListItem } from '../types'
 import { RoleCard } from './RoleCard'
 import { RolesEmptyState } from './RolesEmptyState'
@@ -12,6 +13,7 @@ import { CreateRoleSheet } from './CreateRoleSheet'
 import { RoleViewDrawer } from './RoleViewDrawer'
 
 export function StaffRolesClient() {
+  const confirm = useConfirm()
   const [roles, setRoles] = useState<StaffRoleListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
@@ -49,8 +51,14 @@ export function StaffRolesClient() {
   }
 
   const handleDelete = async (role: StaffRoleListItem) => {
-    if (!window.confirm(`Delete role "${role.name}"? This cannot be undone.`))
-      return
+    const ok = await confirm({
+      title: 'Delete Role',
+      description: `Delete role "${role.name}"?`,
+      note: 'This action cannot be undone.',
+      destructive: true,
+      confirmLabel: 'Delete',
+    })
+    if (!ok) return
     try {
       const res = await fetch(`/api/school/staff-roles/${role.id}`, {
         method: 'DELETE',
@@ -100,7 +108,14 @@ export function StaffRolesClient() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Staff Roles</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">Staff Roles</h1>
+            {roles.length > 0 && (
+              <span className="inline-flex items-center justify-center rounded-full bg-primary/15 text-primary px-3 py-0.5 text-sm font-semibold">
+                {roles.length}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground mt-1">
             Manage roles and granular permissions for your staff
           </p>

@@ -4,7 +4,7 @@ import {
     Mail, Building2, Calendar, Globe,
     Clock, ShieldCheck, BadgeCheck,
 } from 'lucide-react'
-import { ROLE_COLORS, PLAN_COLORS, getAvatarColor } from '@/lib/colors'
+import { ROLE_COLORS, PLAN_COLORS, generateColor } from '@/lib/colors'
 import type { AdminUser } from '@/features/admin/types'
 import { MasqueradeButton } from './MasqueradeButton'
 
@@ -86,7 +86,7 @@ export function UserDetailCard({ user, initiatorPortalType }: {
     user: AdminUser
     initiatorPortalType: string
 }): JSX.Element {
-    const avatarColor = getAvatarColor(user.email)
+    const avatarColor = generateColor(user.email)
     const roleColor = ROLE_COLORS[user.portalType] ?? ''
     const planColor = PLAN_COLORS[user.institution.planTier] ?? ''
 
@@ -99,9 +99,10 @@ export function UserDetailCard({ user, initiatorPortalType }: {
                         <div className="flex flex-col items-center pt-8 pb-6 px-4">
                             <div className="relative">
                                 <div
-                                    className={`w-[104px] h-[104px] rounded-full flex items-center justify-center shadow-md ${avatarColor}`}
+                                    className="w-[104px] h-[104px] rounded-full flex items-center justify-center shadow-md"
+                                    style={{ backgroundColor: avatarColor }}
                                 >
-                                    <span className="text-white text-3xl font-bold">
+                                    <span className="text-gray-800 text-3xl font-bold">
                                         {getInitials(user.email)}
                                     </span>
                                 </div>

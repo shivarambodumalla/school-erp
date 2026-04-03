@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, AlertTriangle, Users, LayoutGrid, BookOpen, Calendar } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { generateColor } from '@/lib/colors'
 
 interface ClassPageHeaderProps {
   classData: {
@@ -28,13 +29,8 @@ const STATUS_STYLES: Record<string, string> = {
   ARCHIVED: 'bg-gray-100 text-gray-600',
 }
 
-function gradeColor(level: number): string {
-  const bgs = [
-    'bg-blue-500', 'bg-violet-500', 'bg-emerald-500', 'bg-orange-500',
-    'bg-rose-500', 'bg-cyan-500', 'bg-fuchsia-500', 'bg-amber-500',
-    'bg-teal-500', 'bg-indigo-500', 'bg-lime-500', 'bg-pink-500',
-  ]
-  return bgs[level % bgs.length]
+function gradeColor(name: string, level: number): string {
+  return generateColor(name || String(level))
 }
 
 export function ClassPageHeader({ classData, academicYears }: ClassPageHeaderProps) {
@@ -60,7 +56,7 @@ export function ClassPageHeader({ classData, academicYears }: ClassPageHeaderPro
       <div className="rounded-xl border bg-card p-5">
         <div className="flex items-start gap-4">
           {/* Grade avatar */}
-          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white text-xl font-bold ${gradeColor(classTemplate.gradeLevel)}`}>
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-gray-800 text-xl font-bold" style={{ backgroundColor: gradeColor(classTemplate.name, classTemplate.gradeLevel) }}>
             {classTemplate.gradeLevel}
           </div>
 

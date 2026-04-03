@@ -1,6 +1,6 @@
 'use client'
 
-import { getAvatarColor } from '@/lib/colors'
+import { generateColor } from '@/lib/colors'
 
 interface Props {
     student: {
@@ -38,8 +38,8 @@ export function IdCardPreview({ student: s, institution, validTill }: Props) {
                 {s.photoUrl ? (
                     <img src={s.photoUrl} alt="" className="h-[60px] w-[60px] rounded-full object-cover shrink-0" />
                 ) : (
-                    <div className={`h-[60px] w-[60px] rounded-full flex items-center justify-center
-                        text-white text-lg font-bold shrink-0 ${getAvatarColor(s.firstName)}`}>
+                    <div className="h-[60px] w-[60px] rounded-full flex items-center justify-center
+                        text-gray-800 text-lg font-bold shrink-0" style={{ backgroundColor: generateColor(s.firstName) }}>
                         {initials}
                     </div>
                 )}

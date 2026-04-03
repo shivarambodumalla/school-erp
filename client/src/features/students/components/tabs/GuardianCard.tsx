@@ -3,6 +3,7 @@
 import { Pencil, Trash2, Phone, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { Card, CardContent } from '@/components/ui/card'
 import type { StudentGuardian } from '../../types'
 
@@ -20,8 +21,16 @@ interface Props {
 }
 
 export function GuardianCard({ guardian: g, studentId, onEdit, onRemoved }: Props) {
+    const confirm = useConfirm()
+
     async function handleRemove() {
-        if (!confirm(`Remove ${g.name}?`)) return
+        const ok = await confirm({
+            title: 'Remove Guardian',
+            description: `Remove ${g.name} as guardian?`,
+            confirmLabel: 'Remove',
+            destructive: true,
+        })
+        if (!ok) return
         const res = await fetch(`/api/school/students/${studentId}/guardians/${g.id}`, {
             method: 'DELETE',
         })

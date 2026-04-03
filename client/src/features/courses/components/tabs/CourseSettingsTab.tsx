@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,10 +19,10 @@ interface CourseData {
 
 interface Props {
   course: CourseData
-  onSaved: () => void
 }
 
-export function CourseSettingsTab({ course, onSaved }: Props) {
+export function CourseSettingsTab({ course }: Props) {
+  const router = useRouter()
   const [title, setTitle] = useState(course.title)
   const [description, setDescription] = useState(course.description ?? '')
   const [status, setStatus] = useState(course.status)
@@ -28,17 +30,25 @@ export function CourseSettingsTab({ course, onSaved }: Props) {
 
   const handleSave = async () => {
     setSaving(true)
-    await fetch(`/api/school/courses/${course.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description: description || null, status }),
-    })
+    try {
+      const res = await fetch(`/api/school/courses/${course.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description: description || null, status }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      toast.success('Settings saved')
+      router.refresh()
+    } catch {
+      toast.error('Failed to save settings')
+    }
     setSaving(false)
-    onSaved()
   }
 
   return (
-    <div className="space-y-4 mt-4 max-w-lg">
+    <div className="space-y-4 max-w-lg">
+      <h2 className="text-lg font-semibold">Settings</h2>
+
       <div className="space-y-2">
         <Label htmlFor="title">Title</Label>
         <Input

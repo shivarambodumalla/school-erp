@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
-import { BookOpen, Users, FileText, ArrowRight } from 'lucide-react'
+import { BookOpen, Users, FileText } from 'lucide-react'
+import type { MouseEvent } from 'react'
 
 const STATUS_STYLES: Record<string, string> = {
   ACTIVE: 'bg-green-100 text-green-700',
@@ -17,14 +17,19 @@ interface CourseCardProps {
     status: string
     _count: { enrollments: number; posts: number }
   }
+  onClick?: (e: MouseEvent) => void
 }
 
-export function CourseCard({ course }: CourseCardProps) {
+export function CourseCard({ course, onClick }: CourseCardProps) {
   const statusClass = STATUS_STYLES[course.status] ?? STATUS_STYLES.DRAFT
 
   return (
-    <div className="rounded-xl border bg-card p-5 space-y-4
-      hover:shadow-md transition-shadow">
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-xl border bg-card p-5 space-y-4
+        hover:shadow-md transition-shadow text-left w-full cursor-pointer"
+    >
       <div className="flex items-start justify-between">
         <div className="h-11 w-11 rounded-lg bg-primary/10 text-primary
           flex items-center justify-center shrink-0">
@@ -56,14 +61,6 @@ export function CourseCard({ course }: CourseCardProps) {
           {course._count.posts} posts
         </span>
       </div>
-
-      <Link
-        href={`/management/courses/${course.id}`}
-        className="inline-flex items-center gap-1 text-sm font-medium
-          text-primary hover:underline min-h-[44px]"
-      >
-        Manage <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
-    </div>
+    </button>
   )
 }

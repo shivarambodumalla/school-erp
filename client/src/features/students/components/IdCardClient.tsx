@@ -6,6 +6,7 @@ import { ArrowLeft, Download, ShieldOff } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { IdCardPreview } from './IdCardPreview'
@@ -23,6 +24,7 @@ interface Props {
 
 export function IdCardClient({ student, institution, activeCard: initial }: Props) {
     const router = useRouter()
+    const confirm = useConfirm()
     const [card, setCard] = useState(initial)
     const [validTill, setValidTill] = useState('')
     const [issuing, setIssuing] = useState(false)
@@ -44,7 +46,13 @@ export function IdCardClient({ student, institution, activeCard: initial }: Prop
     }
 
     async function handleRevoke() {
-        if (!card || !confirm('Revoke this ID card?')) return
+        if (!card) return
+        const ok = await confirm({
+            title: 'Revoke ID Card',
+            description: 'Are you sure you want to revoke this ID card?',
+            confirmLabel: 'Revoke',
+        })
+        if (!ok) return
         const res = await fetch(`/api/school/students/${student.id}/id-card/${card.id}`, {
             method: 'DELETE',
         })

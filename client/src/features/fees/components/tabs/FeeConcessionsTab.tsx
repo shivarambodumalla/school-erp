@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import type { FeeConcessionItem } from '../../types'
 import { AddConcessionSheet } from '../AddConcessionSheet'
 
 export function FeeConcessionsTab() {
   const { addParams, apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const [concessions, setConcessions] = useState<FeeConcessionItem[]>([])
   const [loading, setLoading] = useState(true)
   const [addOpen, setAddOpen] = useState(false)
@@ -27,7 +29,13 @@ export function FeeConcessionsTab() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Remove this concession?')) return
+    const ok = await confirm({
+      title: 'Remove Concession',
+      description: 'Are you sure you want to remove this concession?',
+      destructive: true,
+      confirmLabel: 'Remove',
+    })
+    if (!ok) return
     const res = await fetch(`/api/school/fees/concessions/${id}${apiParam}`, { method: 'DELETE' })
     if (res.ok) { toast.success('Concession removed'); fetchData() }
     else toast.error('Failed to remove')

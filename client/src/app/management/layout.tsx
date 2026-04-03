@@ -51,7 +51,7 @@ export default async function ManagementLayout({
     })
 
     return (
-        <div className="flex min-h-screen">
+        <div className="flex h-screen overflow-hidden">
             <ThemeInjector
                 primaryColor={institution?.primaryColor ?? '#C56447'}
                 secondaryColor={institution?.secondaryColor}
@@ -63,7 +63,7 @@ export default async function ManagementLayout({
                 portalType={session.user.portalType}
                 logoUrl={institution?.logoUrl}
             />
-            <main className="flex-1 md:ml-64 px-4 pb-4 pt-16 md:pt-6 md:px-6 md:pb-6">
+            <main className="flex-1 md:ml-64 px-4 pb-4 pt-16 md:pt-6 md:px-6 md:pb-6 overflow-auto">
                 {children}
             </main>
         </div>

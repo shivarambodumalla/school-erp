@@ -6,6 +6,7 @@ import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { MoreHorizontal, Archive, Copy, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { SectionsTab } from './tabs/SectionsTab'
 import { SubjectsTab } from './tabs/SubjectsTab'
 import { ClassStudentsTab } from './tabs/ClassStudentsTab'
@@ -49,6 +50,7 @@ interface OpenedItem {
 export function ClassYearClient({ classYear }: ClassYearProps) {
   const router = useRouter()
   const { apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const { classTemplate, academicYear, status } = classYear
   const statusClass = STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT
   const [menuOpen, setMenuOpen] = useState(false)
@@ -70,7 +72,13 @@ export function ClassYearClient({ classYear }: ClassYearProps) {
   }
 
   const handleArchive = async () => {
-    if (!confirm(`Archive ${classTemplate.name} — ${academicYear.name}?`)) return
+    const ok = await confirm({
+      title: 'Archive Class',
+      description: `Archive ${classTemplate.name} — ${academicYear.name}?`,
+      note: 'Archived classes become read-only.',
+      confirmLabel: 'Archive',
+    })
+    if (!ok) return
     const res = await fetch(`/api/school/classes/${classYear.id}${apiParam}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'ARCHIVED' }),

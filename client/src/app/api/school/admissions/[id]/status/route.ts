@@ -4,12 +4,13 @@ import { prisma } from '@/lib/prisma'
 import { statusTransitionSchema } from '@/features/admissions/schemas/admissionSchema'
 import bcrypt from 'bcryptjs'
 
-interface Ctx { params: { id: string } }
+type Ctx = { params: Promise<{ id: string }> }
 
-export async function POST(req: Request, { params }: Ctx) {
+export async function POST(req: Request, context: Ctx) {
   const ctx = await getSchoolContext(req, ['ADMIN'])
     if (isApiError(ctx)) return ctx
     const { institutionId } = ctx
+  const { id } = await context.params
   const body = await req.json()
   const parsed = statusTransitionSchema.safeParse(body)
 
@@ -23,7 +24,7 @@ export async function POST(req: Request, { params }: Ctx) {
   const { action, reason, classId, sectionId } = parsed.data
 
   const admission = await prisma.admission.findFirst({
-    where: { id: params.id, institutionId },
+    where: { id, institutionId },
     include: { guardians: true },
   })
 
@@ -42,7 +43,7 @@ export async function POST(req: Request, { params }: Ctx) {
       return await handleReject(admission, institutionId, ctx.userId, reason)
     }
   } catch (err) {
-    console.error(`POST /api/school/admissions/${params.id}/status error:`, err)
+    console.error(`POST /api/school/admissions/${id}/status error:`, err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 

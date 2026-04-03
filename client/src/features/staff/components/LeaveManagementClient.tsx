@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { toast } from 'sonner'
 import { Search, SlidersHorizontal } from 'lucide-react'
+import { LIST_PAGE_CLASS } from '@/lib/table-constants'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -93,10 +94,17 @@ export function LeaveManagementClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`${LIST_PAGE_CLASS} gap-3`}>
       {/* Toolbar: Title left | Search + Filter right */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight shrink-0">Leave Management</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight shrink-0">Leave Management</h1>
+          {leaves.length > 0 && (
+            <span className="inline-flex items-center justify-center rounded-full bg-primary/15 text-primary px-3 py-0.5 text-sm font-semibold">
+              {leaves.length}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

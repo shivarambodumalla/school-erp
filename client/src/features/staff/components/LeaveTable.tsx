@@ -8,6 +8,7 @@ import {
   TableHeader, TableRow,
 } from '@/components/ui/table'
 import { Check, X } from 'lucide-react'
+import { TABLE_CONTAINER_CLASS, TABLE_HEADER_CLASS } from '@/lib/table-constants'
 import type { LeaveRecord } from './leave-types'
 import { STATUS_COLORS } from './leave-types'
 
@@ -27,9 +28,9 @@ export function LeaveTable({ leaves, onApprove, onReject }: Props) {
   }
 
   return (
-    <div className="border rounded-xl overflow-auto max-h-[calc(100vh-320px)]">
+    <div className={TABLE_CONTAINER_CLASS}>
       <Table>
-        <TableHeader className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
+        <TableHeader className={TABLE_HEADER_CLASS}>
           <TableRow>
             <TableHead>Staff</TableHead>
             <TableHead>Leave Type</TableHead>

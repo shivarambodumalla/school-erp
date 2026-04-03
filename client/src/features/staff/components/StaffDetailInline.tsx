@@ -13,16 +13,8 @@ import { StaffActivityTab } from './tabs/StaffActivityTab'
 import { StaffLeaveTab } from './tabs/StaffLeaveTab'
 import { StaffAttendanceTab } from './tabs/StaffAttendanceTab'
 import { StaffPayrollTab } from './tabs/StaffPayrollTab'
+import { generateColor } from '@/lib/colors'
 import type { StaffDetail } from '../types'
-
-const AVATAR_COLORS = [
-  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-  'bg-amber-500', 'bg-rose-500', 'bg-indigo-500',
-]
-
-function getColor(name: string) {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length] ?? 'bg-gray-500'
-}
 
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: 'bg-green-100 text-green-700',
@@ -80,9 +72,9 @@ export function StaffDetailInline({ staffId }: { staffId: string }) {
     <div className="space-y-6 pt-2">
       {/* Hero */}
       <div className="flex items-start gap-4">
-        <div className={`h-14 w-14 rounded-full shrink-0 flex items-center
-          justify-center text-white text-xl font-bold
-          ${getColor(staff.firstName)}`}>
+        <div className="h-14 w-14 rounded-full shrink-0 flex items-center
+          justify-center text-gray-800 text-xl font-bold"
+          style={{ backgroundColor: generateColor(staff.firstName) }}>
           {staff.firstName[0]}{staff.lastName[0]}
         </div>
         <div className="min-w-0 flex-1">

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Megaphone, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { PostAnnouncementSheet } from './announcements/PostAnnouncementSheet'
 
 interface Announcement {
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function DeptAnnouncementsTab({ deptId, isAdmin }: Props) {
+  const confirm = useConfirm()
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [loading, setLoading] = useState(true)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -32,7 +34,13 @@ export function DeptAnnouncementsTab({ deptId, isAdmin }: Props) {
   useEffect(() => { fetch_() }, [fetch_])
 
   const handleDelete = async (annoId: string) => {
-    if (!window.confirm('Delete this announcement?')) return
+    const ok = await confirm({
+      title: 'Delete Announcement',
+      description: 'Are you sure you want to delete this announcement?',
+      destructive: true,
+      confirmLabel: 'Delete',
+    })
+    if (!ok) return
     try {
       const res = await fetch(`/api/school/departments/${deptId}/announcements/${annoId}`, { method: 'DELETE' })
       if (res.ok) { toast.success('Announcement deleted'); fetch_() }

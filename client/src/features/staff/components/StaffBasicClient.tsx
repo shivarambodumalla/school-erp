@@ -34,18 +34,7 @@ const MOCK_STAFF: StaffMember[] = [
   },
 ]
 
-const AVATAR_COLORS = [
-  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-  'bg-amber-500', 'bg-red-500', 'bg-indigo-500',
-]
-
-function getInitials(f: string, l: string) {
-  return `${f[0] ?? ''}${l[0] ?? ''}`.toUpperCase()
-}
-
-function getAvatarColor(name: string) {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length] ?? 'bg-gray-500'
-}
+import { generateColor, getInitials } from '@/lib/colors'
 
 const PORTAL_BADGE: Record<string, string> = {
   ADMIN: 'bg-blue-100 text-blue-700',
@@ -106,9 +95,10 @@ export function StaffBasicClient() {
                   }`}
               >
                 <div
-                  className={`h-9 w-9 rounded-full shrink-0
-                    flex items-center justify-center text-white
-                    text-xs font-bold ${getAvatarColor(s.firstName)}`}
+                  className="h-9 w-9 rounded-full shrink-0
+                    flex items-center justify-center text-gray-800
+                    text-xs font-bold"
+                  style={{ backgroundColor: generateColor(s.firstName) }}
                 >
                   {getInitials(s.firstName, s.lastName)}
                 </div>
@@ -136,9 +126,10 @@ export function StaffBasicClient() {
           <div className="p-6 space-y-4">
             <div className="flex items-center gap-4">
               <div
-                className={`h-16 w-16 rounded-xl shrink-0
-                  flex items-center justify-center text-white
-                  text-xl font-bold ${getAvatarColor(selected.firstName)}`}
+                className="h-16 w-16 rounded-xl shrink-0
+                  flex items-center justify-center text-gray-800
+                  text-xl font-bold"
+                style={{ backgroundColor: generateColor(selected.firstName) }}
               >
                 {getInitials(selected.firstName, selected.lastName)}
               </div>

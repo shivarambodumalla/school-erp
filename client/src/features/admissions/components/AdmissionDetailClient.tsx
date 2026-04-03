@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, UserCheck, XCircle, GraduationCap, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { generateColor } from '@/lib/colors'
 import { AdmissionDetailsTabs } from './AdmissionDetailsTabs'
 import { EnrollModal } from './EnrollModal'
 import { RejectModal } from './RejectModal'
@@ -50,10 +51,6 @@ const STATUS_STYLES: Record<string, string> = {
   REJECTED: 'bg-red-100 text-red-700',
 }
 
-const AVATAR_COLORS = [
-  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-  'bg-amber-500', 'bg-rose-500', 'bg-indigo-500',
-]
 
 export function AdmissionDetailClient({ admission: initial, classes, auditLogs }: Props) {
   const router = useRouter()
@@ -64,7 +61,7 @@ export function AdmissionDetailClient({ admission: initial, classes, auditLogs }
   const [acting, setActing] = useState(false)
 
   const initials = `${admission.firstName[0]}${admission.lastName[0]}`.toUpperCase()
-  const color = AVATAR_COLORS[admission.firstName.charCodeAt(0) % AVATAR_COLORS.length]
+  const color = generateColor(admission.firstName)
 
   async function handleAdmit() {
     setActing(true)
@@ -124,8 +121,8 @@ export function AdmissionDetailClient({ admission: initial, classes, auditLogs }
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className={`h-14 w-14 rounded-xl shrink-0 flex items-center
-            justify-center text-white text-lg font-bold ${color}`}>
+          <div className="h-14 w-14 rounded-xl shrink-0 flex items-center
+            justify-center text-gray-800 text-lg font-bold" style={{ backgroundColor: color }}>
             {initials}
           </div>
           <div>

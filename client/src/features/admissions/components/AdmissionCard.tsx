@@ -1,16 +1,8 @@
 'use client'
 
 import { type MouseEvent } from 'react'
+import { generateColor } from '@/lib/colors'
 import type { AdmissionListItem } from './AdmissionsPipelineClient'
-
-const AVATAR_COLORS = [
-  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-  'bg-amber-500', 'bg-rose-500', 'bg-indigo-500',
-]
-
-function getColor(name: string) {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length] ?? 'bg-gray-500'
-}
 
 interface Props {
   admission: AdmissionListItem
@@ -29,8 +21,8 @@ export function AdmissionCard({ admission: a, isOpened, onOpen }: Props) {
         ${isOpened ? 'ring-1 ring-primary/40 bg-primary/5' : ''}`}
     >
       <div className="flex items-start gap-3">
-        <div className={`h-8 w-8 rounded-full shrink-0 flex items-center
-          justify-center text-white text-xs font-bold ${getColor(a.firstName)}`}>
+        <div className="h-8 w-8 rounded-full shrink-0 flex items-center
+          justify-center text-gray-800 text-xs font-bold" style={{ backgroundColor: generateColor(a.firstName) }}>
           {initials}
         </div>
         <div className="min-w-0 flex-1">

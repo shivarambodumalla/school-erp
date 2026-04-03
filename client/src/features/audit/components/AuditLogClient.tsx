@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Search, SlidersHorizontal } from 'lucide-react'
+import { TABLE_CONTAINER_CLASS, TABLE_HEADER_CLASS, LIST_PAGE_CLASS } from '@/lib/table-constants'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -76,10 +77,17 @@ export function AuditLogClient({ logs }: Props) {
     })
 
     return (
-        <div className="space-y-6">
+        <div className={`${LIST_PAGE_CLASS} gap-3`}>
             {/* Toolbar: Title left | Search + Filter right */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h1 className="text-2xl font-bold tracking-tight shrink-0">Audit Log</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold tracking-tight shrink-0">Audit Log</h1>
+                    {filtered.length > 0 && (
+                        <span className="inline-flex items-center justify-center rounded-full bg-primary/15 text-primary px-3 py-0.5 text-sm font-semibold">
+                            {filtered.length}
+                        </span>
+                    )}
+                </div>
                 <div className="flex items-center gap-2">
                     <div className="relative flex-1 sm:flex-none">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -152,10 +160,10 @@ export function AuditLogClient({ logs }: Props) {
             </div>
 
             {/* Table */}
-            <div className="rounded-xl border bg-card overflow-hidden">
-                <div className="overflow-auto max-h-[calc(100vh-220px)]">
+            <div className="bg-card overflow-hidden">
+                <div className={TABLE_CONTAINER_CLASS}>
                     <table className="w-full text-sm">
-                        <thead className="sticky top-0 z-[1] bg-muted/95 backdrop-blur-sm">
+                        <thead className={TABLE_HEADER_CLASS}>
                             <tr className="border-b">
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Action</th>
                                 <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">User</th>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useInstitutionId } from '@/hooks/useInstitutionId'
 import { usePortal } from '@/hooks/usePortal'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import {
   Plus,
   Loader2,
@@ -103,6 +104,7 @@ export function GroupsView({ subjectId }: Props) {
 
 function TeacherGroupsView({ subjectId }: Props) {
   const { addParams } = useInstitutionId()
+  const confirm = useConfirm()
   const [groupSets, setGroupSets] = useState<GroupSet[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
@@ -186,7 +188,14 @@ function TeacherGroupsView({ subjectId }: Props) {
   }
 
   const handleDeleteSet = async (setId: string) => {
-    if (!confirm('Delete this group set and all its groups?')) return
+    const ok = await confirm({
+      title: 'Delete Group Set',
+      description: 'Delete this group set and all its groups?',
+      destructive: true,
+      confirmLabel: 'Delete',
+      note: 'This action cannot be undone.',
+    })
+    if (!ok) return
     try {
       const params = new URLSearchParams()
       addParams(params)

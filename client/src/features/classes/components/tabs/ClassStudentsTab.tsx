@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Portal } from '@/components/ui/portal'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { TABLE_CONTAINER_WITH_TABS_CLASS, TABLE_HEADER_CLASS } from '@/lib/table-constants'
+import { SortableHeader, toggleSort, type SortDir } from '@/components/shared/SortableHeader'
 import type { StudentEntry } from '../../types'
 
 interface ClassStudentsTabProps {
@@ -23,6 +26,7 @@ interface ClassStudentsTabProps {
 
 export function ClassStudentsTab({ classYearId, sections, initialSectionId, onOpenStudent }: ClassStudentsTabProps) {
   const { addParams, apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const [students, setStudents] = useState<StudentEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState(initialSectionId ?? 'all')
@@ -30,6 +34,16 @@ export function ClassStudentsTab({ classYearId, sections, initialSectionId, onOp
   const [showEnroll, setShowEnroll] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkProcessing, setBulkProcessing] = useState(false)
+
+  /* Sort */
+  const [sortField, setSortField] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<SortDir>(null)
+
+  const handleSort = (field: string) => {
+    const { field: f, dir: d } = toggleSort(field, sortField, sortDir)
+    setSortField(f)
+    setSortDir(d)
+  }
 
   const fetchStudents = useCallback(async () => {
     setLoading(true)
@@ -78,7 +92,14 @@ export function ClassStudentsTab({ classYearId, sections, initialSectionId, onOp
     if (ids.length === 0) return
 
     const actionLabel = action === 'promote' ? 'Promote' : action === 'detain' ? 'Detain' : 'Unenroll'
-    if (!confirm(`${actionLabel} ${ids.length} student${ids.length !== 1 ? 's' : ''}? This cannot be undone.`)) return
+    const ok = await confirm({
+      title: `${actionLabel} Students`,
+      description: `${actionLabel} ${ids.length} student${ids.length !== 1 ? 's' : ''}?`,
+      note: 'This action cannot be undone.',
+      destructive: true,
+      confirmLabel: actionLabel,
+    })
+    if (!ok) return
 
     setBulkProcessing(true)
 
@@ -176,9 +197,9 @@ export function ClassStudentsTab({ classYearId, sections, initialSectionId, onOp
           {search ? 'No students match your search.' : 'No students in this class.'}
         </div>
       ) : (
-        <div className="rounded-xl border overflow-hidden">
+        <div className={TABLE_CONTAINER_WITH_TABS_CLASS}>
           <table className="w-full text-sm">
-            <thead className="bg-muted/50">
+            <thead className={TABLE_HEADER_CLASS}>
               <tr className="border-b">
                 <th className="w-10 px-4 py-3">
                   <Checkbox
@@ -186,21 +207,40 @@ export function ClassStudentsTab({ classYearId, sections, initialSectionId, onOp
                     onCheckedChange={toggleAll}
                   />
                 </th>
-                <th className="text-left px-4 py-3 font-medium">Student</th>
-                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Admission No</th>
-                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Roll No</th>
-                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Section</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
+                <SortableHeader label="Student" field="firstName" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Admission No" field="admissionNo" currentField={sortField} currentDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Roll No" field="rollNo" currentField={sortField} currentDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                <SortableHeader label="Section" field="sectionName" currentField={sortField} currentDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                <SortableHeader label="Status" field="status" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
                 <th className="text-right px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((entry) => (
+              {(() => {
+                const sorted = [...filtered].sort((a, b) => {
+                  if (!sortField || !sortDir) return 0
+                  let av: string | number | null | undefined
+                  let bv: string | number | null | undefined
+                  if (sortField === 'firstName') { av = a.student.firstName; bv = b.student.firstName }
+                  else if (sortField === 'admissionNo') { av = a.student.admissionNo; bv = b.student.admissionNo }
+                  else if (sortField === 'rollNo') { av = a.student.rollNo; bv = b.student.rollNo }
+                  else if (sortField === 'sectionName') { av = a.sectionName; bv = b.sectionName }
+                  else if (sortField === 'status') { av = a.status; bv = b.status }
+                  else return 0
+                  if (av == null && bv == null) return 0
+                  if (av == null) return 1
+                  if (bv == null) return -1
+                  if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av
+                  const r = String(av).localeCompare(String(bv))
+                  return sortDir === 'asc' ? r : -r
+                })
+                return sorted.map((entry) => (
                 <StudentRow key={entry.student.id} entry={entry} classYearId={classYearId}
                   sections={sections} onRefresh={fetchStudents} onOpenStudent={onOpenStudent}
                   isSelected={selected.has(entry.student.id)}
                   onToggleSelect={() => toggleOne(entry.student.id)} />
-              ))}
+                ))
+              })()}
             </tbody>
           </table>
         </div>
@@ -241,6 +281,7 @@ function StudentRow({ entry, classYearId, sections, onRefresh, onOpenStudent, is
 }) {
   const router = useRouter()
   const { apiParam } = useInstitutionId()
+  const confirm = useConfirm()
   const { student, sectionName, status } = entry
   const [menuOpen, setMenuOpen] = useState(false)
   const [moveOpen, setMoveOpen] = useState(false)
@@ -257,7 +298,14 @@ function StudentRow({ entry, classYearId, sections, onRefresh, onOpenStudent, is
   }
 
   const handleUnenroll = async () => {
-    if (!confirm(`Unenroll ${student.firstName} ${student.lastName}?`)) return
+    const ok = await confirm({
+      title: 'Unenroll Student',
+      description: `Unenroll ${student.firstName} ${student.lastName}?`,
+      note: 'The student will be removed from this class.',
+      destructive: true,
+      confirmLabel: 'Unenroll',
+    })
+    if (!ok) return
     const res = await fetch(`/api/school/classes/${classYearId}/students/${student.id}${apiParam}`, { method: 'DELETE' })
     if (res.ok) { toast.success('Student unenrolled'); onRefresh() }
     else { const e = await res.json(); toast.error(e.error ?? 'Failed') }
@@ -265,7 +313,14 @@ function StudentRow({ entry, classYearId, sections, onRefresh, onOpenStudent, is
   }
 
   const handlePromote = async () => {
-    if (!confirm(`Promote ${student.firstName} ${student.lastName}? This cannot be undone.`)) return
+    const ok = await confirm({
+      title: 'Promote Student',
+      description: `Promote ${student.firstName} ${student.lastName}?`,
+      note: 'This action cannot be undone.',
+      destructive: true,
+      confirmLabel: 'Promote',
+    })
+    if (!ok) return
     const res = await fetch(`/api/school/classes/${classYearId}/promote${apiParam}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ decisions: [{ studentId: student.id, status: 'PROMOTED' }] }),
@@ -276,7 +331,14 @@ function StudentRow({ entry, classYearId, sections, onRefresh, onOpenStudent, is
   }
 
   const handleDetain = async () => {
-    if (!confirm(`Detain ${student.firstName} ${student.lastName}? This cannot be undone.`)) return
+    const ok = await confirm({
+      title: 'Detain Student',
+      description: `Detain ${student.firstName} ${student.lastName}?`,
+      note: 'This action cannot be undone.',
+      destructive: true,
+      confirmLabel: 'Detain',
+    })
+    if (!ok) return
     const res = await fetch(`/api/school/classes/${classYearId}/promote${apiParam}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ decisions: [{ studentId: student.id, status: 'DETAINED' }] }),

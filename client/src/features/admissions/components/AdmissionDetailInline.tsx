@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { UserCheck, XCircle, GraduationCap, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { generateColor } from '@/lib/colors'
 import { AdmissionDetailsTabs } from './AdmissionDetailsTabs'
 import { EnrollModal } from './EnrollModal'
 import { RejectModal } from './RejectModal'
@@ -25,7 +26,7 @@ interface Admission {
   previousClass: string | null; previousTCNumber: string | null
   appliedAt: string; admittedAt: string | null
   enrolledAt: string | null; rejectedAt: string | null
-  rejectionReason: string | null
+  rejectionReason: string | null; rejectedBy: string | null
   guardians: Guardian[]
   documents: Array<{
     id: string; documentTypeName: string; fileUrl: string
@@ -42,6 +43,8 @@ interface AuditEntry { action: string; after: unknown; createdAt: string }
 
 interface Props {
   admissionId: string
+  /** Called when admission status changes (admit, enroll, reject) so parent can update its list */
+  onStatusChange?: (admissionId: string, newStatus: string) => void
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -51,12 +54,8 @@ const STATUS_STYLES: Record<string, string> = {
   REJECTED: 'bg-red-100 text-red-700',
 }
 
-const AVATAR_COLORS = [
-  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-  'bg-amber-500', 'bg-rose-500', 'bg-indigo-500',
-]
 
-export function AdmissionDetailInline({ admissionId }: Props) {
+export function AdmissionDetailInline({ admissionId, onStatusChange }: Props) {
   const router = useRouter()
   const [admission, setAdmission] = useState<Admission | null>(null)
   const [classes, setClasses] = useState<ClassItem[]>([])
@@ -86,7 +85,7 @@ export function AdmissionDetailInline({ admissionId }: Props) {
   if (!admission) return null
 
   const initials = `${admission.firstName[0]}${admission.lastName[0]}`.toUpperCase()
-  const color = AVATAR_COLORS[admission.firstName.charCodeAt(0) % AVATAR_COLORS.length]
+  const color = generateColor(admission.firstName)
 
   async function handleAdmit() {
     setActing(true)
@@ -100,6 +99,7 @@ export function AdmissionDetailInline({ admissionId }: Props) {
       const data = await res.json()
       toast.success(`Admitted — ${data.admissionNo}`)
       setAdmission(prev => prev ? { ...prev, status: 'ADMITTED', admissionNo: data.admissionNo, admittedAt: new Date().toISOString() } : prev)
+      onStatusChange?.(admissionId, 'ADMITTED')
     } catch { toast.error('Something went wrong') } finally { setActing(false) }
   }
 
@@ -115,6 +115,7 @@ export function AdmissionDetailInline({ admissionId }: Props) {
       toast.success('Application rejected')
       setShowReject(false)
       setAdmission(prev => prev ? { ...prev, status: 'REJECTED', rejectedAt: new Date().toISOString(), rejectionReason: reason } : prev)
+      onStatusChange?.(admissionId, 'REJECTED')
     } catch { toast.error('Something went wrong') } finally { setActing(false) }
   }
 
@@ -131,6 +132,7 @@ export function AdmissionDetailInline({ admissionId }: Props) {
       toast.success('Student enrolled successfully')
       setShowEnroll(false)
       setAdmission(prev => prev ? { ...prev, status: 'ENROLLED', enrolledAt: new Date().toISOString(), student: { id: data.studentId ?? '' } } : prev)
+      onStatusChange?.(admissionId, 'ENROLLED')
     } catch { toast.error('Something went wrong') } finally { setActing(false) }
   }
 
@@ -139,8 +141,8 @@ export function AdmissionDetailInline({ admissionId }: Props) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className={`h-14 w-14 rounded-xl shrink-0 flex items-center
-            justify-center text-white text-lg font-bold ${color}`}>
+          <div className="h-14 w-14 rounded-xl shrink-0 flex items-center
+            justify-center text-gray-800 text-lg font-bold" style={{ backgroundColor: color }}>
             {initials}
           </div>
           <div>
@@ -188,13 +190,27 @@ export function AdmissionDetailInline({ admissionId }: Props) {
               <ExternalLink className="h-4 w-4 mr-1.5" /> View Student
             </Button>
           )}
-          {admission.status === 'REJECTED' && admission.rejectionReason && (
-            <div className="text-sm text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">
-              Rejected: {admission.rejectionReason}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Rejection reason banner */}
+      {admission.status === 'REJECTED' && admission.rejectionReason && (
+        <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-4">
+          <p className="text-sm font-medium text-red-800 dark:text-red-300">
+            Reason for Rejection
+          </p>
+          <p className="text-sm text-red-700 dark:text-red-400 mt-1 whitespace-pre-wrap">
+            {admission.rejectionReason}
+          </p>
+          {admission.rejectedAt && (
+            <p className="text-xs text-red-500 dark:text-red-500 mt-2">
+              Rejected on {new Date(admission.rejectedAt).toLocaleDateString('en-IN', {
+                day: '2-digit', month: 'short', year: 'numeric',
+              })}{admission.rejectedBy ? ` by ${admission.rejectedBy}` : ''}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <AdmissionDetailsTabs
