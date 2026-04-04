@@ -1,10 +1,93 @@
 'use client'
 
+import { useState } from 'react'
 import { Users, GraduationCap, FileText, Calendar } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useInstitutionId } from '@/hooks/useInstitutionId'
+import { getErrorMessage, isDependencyError } from '@/lib/api-error-handler'
 import type { StaffDetail } from '../../types'
 
-export function StaffOverviewTab({ staff }: { staff: StaffDetail }) {
+interface CascadeResponse {
+  requiresConfirmation: boolean
+  warnings: string[]
+}
+
+function isCascadeResponse(data: unknown): data is CascadeResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'requiresConfirmation' in data &&
+    (data as CascadeResponse).requiresConfirmation === true &&
+    'warnings' in data &&
+    Array.isArray((data as CascadeResponse).warnings)
+  )
+}
+
+export function StaffOverviewTab({ staff, onStatusChanged }: { staff: StaffDetail; onStatusChanged?: () => void }) {
+  const { apiParam } = useInstitutionId()
+  const confirm = useConfirm()
+  const [changingStatus, setChangingStatus] = useState(false)
+
+  const handleStatusChange = async (newStatus: string) => {
+    setChangingStatus(true)
+    try {
+      const res = await fetch(`/api/school/staff/${staff.id}${apiParam}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        toast.success(`Staff status changed to ${newStatus.toLowerCase()}`)
+        onStatusChanged?.()
+        return
+      }
+      const data = await res.json().catch(() => ({ error: 'Something went wrong' })) as Record<string, unknown>
+
+      // Handle cascade confirmation flow
+      if (isCascadeResponse(data)) {
+        const warningList = (data as CascadeResponse).warnings.join('\n- ')
+        const ok = await confirm({
+          title: 'Confirm Status Change',
+          description: `Changing status will have the following effects:\n\n- ${warningList}`,
+          note: 'This may affect active assignments for this staff member.',
+          destructive: true,
+          confirmLabel: 'Proceed',
+        })
+        if (!ok) return
+        // Re-send with cascade confirmation
+        const cascadeRes = await fetch(`/api/school/staff/${staff.id}${apiParam}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus, confirmCascade: true }),
+        })
+        if (cascadeRes.ok) {
+          toast.success(`Staff status changed to ${newStatus.toLowerCase()}`)
+          onStatusChanged?.()
+        } else {
+          const errData = await cascadeRes.json().catch(() => ({ error: 'Failed to update status' })) as Record<string, unknown>
+          toast.error(getErrorMessage(errData))
+        }
+        return
+      }
+
+      // Handle dependency block or other errors
+      if (isDependencyError(data)) {
+        toast.error(getErrorMessage(data), { duration: 6000 })
+      } else {
+        toast.error(getErrorMessage(data))
+      }
+    } catch {
+      toast.error('Failed to update status')
+    } finally {
+      setChangingStatus(false)
+    }
+  }
+
+  const canDeactivate = staff.status === 'ACTIVE'
+  const canActivate = staff.status === 'INACTIVE' || staff.status === 'ON_LEAVE'
   return (
     <div className="grid md:grid-cols-2 gap-6 pt-4">
       {/* Quick Stats */}
@@ -91,6 +174,29 @@ export function StaffOverviewTab({ staff }: { staff: StaffDetail }) {
               {sr.staffRole.name}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Status Actions */}
+      {(canDeactivate || canActivate) && (
+        <div className="md:col-span-2 rounded-xl border p-4 space-y-3">
+          <h3 className="font-semibold">Status Actions</h3>
+          <div className="flex items-center gap-3">
+            {canDeactivate && (
+              <Button variant="outline" size="sm" className="min-h-[44px]"
+                disabled={changingStatus}
+                onClick={() => handleStatusChange('INACTIVE')}>
+                {changingStatus ? 'Updating...' : 'Deactivate Staff'}
+              </Button>
+            )}
+            {canActivate && (
+              <Button variant="outline" size="sm" className="min-h-[44px]"
+                disabled={changingStatus}
+                onClick={() => handleStatusChange('ACTIVE')}>
+                {changingStatus ? 'Updating...' : 'Activate Staff'}
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>

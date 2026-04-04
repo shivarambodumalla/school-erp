@@ -125,7 +125,7 @@ export function AdmissionsPipelineClient() {
   // Filter out rejected + enrolled — rejected live on /management/admissions/rejected, enrolled are now in Students
   const activeAdmissions = admissions.filter(a => a.status !== 'REJECTED' && a.status !== 'ENROLLED')
   const rejectedCount = admissions.filter(a => a.status === 'REJECTED').length
-  const enrolledCount = admissions.filter(a => a.status === 'ENROLLED').length
+  // enrolledCount not displayed — enrolled students move to /management/students
 
   const openAdmission = useCallback((tab: AdmissionTab, navigate: boolean) => {
     setOpenTabs(prev => {

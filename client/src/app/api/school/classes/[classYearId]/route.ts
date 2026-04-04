@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { checkClassYearHasNoData, handleDependencyError } from '@/lib/dependency-checks'
 
 type RouteContext = { params: Promise<{ classYearId: string }> }
 
@@ -92,6 +93,45 @@ export async function PATCH(
     return NextResponse.json(updated)
   } catch (err) {
     console.error('PATCH /api/school/classes/[classYearId] error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  context: RouteContext
+) {
+  const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+
+  try {
+    const { classYearId } = await context.params
+    const body = await req.json().catch(() => ({})) as { action?: string }
+
+    const classYear = await prisma.classYear.findFirst({
+      where: { id: classYearId, institutionId },
+    })
+    if (!classYear) {
+      return NextResponse.json({ error: 'Class year not found' }, { status: 404 })
+    }
+
+    if (body.action === 'ARCHIVE') {
+      const archived = await prisma.classYear.update({
+        where: { id: classYearId },
+        data: { status: 'ARCHIVED' },
+      })
+      return NextResponse.json(archived)
+    }
+
+    try { await checkClassYearHasNoData(classYearId) }
+    catch (e) { return handleDependencyError(e) }
+
+    await prisma.classYear.delete({ where: { id: classYearId } })
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('DELETE /api/school/classes/[classYearId] error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { checkSectionHasNoActiveStudents, handleDependencyError } from '@/lib/dependency-checks'
 
 type RouteContext = { params: Promise<{ classYearId: string; sectionId: string }> }
 
@@ -57,18 +58,13 @@ export async function DELETE(
 
     const section = await prisma.section.findFirst({
       where: { id: sectionId, classYearId, institutionId },
-      include: { _count: { select: { students: true } } },
     })
     if (!section) {
       return NextResponse.json({ error: 'Section not found' }, { status: 404 })
     }
 
-    if (section._count.students > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete section with enrolled students' },
-        { status: 400 }
-      )
-    }
+    try { await checkSectionHasNoActiveStudents(sectionId) }
+    catch (e) { return handleDependencyError(e) }
 
     await prisma.section.delete({ where: { id: sectionId } })
 

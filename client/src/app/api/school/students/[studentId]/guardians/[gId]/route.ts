@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import {
+  checkGuardianNotOnly,
+  cascadeGuardianLoginRemoval,
+  DependencyError,
+  handleDependencyError,
+} from '@/lib/dependency-checks'
 
 type Params = { params: { studentId: string; gId: string } }
 
@@ -72,7 +78,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     const { institutionId } = ctx
 
     const student = await prisma.student.findFirst({
-        where: { id: params.studentId, institutionId: institutionId },
+        where: { id: params.studentId, institutionId },
         select: { id: true },
     })
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -82,7 +88,18 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     })
     if (!guardian) return NextResponse.json({ error: 'Guardian not found' }, { status: 404 })
 
-    if (guardian.userId) {
+    try {
+        // Block removal if this is the only guardian
+        await checkGuardianNotOnly(params.studentId)
+    } catch (err: unknown) {
+        if (err instanceof DependencyError) return handleDependencyError(err)
+        throw err
+    }
+
+    // Cascade login removal if guardian has canLogin enabled
+    if (guardian.canLogin) {
+        await cascadeGuardianLoginRemoval(guardian.id)
+    } else if (guardian.userId) {
         await prisma.user.update({
             where: { id: guardian.userId },
             data: { isActive: false },

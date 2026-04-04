@@ -1,5 +1,4 @@
 import { auth } from '@/server/auth'
-import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
 import { resolveSubjectId } from '@/lib/resolve-id'
 import { SubjectContentsView } from '@/features/subjects/components/SubjectContentsView'

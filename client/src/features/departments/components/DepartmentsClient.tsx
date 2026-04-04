@@ -6,6 +6,7 @@ import { Plus, Search, LayoutGrid, List, Building2, Users, CheckCircle2, X, Slid
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { getErrorMessage, isDependencyError } from '@/lib/api-error-handler'
 import { Input } from '@/components/ui/input'
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
@@ -126,8 +127,13 @@ export function DepartmentsClient() {
     if (!ok) return
     try {
       const res = await fetch(`/api/school/departments/${dept.id}`, { method: 'DELETE' })
-      if (res.ok) { toast.success(`"${dept.name}" deleted`); fetchDepartments() }
-      else { const err = (await res.json()) as { error: string }; toast.error(err.error) }
+      if (res.ok) { toast.success(`"${dept.name}" deleted`); fetchDepartments(); return }
+      const errData = await res.json().catch(() => ({ error: 'Something went wrong' })) as Record<string, unknown>
+      if (isDependencyError(errData)) {
+        toast.error(getErrorMessage(errData), { duration: 6000 })
+      } else {
+        toast.error(getErrorMessage(errData))
+      }
     } catch { toast.error('Failed to delete department') }
   }
 

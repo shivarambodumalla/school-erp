@@ -128,7 +128,7 @@ export function StaffProfileClient({ staffId }: { staffId: string }) {
         </TabsList>
 
         <TabsContent value="overview">
-          <StaffOverviewTab staff={staff} />
+          <StaffOverviewTab staff={staff} onStatusChanged={fetchStaff} />
         </TabsContent>
         <TabsContent value="subjects">
           <StaffSubjectsTab staff={staff} />

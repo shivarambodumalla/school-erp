@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import {
+  checkClassYearIsActive,
+  checkSectionCapacity,
+  checkStudentNotDuplicateEnrollment,
+  handleDependencyError,
+} from '@/lib/dependency-checks'
 
 type RouteContext = { params: Promise<{ classYearId: string }> }
 
@@ -88,15 +94,11 @@ export async function POST(
       return NextResponse.json({ error: 'Class year not found' }, { status: 404 })
     }
 
-    const existing = await prisma.studentSection.findUnique({
-      where: { studentId_classYearId: { studentId: body.studentId, classYearId } },
-    })
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Student is already enrolled in this class year' },
-        { status: 409 }
-      )
-    }
+    try {
+      await checkClassYearIsActive(classYearId)
+      await checkSectionCapacity(body.sectionId)
+      await checkStudentNotDuplicateEnrollment(body.studentId, classYearId)
+    } catch (e) { return handleDependencyError(e) }
 
     const studentSection = await prisma.studentSection.create({
       data: {

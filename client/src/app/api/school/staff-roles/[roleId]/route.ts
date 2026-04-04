@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import {
+  checkStaffRoleNotInUse,
+  handleDependencyError,
+} from '@/lib/dependency-checks'
 
 type Ctx = { params: Promise<{ roleId: string }> }
 const json = NextResponse.json
@@ -82,19 +86,16 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
   try {
     const role = await prisma.staffRole.findFirst({
       where: { id: roleId, institutionId },
-      include: INCLUDE_COUNT,
     })
     if (!role) return json({ error: 'Role not found' }, { status: 404 })
     if (role.isSystemRole) {
       return json({ error: 'System roles cannot be deleted' }, { status: 403 })
     }
 
-    const staffCount = role._count.primaryStaff + role._count.assignments
-    if (staffCount > 0) {
-      return json(
-        { error: 'Cannot delete a role with assigned staff' },
-        { status: 400 }
-      )
+    try {
+      await checkStaffRoleNotInUse(roleId)
+    } catch (e) {
+      return handleDependencyError(e)
     }
 
     await prisma.staffRole.delete({ where: { id: roleId } })

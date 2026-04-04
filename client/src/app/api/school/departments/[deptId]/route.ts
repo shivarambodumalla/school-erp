@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import {
+  checkDeptHasNoStaff,
+  checkDeptHasNoSubjects,
+  handleDependencyError,
+} from '@/lib/dependency-checks'
 
 const json = NextResponse.json
 type Ctx = { params: Promise<{ deptId: string }> }
@@ -105,13 +110,16 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
   try {
     const dept = await prisma.department.findUnique({
       where: { id: deptId },
-      include: { _count: { select: { staff: true } } },
     })
     if (!dept || dept.institutionId !== institutionId) {
       return json({ error: 'Department not found' }, { status: 404 })
     }
-    if (dept._count.staff > 0) {
-      return json({ error: 'Move all staff to another department first' }, { status: 400 })
+
+    try {
+      await checkDeptHasNoStaff(deptId)
+      await checkDeptHasNoSubjects(deptId)
+    } catch (e) {
+      return handleDependencyError(e)
     }
 
     await prisma.department.delete({ where: { id: deptId } })

@@ -3,6 +3,12 @@ import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { statusTransitionSchema } from '@/features/admissions/schemas/admissionSchema'
 import bcrypt from 'bcryptjs'
+import {
+  checkClassYearIsActive,
+  checkSectionCapacity,
+  DependencyError,
+  handleDependencyError,
+} from '@/lib/dependency-checks'
 
 type Ctx = { params: Promise<{ id: string }> }
 
@@ -42,7 +48,8 @@ export async function POST(req: Request, context: Ctx) {
     if (action === 'REJECT') {
       return await handleReject(admission, institutionId, ctx.userId, reason)
     }
-  } catch (err) {
+  } catch (err: unknown) {
+    if (err instanceof DependencyError) return handleDependencyError(err)
     console.error(`POST /api/school/admissions/${id}/status error:`, err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -123,6 +130,14 @@ async function handleEnroll(
       { error: 'Class is required for enrollment' },
       { status: 400 },
     )
+  }
+
+  // Validate class year is active and section has capacity
+  await checkClassYearIsActive(finalClassId)
+
+  const finalSectionIdForCheck = sectionId ?? admission.sectionId
+  if (finalSectionIdForCheck) {
+    await checkSectionCapacity(finalSectionIdForCheck)
   }
 
   const result = await prisma.$transaction(async (tx) => {

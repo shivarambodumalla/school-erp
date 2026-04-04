@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import {
+  checkStudentHasNoFinancialData,
+  DependencyError,
+  handleDependencyError,
+} from '@/lib/dependency-checks'
 
 const STUDENT_SELECT = {
     id: true, sisId: true, admissionNo: true, rollNo: true,
@@ -124,6 +129,54 @@ export async function PATCH(
             recordId: resolvedId,
             before: before as object,
             after: updated as object,
+        },
+    })
+
+    return NextResponse.json(updated)
+}
+
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: { studentId: string } },
+) {
+    const ctx = await getSchoolContext(req, ['ADMIN'])
+    if (isApiError(ctx)) return ctx
+    const { institutionId } = ctx
+
+    const isNum = /^\d+$/.test(params.studentId)
+    const found = await prisma.student.findFirst({
+        where: {
+            institutionId,
+            ...(isNum ? { serialNo: parseInt(params.studentId, 10) } : { id: params.studentId }),
+        },
+        select: { id: true, status: true },
+    })
+    if (!found) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    try {
+        // Block deletion if student has financial records
+        await checkStudentHasNoFinancialData(found.id)
+    } catch (err: unknown) {
+        if (err instanceof DependencyError) return handleDependencyError(err)
+        throw err
+    }
+
+    // Soft-delete only: mark as INACTIVE, never hard delete
+    const updated = await prisma.student.update({
+        where: { id: found.id },
+        data: { status: 'INACTIVE' },
+        select: { id: true, status: true },
+    })
+
+    await prisma.auditLog.create({
+        data: {
+            institutionId,
+            userId: ctx.userId,
+            action: 'STUDENT_DEACTIVATED',
+            tableName: 'Student',
+            recordId: found.id,
+            before: { status: found.status },
+            after: { status: 'INACTIVE' },
         },
     })
 

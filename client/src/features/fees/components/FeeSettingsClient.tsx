@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { getErrorMessage, isDependencyError } from '@/lib/api-error-handler'
 import type { FeeSettingsData, FeeCategory } from '../types'
 import { FREQ_LABELS } from '../types'
 
@@ -43,6 +44,21 @@ export function FeeSettingsClient() {
     else toast.error('Failed to save')
   }
 
+  const archiveCategory = async (id: string) => {
+    try {
+      const res = await fetch(`/api/school/fees/categories/${id}${apiParam}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'DEACTIVATE' }),
+      })
+      if (res.ok) { toast.success('Category archived'); fetchCategories() }
+      else {
+        const errData = await res.json().catch(() => ({ error: 'Failed to archive' })) as Record<string, unknown>
+        toast.error(getErrorMessage(errData))
+      }
+    } catch { toast.error('Failed to archive category') }
+  }
+
   const deleteCategory = async (id: string) => {
     const ok = await confirm({
       title: 'Delete Fee Category',
@@ -52,9 +68,22 @@ export function FeeSettingsClient() {
       note: 'This action cannot be undone.',
     })
     if (!ok) return
-    const res = await fetch(`/api/school/fees/categories/${id}${apiParam}`, { method: 'DELETE' })
-    if (res.ok) { toast.success('Deleted'); fetchCategories() }
-    else { const err = await res.json().catch(() => ({})) as { error?: string }; toast.error(err.error ?? 'Cannot delete') }
+    try {
+      const res = await fetch(`/api/school/fees/categories/${id}${apiParam}`, { method: 'DELETE' })
+      if (res.ok) { toast.success('Deleted'); fetchCategories(); return }
+      const errData = await res.json().catch(() => ({ error: 'Cannot delete' })) as Record<string, unknown>
+      if (isDependencyError(errData)) {
+        const archiveOk = await confirm({
+          title: 'Cannot Delete',
+          description: getErrorMessage(errData),
+          note: 'You can archive this category instead to hide it from new fee assignments.',
+          confirmLabel: 'Archive Instead',
+        })
+        if (archiveOk) await archiveCategory(id)
+      } else {
+        toast.error(getErrorMessage(errData))
+      }
+    } catch { toast.error('Failed to delete category') }
   }
 
   if (!settings) {

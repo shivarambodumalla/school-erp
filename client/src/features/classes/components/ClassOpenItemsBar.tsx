@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { X } from 'lucide-react'
 import Link from 'next/link'
 
@@ -39,7 +39,6 @@ function saveSubjectTabs(classYearId: string, tabs: TabItem[]) {
  */
 export function ClassOpenItemsBar({ classSerialNo, classYearId, className }: Props) {
   const pathname = usePathname()
-  const router = useRouter()
   const [subjectTabs, setSubjectTabs] = useState<TabItem[]>([])
 
   const classHomePath = `/management/institution/classes/${classSerialNo}`

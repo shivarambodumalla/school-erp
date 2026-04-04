@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { checkExamTypeNotInUse, handleDependencyError } from '@/lib/dependency-checks'
 
 type Ctx = { params: Promise<{ id: string }> }
 
@@ -89,15 +90,8 @@ export async function DELETE(req: NextRequest,routeCtx: Ctx) {
       )
     }
 
-    const entriesCount = await prisma.gradeEntry.count({
-      where: { examTypeId: id, institutionId },
-    })
-    if (entriesCount > 0) {
-      return NextResponse.json(
-        { error: `Cannot delete: ${entriesCount} grade entries exist` },
-        { status: 400 },
-      )
-    }
+    try { await checkExamTypeNotInUse(id) }
+    catch (e) { return handleDependencyError(e) }
 
     await prisma.examType.delete({ where: { id } })
     return NextResponse.json({ deleted: true })

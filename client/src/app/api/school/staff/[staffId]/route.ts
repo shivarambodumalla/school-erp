@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import {
+  checkStaffNotHOD,
+  checkStaffNotClassTeacher,
+  checkStaffNotPrimarySubjectTeacher,
+  cascadeStaffDeactivation,
+} from '@/lib/dependency-checks'
 
 type Ctx = { params: Promise<{ staffId: string }> }
 
@@ -129,48 +135,61 @@ export async function PATCH(req: NextRequest,routeCtx: Ctx) {
     data.joiningDate = new Date(data.joiningDate as string)
   }
 
+  const newStatus = data.status as string | undefined
+
+  // ── Deactivation / Termination flow ──
+  if (newStatus === 'INACTIVE' || newStatus === 'TERMINATED') {
+    const [hodResult, classTeacherResult, primaryTeacherResult] =
+      await Promise.all([
+        checkStaffNotHOD(staffId),
+        checkStaffNotClassTeacher(staffId),
+        checkStaffNotPrimarySubjectTeacher(staffId),
+      ])
+
+    const warnings: string[] = []
+    if (hodResult.isHOD) {
+      warnings.push(
+        `HOD / Deputy HOD of: ${hodResult.departments.join(', ')}`,
+      )
+    }
+    if (classTeacherResult.isClassTeacher) {
+      warnings.push(
+        `Class teacher of: ${classTeacherResult.sections.join(', ')}`,
+      )
+    }
+    if (primaryTeacherResult.isPrimaryTeacher) {
+      warnings.push(
+        `Primary teacher for: ${primaryTeacherResult.subjects.join(', ')}`,
+      )
+    }
+
+    const confirmCascade = (body as Record<string, unknown>).confirmCascade === true
+
+    if (warnings.length > 0 && !confirmCascade) {
+      return NextResponse.json({
+        requiresConfirmation: true,
+        warnings,
+      })
+    }
+
+    // Confirmed or no warnings — run cascade then update status
+    const cascadeResult = await cascadeStaffDeactivation(staffId, institutionId)
+
+    const updated = await prisma.staff.update({
+      where: { id: staffId },
+      data,
+      select: { id: true, firstName: true, lastName: true },
+    })
+
+    return NextResponse.json({ ok: true, ...updated, cascadeResult })
+  }
+
+  // ── Normal (non-deactivation) update ──
   const updated = await prisma.staff.update({
     where: { id: staffId },
     data,
     select: { id: true, firstName: true, lastName: true },
   })
 
-  // HOD fallback: clear HOD/deputy roles when staff is deactivated or terminated
-  let hodFallbackApplied = false
-  let affectedDepartments: { id: string; name: string }[] = []
-
-  const newStatus = data.status as string | undefined
-  if (newStatus === 'INACTIVE' || newStatus === 'TERMINATED') {
-    const hodDepts = await prisma.department.findMany({
-      where: {
-        OR: [{ hodId: staffId }, { deputyHodId: staffId }],
-        institutionId,
-      },
-      select: { id: true, name: true, hodId: true, deputyHodId: true },
-    })
-
-    for (const dept of hodDepts) {
-      if (dept.hodId === staffId) {
-        await prisma.department.update({
-          where: { id: dept.id },
-          data: { hodId: null, hodSince: null },
-        })
-        await prisma.staff.updateMany({
-          where: { reportsToId: staffId, departmentId: dept.id },
-          data: { reportsToId: null },
-        })
-      }
-      if (dept.deputyHodId === staffId) {
-        await prisma.department.update({
-          where: { id: dept.id },
-          data: { deputyHodId: null },
-        })
-      }
-    }
-
-    hodFallbackApplied = hodDepts.length > 0
-    affectedDepartments = hodDepts.map((d) => ({ id: d.id, name: d.name }))
-  }
-
-  return NextResponse.json({ ...updated, hodFallbackApplied, affectedDepartments })
+  return NextResponse.json(updated)
 }

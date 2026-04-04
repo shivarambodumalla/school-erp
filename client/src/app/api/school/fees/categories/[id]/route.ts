@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { getSchoolContext, isApiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import {
+  checkFeeCategoryNotInUse,
+  DependencyError,
+  handleDependencyError,
+} from '@/lib/dependency-checks'
 
 export async function PATCH(
   req: Request,
@@ -40,12 +45,28 @@ export async function DELETE(
   if (isApiError(ctx)) return ctx
   const { id } = await params
 
-  const count = await prisma.feePayment.count({ where: { feeCategoryId: id } })
-  if (count > 0) {
-    return NextResponse.json(
-      { error: 'Cannot delete — payments exist' },
-      { status: 400 }
-    )
+  // Support DEACTIVATE action via request body
+  let body: { action?: string } = {}
+  try {
+    body = (await req.json()) as { action?: string }
+  } catch {
+    // No body is fine — default to hard delete
+  }
+
+  if (body.action === 'DEACTIVATE') {
+    const updated = await prisma.feeCategory.update({
+      where: { id },
+      data: { isActive: false },
+    })
+    return NextResponse.json(updated)
+  }
+
+  try {
+    // Block deletion if category has payment records
+    await checkFeeCategoryNotInUse(id)
+  } catch (err: unknown) {
+    if (err instanceof DependencyError) return handleDependencyError(err)
+    throw err
   }
 
   await prisma.feeCategory.delete({ where: { id } })

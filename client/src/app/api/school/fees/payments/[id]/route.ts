@@ -41,24 +41,13 @@ export async function PATCH(
   return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const ctx = await getSchoolContext(req, ['ADMIN'])
-  if (isApiError(ctx)) return ctx
-  const { id } = await params
-
-  const updated = await prisma.feePayment.update({
-    where: { id },
-    data: {
-      status: 'PENDING',
-      paidAt: null,
-      receiptNo: null,
-      method: null,
-      transactionRef: null,
-      collectedById: null,
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  return NextResponse.json(
+    {
+      error:
+        'Fee payment records cannot be permanently deleted. Use PATCH with action=REVERSE instead.',
     },
-  })
-  return NextResponse.json(updated)
+    { status: 405 }
+  )
 }

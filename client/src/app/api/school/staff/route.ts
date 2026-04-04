@@ -82,6 +82,34 @@ export async function POST(req: Request) {
     portalType?: string
   }
 
+  // Validate departmentId belongs to same institution
+  if (body.departmentId) {
+    const dept = await prisma.department.findFirst({
+      where: { id: body.departmentId, institutionId },
+      select: { id: true },
+    })
+    if (!dept) {
+      return NextResponse.json(
+        { error: 'Department not found or does not belong to this institution' },
+        { status: 400 },
+      )
+    }
+  }
+
+  // Validate primaryRoleId belongs to same institution
+  if (body.primaryRoleId) {
+    const role = await prisma.staffRole.findFirst({
+      where: { id: body.primaryRoleId, institutionId },
+      select: { id: true },
+    })
+    if (!role) {
+      return NextResponse.json(
+        { error: 'Staff role not found or does not belong to this institution' },
+        { status: 400 },
+      )
+    }
+  }
+
   // Ensure settings exist, then atomically increment seq
   await prisma.staffSettings.upsert({
     where: { institutionId },
