@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-const */
 
-import { auth } from '@/server/auth'
+import NextAuth from 'next-auth'
 import { NextResponse } from 'next/server'
+import { authConfig } from '@/server/auth.config'
+
+const { auth } = NextAuth(authConfig)
 
 const PUBLIC_ROUTES = ['/', '/auth/login', '/auth/error']
 

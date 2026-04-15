@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { type Permission } from '@/lib/permissions'
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/defaultRoles'
+import { authConfig } from './auth.config'
 
 const loginSchema = z.object({
     email: z.string().email(),
@@ -12,6 +13,7 @@ const loginSchema = z.object({
 })
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
     providers: [
         Credentials({
             credentials: {
@@ -42,9 +44,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     data: { lastLoginAt: new Date() },
                 })
 
-                // Resolve permissions for this user's portal type
-                // In future: fetch custom role permissions from DB
-                // For now: use default permissions for portal type
                 const permissions: Permission[] =
                     DEFAULT_ROLE_PERMISSIONS[user.portalType] ?? []
 
@@ -65,48 +64,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
         }),
     ],
-
-    callbacks: {
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id as string
-                token.portalType = user.portalType
-                token.institutionId = user.institutionId
-                token.institutionName = user.institutionName
-                token.institutionSubdomain = user.institutionSubdomain
-                token.primaryColor = user.primaryColor
-                token.secondaryColor = user.secondaryColor
-                token.themePalette = user.themePalette
-                token.darkPalette = user.darkPalette
-                token.logoUrl = user.logoUrl
-                token.permissions = user.permissions
-            }
-            return token
-        },
-
-        async session({ session, token }) {
-            session.user.id = token.id as string
-            session.user.portalType = token.portalType as string
-            session.user.institutionId = token.institutionId as string
-            session.user.institutionName = token.institutionName as string
-            session.user.institutionSubdomain = token.institutionSubdomain as string
-            session.user.primaryColor = token.primaryColor as string
-            session.user.secondaryColor = token.secondaryColor as string | undefined
-            session.user.themePalette = token.themePalette as Record<string, string> | undefined
-            session.user.darkPalette = token.darkPalette as Record<string, string> | undefined
-            session.user.logoUrl = token.logoUrl as string | undefined
-            session.user.permissions = token.permissions as Permission[]
-            return session
-        },
-    },
-
-    pages: {
-        signIn: '/auth/login',
-        error: '/auth/error',
-    },
-
-    session: {
-        strategy: 'jwt',
-        maxAge: 30 * 24 * 60 * 60,
-    },
 })
