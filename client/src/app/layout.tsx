@@ -1,32 +1,32 @@
-import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { SessionProvider } from "next-auth/react";
-import { auth } from "@/server/auth";
-import { MasqueradeBar } from "@/components/shared/MasqueradeBar";
-import { MasqueradeFrame } from "@/components/shared/MasqueradeFrame";
-import { MasqueradeReadOnlyOverlay } from "@/components/shared/MasqueradeReadOnlyOverlay";
+import type { Metadata, Viewport } from 'next'
+import localFont from 'next/font/local'
+import './globals.css'
+import { ThemeProvider } from '@/components/theme-provider'
+import { SessionProvider } from 'next-auth/react'
+import { auth } from '@/server/auth'
+import { MasqueradeBar } from '@/components/shared/MasqueradeBar'
+import { MasqueradeFrame } from '@/components/shared/MasqueradeFrame'
+import { MasqueradeReadOnlyOverlay } from '@/components/shared/MasqueradeReadOnlyOverlay'
 import { Toaster } from 'sonner'
 import { ConfirmProvider } from '@/components/ui/confirm-dialog'
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
+  src: './fonts/GeistVF.woff',
+  variable: '--font-geist-sans',
+  weight: '100 900',
+})
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+  src: './fonts/GeistMonoVF.woff',
+  variable: '--font-geist-mono',
+  weight: '100 900',
+})
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
   viewportFit: 'cover',
-  themeColor: '#3730A3',
+  themeColor: '#1d4ed8',
 }
 
 export const metadata: Metadata = {
@@ -36,14 +36,7 @@ export const metadata: Metadata = {
   },
   description: 'Your school. In flow.',
   applicationName: 'Onflows',
-  keywords: [
-    'school management',
-    'ERP',
-    'education',
-    'LMS',
-    'school software',
-    'India',
-  ],
+  keywords: ['school management', 'ERP', 'education', 'LMS', 'school software', 'India'],
   authors: [{ name: 'Onflows' }],
   creator: 'Onflows',
   metadataBase: new URL('https://onflows.app'),
@@ -62,23 +55,24 @@ export const metadata: Metadata = {
     creator: '@onflows',
   },
   icons: {
-    icon: '/images/logo-square.svg',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/images/favicon.svg', type: 'image/svg+xml' },
+    ],
     apple: '/images/logo-square.svg',
   },
-};
+}
 
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
-  const session = await auth();
+  const session = await auth()
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SessionProvider session={session}>
           <ThemeProvider
             attribute="class"
@@ -86,9 +80,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ConfirmProvider>
-              {children}
-            </ConfirmProvider>
+            <ConfirmProvider>{children}</ConfirmProvider>
             <MasqueradeFrame />
             <MasqueradeBar />
             <MasqueradeReadOnlyOverlay />
@@ -104,5 +96,5 @@ export default async function RootLayout({
         </SessionProvider>
       </body>
     </html>
-  );
+  )
 }

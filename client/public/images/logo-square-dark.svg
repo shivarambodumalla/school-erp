@@ -2,7 +2,7 @@
   <!-- Container -->
   <rect width="56" height="56" rx="14" fill="#1d4ed8"/>
   <!-- Outline square (back, top-right) -->
-  <rect x="22" y="22" width="24" height="24" rx="5" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2.5"/>
+  <rect x="22" y="22" width="24" height="24" rx="5" fill="none" stroke="rgba(147,197,253,0.55)" stroke-width="2.5"/>
   <!-- Solid square (front, bottom-left) -->
   <rect x="9" y="9" width="24" height="24" rx="5" fill="white"/>
 </svg>
