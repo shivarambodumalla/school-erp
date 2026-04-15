@@ -72,7 +72,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const tempPassword = 'TempPass@123'
+    const { generateTempPassword } = await import('@/lib/generate-password')
+    const tempPassword = generateTempPassword()
     const hashedPassword = await bcrypt.hash(tempPassword, 12)
 
     const user = await prisma.platformUser.create({

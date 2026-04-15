@@ -38,3 +38,7 @@ next-env.d.ts
 
 # Misc
 *.log
+
+# Claude Code (contains local permission grants with secrets)
+.claude/
+

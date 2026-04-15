@@ -2,13 +2,7 @@
 
 import { type MouseEvent } from 'react'
 import type { AdmissionListItem } from './AdmissionsPipelineClient'
-
-const STATUS_STYLES: Record<string, string> = {
-  APPLIED: 'bg-blue-100 text-blue-700',
-  ADMITTED: 'bg-emerald-100 text-emerald-700',
-  ENROLLED: 'bg-violet-100 text-violet-700',
-  REJECTED: 'bg-red-100 text-red-700',
-}
+import { ADMISSION_STATUS_COLORS } from '@/lib/colors'
 
 interface Props {
   admissions: AdmissionListItem[]
@@ -83,7 +77,7 @@ export function AdmissionsTable({ admissions, statusFilter, onStatusFilter, open
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5
-                        rounded-full text-xs font-medium ${STATUS_STYLES[a.status] ?? ''}`}>
+                        rounded-full text-xs font-medium ${ADMISSION_STATUS_COLORS[a.status] ?? ''}`}>
                         {a.status}
                       </span>
                     </td>

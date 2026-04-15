@@ -195,7 +195,8 @@ async function handleEnroll(
     }
 
     // Copy guardians to student and create parent accounts
-    const tempPassword = await bcrypt.hash('TempPass@123', 10)
+    const { generateTempPassword } = await import('@/lib/generate-password')
+    const tempPassword = await bcrypt.hash(generateTempPassword(), 10)
 
     for (const g of admission.guardians) {
       let guardianUserId: string | undefined

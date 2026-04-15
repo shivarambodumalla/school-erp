@@ -83,6 +83,15 @@ export const PERMISSIONS = {
     // Communications
     COMMUNICATIONS_VIEW: 'communications.view',
 
+    // Leads
+    LEADS_VIEW: 'leads.view',
+    LEADS_CREATE: 'leads.create',
+    LEADS_EDIT: 'leads.edit',
+
+    // Report Cards
+    REPORT_CARDS_VIEW: 'report_cards.view',
+    REPORT_CARDS_GENERATE: 'report_cards.generate',
+
     // Platform (Super Admin only)
     PLATFORM_ADMIN: 'platform.admin',
 } as const
@@ -165,6 +174,11 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
         PERMISSIONS.TICKETS_VIEW,
         PERMISSIONS.TICKETS_MANAGE,
         PERMISSIONS.COMMUNICATIONS_VIEW,
+        PERMISSIONS.LEADS_VIEW,
+        PERMISSIONS.LEADS_CREATE,
+        PERMISSIONS.LEADS_EDIT,
+        PERMISSIONS.REPORT_CARDS_VIEW,
+        PERMISSIONS.REPORT_CARDS_GENERATE,
         PERMISSIONS.AI_INSIGHTS,
         PERMISSIONS.AI_LESSON_PLAN,
         PERMISSIONS.MASQUERADE_READ_ONLY,

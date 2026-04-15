@@ -10,15 +10,8 @@ export async function GET(
   context: RouteContext
 ) {
   const ctx = await getSchoolContext(req, ['ADMIN', 'TEACHER'])
-    if (isApiError(ctx)) return ctx
-    const { institutionId } = ctx
-    if (false
-  ) {
-    return NextResponse.json(
-      { error: 'Unauthorised' },
-      { status: 401 }
-    )
-  }
+  if (isApiError(ctx)) return ctx
+  const { institutionId } = ctx
 
   if (!institutionId) {
     return NextResponse.json(

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { LogOut, Menu } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { AcademicYearSwitcher } from './AcademicYearSwitcher'
 import {
     Sheet,
     SheetContent,
@@ -60,6 +61,11 @@ export function ManagementSidebar({
                 ) : (
                     <img src="/images/logo-wide.svg" alt="Onflows" className="h-8" />
                 )}
+            </div>
+
+            {/* Academic Year Switcher (desktop sidebar) */}
+            <div className="px-3 py-2 border-b hidden md:block">
+                <AcademicYearSwitcher />
             </div>
 
             {/* Nav groups */}
@@ -166,6 +172,7 @@ export function ManagementSidebar({
                         <img src="/images/logo-wide.svg" alt="Onflows" className="h-5" />
                     )}
                 </div>
+                <AcademicYearSwitcher />
                 <ThemeToggle />
             </div>
 

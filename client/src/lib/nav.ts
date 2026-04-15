@@ -4,7 +4,8 @@ import {
     MessageCircle, CreditCard, BookOpen, Rss, Bus,
     ShieldCheck, FolderOpen, BarChart3, ClipboardList,
     Ticket, Settings, AlertTriangle, Building2,
-    CalendarOff, Banknote,
+    CalendarOff, Banknote, Contact2, Megaphone, Trophy, FileText,
+    Bell,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PERMISSIONS, type Permission } from './permissions'
@@ -24,24 +25,45 @@ export interface NavGroup {
 // Management shell navigation
 export const MANAGEMENT_NAV: NavGroup[] = [
     {
-        label: 'Academic',
+        label: 'Overview',
         items: [
             { label: 'Dashboard', path: '/management/dashboard', icon: LayoutDashboard, permission: null },
+        ],
+    },
+    {
+        label: 'Admissions & CRM',
+        items: [
+            { label: 'Leads', path: '/management/admissions/leads', icon: Contact2, permission: PERMISSIONS.LEADS_VIEW },
+            { label: 'Follow-ups', path: '/management/admissions/follow-ups', icon: Clock, permission: PERMISSIONS.LEADS_VIEW },
+            { label: 'Admissions', path: '/management/admissions', icon: ClipboardList, permission: PERMISSIONS.STUDENTS_CREATE },
+            { label: 'Merit List', path: '/management/admissions/merit-list', icon: Trophy, permission: PERMISSIONS.STUDENTS_CREATE },
+            { label: 'Analytics', path: '/management/admissions/analytics', icon: BarChart3, permission: PERMISSIONS.LEADS_VIEW },
+        ],
+    },
+    {
+        label: 'Academic',
+        items: [
             { label: 'Classes', path: '/management/institution/classes', icon: LayoutGrid, permission: PERMISSIONS.STUDENTS_VIEW },
             { label: 'Timetable', path: '/management/timetable', icon: Clock, permission: PERMISSIONS.TIMETABLE_VIEW },
             { label: 'Attendance', path: '/management/attendance', icon: CalendarCheck, permission: PERMISSIONS.ATTENDANCE_VIEW },
             { label: 'Grades', path: '/management/grades', icon: GraduationCap, permission: PERMISSIONS.GRADES_VIEW },
+            { label: 'Report Cards', path: '/management/report-cards', icon: FileText, permission: PERMISSIONS.REPORT_CARDS_VIEW },
             { label: 'Calendar', path: '/management/calendar', icon: CalendarDays, permission: PERMISSIONS.CALENDAR_VIEW },
         ],
     },
     {
         label: 'People',
         items: [
-            { label: 'Admissions', path: '/management/admissions', icon: ClipboardList, permission: PERMISSIONS.STUDENTS_CREATE },
             { label: 'Students', path: '/management/students', icon: Users, permission: PERMISSIONS.STUDENTS_VIEW },
             { label: 'Staff', path: '/management/staff', icon: UserCheck, permission: PERMISSIONS.STAFF_VIEW },
             { label: 'Departments', path: '/management/departments', icon: Building2, permission: PERMISSIONS.SETTINGS_MANAGE },
-            { label: 'Communications', path: '/management/communications', icon: MessageCircle, permission: PERMISSIONS.COMMUNICATIONS_VIEW },
+        ],
+    },
+    {
+        label: 'Communications',
+        items: [
+            { label: 'Circulars', path: '/management/communications/circulars', icon: Megaphone, permission: PERMISSIONS.COMMUNICATIONS_VIEW },
+            { label: 'Messages', path: '/management/communications', icon: MessageCircle, permission: PERMISSIONS.COMMUNICATIONS_VIEW },
         ],
     },
     {
@@ -77,16 +99,17 @@ export const MANAGEMENT_NAV: NavGroup[] = [
 // Consumer shell bottom tabs
 export const PARENT_TABS: NavItem[] = [
     { label: 'Home', path: '/consumer/dashboard', icon: LayoutDashboard, permission: null },
-    { label: 'Bus', path: '/consumer/bus', icon: Bus, permission: PERMISSIONS.BUS_VIEW },
+    { label: 'Circulars', path: '/consumer/circulars', icon: Bell, permission: null },
     { label: 'Fees', path: '/consumer/fees', icon: CreditCard, permission: PERMISSIONS.FEES_VIEW },
     { label: 'Grades', path: '/consumer/grades', icon: GraduationCap, permission: PERMISSIONS.GRADES_VIEW },
-    { label: 'Chat', path: '/consumer/chat', icon: MessageCircle, permission: null },
+    { label: 'Reports', path: '/consumer/report-cards', icon: FileText, permission: null },
 ]
 
 export const STUDENT_TABS: NavItem[] = [
     { label: 'Home', path: '/consumer/dashboard', icon: LayoutDashboard, permission: null },
     { label: 'Subjects', path: '/consumer/subjects', icon: BookOpen, permission: null },
     { label: 'Grades', path: '/consumer/grades', icon: GraduationCap, permission: PERMISSIONS.GRADES_VIEW },
+    { label: 'Circulars', path: '/consumer/circulars', icon: Bell, permission: null },
     { label: 'Homework', path: '/consumer/homework', icon: ClipboardList, permission: null },
     { label: 'Profile', path: '/consumer/profile', icon: Users, permission: null },
 ]

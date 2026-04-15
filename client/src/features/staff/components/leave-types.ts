@@ -37,9 +37,4 @@ export interface LeaveBalance {
 
 export type StatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
 
-export const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'bg-amber-100 text-amber-700 border-amber-200',
-  APPROVED: 'bg-green-100 text-green-700 border-green-200',
-  REJECTED: 'bg-red-100 text-red-700 border-red-200',
-  CANCELLED: 'bg-gray-100 text-gray-600 border-gray-200',
-}
+export { LEAVE_STATUS_COLORS as STATUS_COLORS } from '@/lib/colors'

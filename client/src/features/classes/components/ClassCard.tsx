@@ -2,14 +2,8 @@
 
 import Link from 'next/link'
 import { LayoutGrid, Users, ArrowRight } from 'lucide-react'
-import { generateColor } from '@/lib/colors'
+import { generateColor, CLASS_STATUS_COLORS } from '@/lib/colors'
 import type { ClassTemplate } from '../types'
-
-const STATUS_STYLES: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-  DRAFT: 'bg-amber-100 text-amber-700',
-}
 
 interface ClassCardProps {
   data: ClassTemplate
@@ -18,7 +12,7 @@ interface ClassCardProps {
 export function ClassCard({ data }: ClassCardProps) {
   const { name, gradeLevel, activeYear } = data
   const status = activeYear?.status ?? 'DRAFT'
-  const statusClass = STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT
+  const statusClass = CLASS_STATUS_COLORS[status] ?? CLASS_STATUS_COLORS.DRAFT
 
   return (
     <div className="rounded-xl border bg-card p-5 space-y-4

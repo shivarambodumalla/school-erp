@@ -68,13 +68,7 @@ export interface FeeSettingsData {
   partialPaymentAllowed: boolean
 }
 
-export const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'bg-amber-100 text-amber-700',
-  PAID: 'bg-green-100 text-green-700',
-  OVERDUE: 'bg-red-100 text-red-700',
-  WAIVED: 'bg-gray-100 text-gray-600',
-  PARTIAL: 'bg-blue-100 text-blue-700',
-}
+export { FEE_STATUS_COLORS as STATUS_COLORS } from '@/lib/colors'
 
 export const FREQ_LABELS: Record<string, string> = {
   MONTHLY: 'Monthly',

@@ -231,7 +231,7 @@ export function AddStaffSheet({ open, onOpenChange, onCreated }: Props) {
                   </Select>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Temporary password: <span className="font-mono">TempPass@123</span>
+                  A secure temporary password will be generated automatically
                 </p>
               </div>
             )}

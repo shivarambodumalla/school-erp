@@ -47,14 +47,7 @@ function saveStaffTabs(tabs: StaffTab[]) {
 
 const MAX_TABS = 10
 
-import { generateColor, getInitials } from '@/lib/colors'
-
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  INACTIVE: 'bg-gray-100 text-gray-600',
-  ON_LEAVE: 'bg-yellow-100 text-yellow-700',
-  TERMINATED: 'bg-red-100 text-red-700',
-}
+import { generateColor, getInitials, STAFF_STATUS_COLORS } from '@/lib/colors'
 
 const STATUS_OPTIONS = ['ACTIVE', 'INACTIVE', 'ON_LEAVE', 'TERMINATED']
 
@@ -400,7 +393,7 @@ function StaffTable({ staff, openedIds, onRowClick }: {
                 <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{s.department?.name ?? '-'}</td>
                 <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{s.primaryRole?.name ?? '-'}</td>
                 <td className="px-4 py-3">
-                  <Badge variant="secondary" className={STATUS_COLORS[s.status] ?? ''}>{s.status}</Badge>
+                  <Badge variant="secondary" className={STAFF_STATUS_COLORS[s.status] ?? ''}>{s.status}</Badge>
                 </td>
               </tr>
             )

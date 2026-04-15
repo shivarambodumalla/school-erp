@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { TABLE_CONTAINER_WITH_TABS_CLASS, TABLE_HEADER_CLASS } from '@/lib/table-constants'
 import { SortableHeader, toggleSort, type SortDir } from '@/components/shared/SortableHeader'
+import { ENROLLMENT_STATUS_COLORS } from '@/lib/colors'
 import type { StudentEntry } from '../../types'
 
 interface ClassStudentsTabProps {
@@ -266,13 +267,6 @@ function FilterPill({ label, active, onClick }: { label: string; active: boolean
 }
 
 /* ── Row with actions ── */
-const STATUS_STYLE: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  PROMOTED: 'bg-blue-100 text-blue-700',
-  DETAINED: 'bg-red-100 text-red-700',
-  TRANSFERRED: 'bg-gray-100 text-gray-600',
-}
-
 function StudentRow({ entry, classYearId, sections, onRefresh, onOpenStudent, isSelected, onToggleSelect }: {
   entry: StudentEntry; classYearId: string
   sections: { id: string; name: string }[]; onRefresh: () => void
@@ -285,7 +279,7 @@ function StudentRow({ entry, classYearId, sections, onRefresh, onOpenStudent, is
   const { student, sectionName, status } = entry
   const [menuOpen, setMenuOpen] = useState(false)
   const [moveOpen, setMoveOpen] = useState(false)
-  const sc = STATUS_STYLE[status] ?? 'bg-gray-100 text-gray-600'
+  const sc = ENROLLMENT_STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-600'
 
   const handleMove = async (sectionId: string) => {
     const res = await fetch(`/api/school/classes/${classYearId}/students/${student.id}${apiParam}`, {

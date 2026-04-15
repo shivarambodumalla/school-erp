@@ -55,7 +55,8 @@ export async function POST(
 
     let userId: string | undefined
     if (body.canLogin && body.email) {
-        const hashed = await bcrypt.hash('Welcome@123', 10)
+        const { generateTempPassword } = await import('@/lib/generate-password')
+        const hashed = await bcrypt.hash(generateTempPassword(), 10)
         const user = await prisma.user.create({
             data: {
                 institutionId: institutionId,

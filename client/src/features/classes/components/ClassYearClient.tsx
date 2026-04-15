@@ -16,12 +16,7 @@ import { SubjectPageClient } from '@/features/subjects/components/SubjectPageCli
 import { StudentDetailInline } from '@/features/students/components/StudentDetailInline'
 import type { SectionData } from '../types'
 import type { SubjectDetail } from '@/features/subjects/types'
-
-const STATUS_STYLES: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-  DRAFT: 'bg-amber-100 text-amber-700',
-}
+import { CLASS_STATUS_COLORS } from '@/lib/colors'
 
 const TABS = [
   { key: 'sections', label: 'Sections' },
@@ -52,7 +47,7 @@ export function ClassYearClient({ classYear }: ClassYearProps) {
   const { apiParam } = useInstitutionId()
   const confirm = useConfirm()
   const { classTemplate, academicYear, status } = classYear
-  const statusClass = STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT
+  const statusClass = CLASS_STATUS_COLORS[status] ?? CLASS_STATUS_COLORS.DRAFT
   const [menuOpen, setMenuOpen] = useState(false)
   const [showClone, setShowClone] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('sections')

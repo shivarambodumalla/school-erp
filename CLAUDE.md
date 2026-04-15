@@ -171,5 +171,85 @@ Before adding any UI element, ask:
 - Tooltips for critical information — show it directly
 - Loading spinners without context — tell users what's loading
 
+## Environment Variables
+
+See `client/.env.example` for all required variables. Key ones:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DIRECT_URL` | Yes | Direct DB connection (bypasses pooler, used for migrations) |
+| `NEXTAUTH_SECRET` | Yes | JWT signing key — generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Yes | Base URL of the app |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public-facing URL for client-side links |
+| `CLOUDINARY_*` | No | Image/file upload — optional for local dev |
+
+## Database Migrations
+
+```bash
+cd client
+npx prisma migrate dev --name <migration-name>   # Create + apply migration
+npx prisma migrate deploy                         # Apply pending migrations (CI/prod)
+npx prisma generate                               # Regenerate client after schema change
+npx prisma db seed                                # Seed dev data
+```
+
+Never edit migration files after they've been applied. To undo, create a new migration.
+
+## Testing
+
+- Framework: Vitest + React Testing Library
+- Run: `npm test` (single run), `npm run test:watch` (watch mode)
+- Test files live next to source: `src/features/<feature>/__tests__/`
+- Write tests for: business logic, API routes, complex components
+- E2E: not yet configured (planned: Playwright)
+
+## Error Handling
+
+- API routes: wrap in try/catch, return `{ error: string }` with appropriate status code
+- Client components: use error.tsx boundaries for route-level errors
+- Mutations: use `toast.success()` / `toast.error()` from sonner for user feedback
+- Every `[param]` route folder must have `error.tsx` + `loading.tsx`
+
+## Naming Conventions
+
+| Entity | Convention | Example |
+|--------|-----------|---------|
+| Components | PascalCase | `StaffTable.tsx` |
+| Hooks | camelCase with `use` prefix | `useInstitutionId.ts` |
+| Utilities | camelCase | `generatePassword.ts` |
+| Types/Interfaces | PascalCase | `StaffMember` |
+| API routes | kebab-case folders | `/api/school/staff/` |
+| Feature folders | kebab-case | `src/features/staff/` |
+| Status colors | Import from `@/lib/colors.ts` | Never define locally |
+
+## Feature Folder Structure
+
+```
+src/features/<feature>/
+├── components/        # UI components
+│   └── tabs/          # Tab sub-components (if applicable)
+├── types.ts           # Feature-specific TypeScript types
+├── index.ts           # Barrel exports
+└── __tests__/         # Tests
+```
+
+## Data Fetching Pattern
+
+- **Server Components** (default): Fetch data in `page.tsx` with Prisma, pass to client components
+- **Client Components**: Use `fetch()` to call `/api/` routes for mutations and dynamic data
+- **API routes**: Always call `getSchoolContext()` first for auth + institutionId
+- **Validation**: Use Zod schemas for all POST/PATCH request bodies
+
+## Deployment
+
+```bash
+cd client
+npm run build          # Build production bundle
+npm start              # Start with custom server (server.js)
+```
+
+Production env vars must be set (see `.env.production.example`). Deploy target: Render (or any Node.js host with PostgreSQL).
+
 ## Next Session Starts At
 Week 2 — NextAuth v5 login for all 5 portals

@@ -15,16 +15,11 @@ import { Badge } from '@/components/ui/badge'
 import { AddClassSheet } from './AddClassSheet'
 import { TABLE_CONTAINER_CLASS, TABLE_HEADER_CLASS, LIST_PAGE_CLASS } from '@/lib/table-constants'
 import { SortableHeader, toggleSort, sortData, type SortDir } from '@/components/shared/SortableHeader'
-import { generateColor } from '@/lib/colors'
+import { generateColor, CLASS_STATUS_COLORS } from '@/lib/colors'
 import type { ClassTemplate } from '../types'
 
 const STATUS_OPTIONS = ['ACTIVE', 'ARCHIVED', 'DRAFT']
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-  DRAFT: 'bg-amber-100 text-amber-700',
-}
 
 export function ClassesClient() {
   const router = useRouter()
@@ -232,7 +227,7 @@ export function ClassesClient() {
                       {cls.activeYear?.studentCount ?? 0}
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant="secondary" className={STATUS_COLORS[status] ?? ''}>
+                      <Badge variant="secondary" className={CLASS_STATUS_COLORS[status] ?? ''}>
                         {status}
                       </Badge>
                     </td>

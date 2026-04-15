@@ -15,12 +15,106 @@ export const PLAN_COLORS: Record<string, string> = {
     PRO: 'bg-purple-100 text-purple-600',
 }
 
-// Status badge colors
-export const STATUS_COLORS = {
+// Generic status badge colors (lowercase keys for legacy)
+export const STATUS_COLORS: Record<string, string> = {
     active: 'bg-green-100 text-green-700',
     inactive: 'bg-red-100 text-red-700',
     pending: 'bg-amber-100 text-amber-700',
     suspended: 'bg-orange-100 text-orange-700',
+}
+
+// ── Domain-specific status colors ──
+
+export const STAFF_STATUS_COLORS: Record<string, string> = {
+    ACTIVE: 'bg-green-100 text-green-700',
+    INACTIVE: 'bg-gray-100 text-gray-600',
+    ON_LEAVE: 'bg-yellow-100 text-yellow-700',
+    TERMINATED: 'bg-red-100 text-red-700',
+}
+
+export const CLASS_STATUS_COLORS: Record<string, string> = {
+    ACTIVE: 'bg-green-100 text-green-700',
+    ARCHIVED: 'bg-gray-100 text-gray-600',
+    DRAFT: 'bg-amber-100 text-amber-700',
+}
+
+export const COURSE_STATUS_COLORS: Record<string, string> = {
+    ACTIVE: 'bg-green-100 text-green-700',
+    ARCHIVED: 'bg-gray-100 text-gray-600',
+    DRAFT: 'bg-amber-100 text-amber-700',
+}
+
+export const FEE_STATUS_COLORS: Record<string, string> = {
+    PENDING: 'bg-amber-100 text-amber-700',
+    PAID: 'bg-green-100 text-green-700',
+    OVERDUE: 'bg-red-100 text-red-700',
+    WAIVED: 'bg-gray-100 text-gray-600',
+    PARTIAL: 'bg-blue-100 text-blue-700',
+}
+
+export const ADMISSION_STATUS_COLORS: Record<string, string> = {
+    APPLIED: 'bg-blue-100 text-blue-700',
+    ADMITTED: 'bg-emerald-100 text-emerald-700',
+    ENROLLED: 'bg-violet-100 text-violet-700',
+    REJECTED: 'bg-red-100 text-red-700',
+}
+
+export const STUDENT_STATUS_COLORS: Record<string, string> = {
+    ACTIVE: 'bg-green-100 text-green-700',
+    INACTIVE: 'bg-red-100 text-red-700',
+    TRANSFERRED: 'bg-amber-100 text-amber-700',
+}
+
+export const ENROLLMENT_STATUS_COLORS: Record<string, string> = {
+    ACTIVE: 'bg-green-100 text-green-700',
+    PROMOTED: 'bg-blue-100 text-blue-700',
+    DETAINED: 'bg-red-100 text-red-700',
+    TRANSFERRED: 'bg-gray-100 text-gray-600',
+}
+
+export const ATTENDANCE_STATUS_COLORS: Record<string, string> = {
+    PRESENT: 'bg-green-500',
+    ABSENT: 'bg-red-500',
+    LATE: 'bg-amber-500',
+    HALF_DAY: 'bg-blue-500',
+    EXCUSED: 'bg-gray-400',
+}
+
+export const STAFF_ATTENDANCE_COLORS: Record<string, string> = {
+    PRESENT: 'bg-green-500',
+    ABSENT: 'bg-red-500',
+    HALF_DAY: 'bg-amber-500',
+    ON_LEAVE: 'bg-blue-500',
+    HOLIDAY: 'bg-purple-500',
+    LATE: 'bg-orange-500',
+}
+
+export const LEAVE_STATUS_COLORS: Record<string, string> = {
+    PENDING: 'bg-amber-100 text-amber-700 border-amber-200',
+    APPROVED: 'bg-green-100 text-green-700 border-green-200',
+    REJECTED: 'bg-red-100 text-red-700 border-red-200',
+    CANCELLED: 'bg-gray-100 text-gray-600 border-gray-200',
+}
+
+export const LEAVE_PILL_COLORS: Record<string, string> = {
+    ALL: 'bg-primary text-primary-foreground',
+    PENDING: 'bg-amber-600 text-white',
+    APPROVED: 'bg-green-600 text-white',
+    REJECTED: 'bg-red-600 text-white',
+    CANCELLED: 'bg-gray-500 text-white',
+}
+
+export const COURSE_PROGRESS_COLORS: Record<string, string> = {
+    COMPLETED: 'bg-green-100 text-green-700',
+    IN_PROGRESS: 'bg-blue-100 text-blue-700',
+    NOT_STARTED: 'bg-muted text-muted-foreground',
+}
+
+export const SUBMISSION_STATUS_COLORS: Record<string, string> = {
+    PENDING: 'bg-blue-100 text-blue-700',
+    SUBMITTED: 'bg-green-100 text-green-700',
+    GRADED: 'bg-violet-100 text-violet-700',
+    OVERDUE: 'bg-red-100 text-red-700',
 }
 
 // Ticket priority colors

@@ -2,12 +2,7 @@
 
 import { BookOpen, Users, FileText } from 'lucide-react'
 import type { MouseEvent } from 'react'
-
-const STATUS_STYLES: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-  DRAFT: 'bg-amber-100 text-amber-700',
-}
+import { COURSE_STATUS_COLORS } from '@/lib/colors'
 
 interface CourseCardProps {
   course: {
@@ -21,7 +16,7 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, onClick }: CourseCardProps) {
-  const statusClass = STATUS_STYLES[course.status] ?? STATUS_STYLES.DRAFT
+  const statusClass = COURSE_STATUS_COLORS[course.status] ?? COURSE_STATUS_COLORS.DRAFT
 
   return (
     <button

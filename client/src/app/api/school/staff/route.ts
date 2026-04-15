@@ -129,7 +129,8 @@ export async function POST(req: Request) {
   let tempPassword: string | undefined
 
   if (body.createLogin && body.loginEmail) {
-    tempPassword = 'TempPass@123'
+    const { generateTempPassword } = await import('@/lib/generate-password')
+    tempPassword = generateTempPassword()
     const hashed = await bcrypt.hash(tempPassword, 10)
 
     const user = await prisma.user.create({

@@ -7,6 +7,21 @@ const HASH_ROUNDS = 12
 
 async function main(): Promise<void> {
     // Clean up in dependency order
+
+    // New feature models (delete first — they reference staff, student, etc.)
+    await prisma.academicYearPreference.deleteMany()
+    await prisma.reportCard.deleteMany()
+    await prisma.reportCardGeneration.deleteMany()
+    await prisma.circularRead.deleteMany()
+    await prisma.schoolCircular.deleteMany()
+    await prisma.kudos.deleteMany()
+    await prisma.kudosConfig.deleteMany()
+    await prisma.meritListEntry.deleteMany()
+    await prisma.meritListConfig.deleteMany()
+    await prisma.leadFollowUp.deleteMany()
+    await prisma.lead.deleteMany()
+    await prisma.leadLabel.deleteMany()
+
     await prisma.feeConcession.deleteMany()
     await prisma.feePayment.deleteMany()
     await prisma.feeReminder.deleteMany()

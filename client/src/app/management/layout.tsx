@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { isConsumerPortal } from '@/lib/permissions'
 import { ManagementSidebar } from '@/components/layout/ManagementSidebar'
 import { ThemeInjector } from '@/components/shared/ThemeInjector'
+import { AcademicYearProvider } from '@/lib/academic-year-context'
 import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
 
@@ -51,21 +52,23 @@ export default async function ManagementLayout({
     })
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            <ThemeInjector
-                primaryColor={institution?.primaryColor ?? '#C56447'}
-                secondaryColor={institution?.secondaryColor}
-            />
-            <ManagementSidebar
-                permissions={session.user.permissions}
-                institutionName={session.user.institutionName}
-                userEmail={session.user.email ?? ''}
-                portalType={session.user.portalType}
-                logoUrl={institution?.logoUrl}
-            />
-            <main className="flex-1 md:ml-64 px-4 pb-4 pt-16 md:pt-6 md:px-6 md:pb-6 overflow-auto">
-                {children}
-            </main>
-        </div>
+        <AcademicYearProvider>
+            <div className="flex h-screen overflow-hidden">
+                <ThemeInjector
+                    primaryColor={institution?.primaryColor ?? '#3730A3'}
+                    secondaryColor={institution?.secondaryColor}
+                />
+                <ManagementSidebar
+                    permissions={session.user.permissions}
+                    institutionName={session.user.institutionName}
+                    userEmail={session.user.email ?? ''}
+                    portalType={session.user.portalType}
+                    logoUrl={institution?.logoUrl}
+                />
+                <main className="flex-1 md:ml-64 px-4 pb-4 pt-16 md:pt-6 md:px-6 md:pb-6 overflow-auto">
+                    {children}
+                </main>
+            </div>
+        </AcademicYearProvider>
     )
 }

@@ -21,9 +21,9 @@ export async function GET(req: Request) {
   for (const studentId of studentIds) {
     const student = await prisma.student.findUnique({
       where: { id: studentId },
-      select: { id: true, firstName: true, lastName: true, admissionNo: true },
+      select: { id: true, firstName: true, lastName: true, admissionNo: true, institutionId: true },
     })
-    if (!student) continue
+    if (!student || student.institutionId !== institutionId) continue
 
     const payments = await prisma.feePayment.findMany({
       where: { studentId, institutionId },

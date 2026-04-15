@@ -15,15 +15,8 @@ import { StaffActivityTab } from './tabs/StaffActivityTab'
 import { StaffLeaveTab } from './tabs/StaffLeaveTab'
 import { StaffAttendanceTab } from './tabs/StaffAttendanceTab'
 import { StaffPayrollTab } from './tabs/StaffPayrollTab'
-import { generateColor } from '@/lib/colors'
+import { generateColor, STAFF_STATUS_COLORS } from '@/lib/colors'
 import type { StaffDetail } from '../types'
-
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  INACTIVE: 'bg-gray-100 text-gray-600',
-  ON_LEAVE: 'bg-yellow-100 text-yellow-700',
-  TERMINATED: 'bg-red-100 text-red-700',
-}
 
 export function StaffProfileClient({ staffId }: { staffId: string }) {
   const router = useRouter()
@@ -78,7 +71,7 @@ export function StaffProfileClient({ staffId }: { staffId: string }) {
               {staff.firstName} {staff.lastName}
             </h1>
             <Badge variant="secondary"
-              className={STATUS_COLORS[staff.status] ?? ''}>
+              className={STAFF_STATUS_COLORS[staff.status] ?? ''}>
               {staff.status}
             </Badge>
           </div>

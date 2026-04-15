@@ -27,7 +27,9 @@ export default auth((req) => {
     const isPublic =
         PUBLIC_ROUTES.includes(nextUrl.pathname) ||
         nextUrl.pathname.startsWith('/api/auth') ||
-        nextUrl.pathname.startsWith('/api/health')
+        nextUrl.pathname.startsWith('/api/health') ||
+        nextUrl.pathname.startsWith('/enquire') ||
+        nextUrl.pathname.startsWith('/api/public')
 
     // Not logged in → redirect to login
     if (!session && !isPublic) {

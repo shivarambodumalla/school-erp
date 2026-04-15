@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { UserCheck, XCircle, GraduationCap, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { generateColor } from '@/lib/colors'
+import { generateColor, ADMISSION_STATUS_COLORS } from '@/lib/colors'
 import { AdmissionDetailsTabs } from './AdmissionDetailsTabs'
 import { EnrollModal } from './EnrollModal'
 import { RejectModal } from './RejectModal'
@@ -47,12 +47,6 @@ interface Props {
   onStatusChange?: (admissionId: string, newStatus: string) => void
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  APPLIED: 'bg-blue-100 text-blue-700',
-  ADMITTED: 'bg-emerald-100 text-emerald-700',
-  ENROLLED: 'bg-violet-100 text-violet-700',
-  REJECTED: 'bg-red-100 text-red-700',
-}
 
 
 export function AdmissionDetailInline({ admissionId, onStatusChange }: Props) {
@@ -155,7 +149,7 @@ export function AdmissionDetailInline({ admissionId, onStatusChange }: Props) {
                 <span className="text-sm text-muted-foreground">· {admission.admissionNo}</span>
               )}
               <span className={`inline-flex items-center px-2 py-0.5
-                rounded-full text-xs font-medium ${STATUS_STYLES[admission.status]}`}>
+                rounded-full text-xs font-medium ${ADMISSION_STATUS_COLORS[admission.status]}`}>
                 {admission.status}
               </span>
             </div>

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import {
   BookOpen, Users, Settings, FileText,
 } from 'lucide-react'
+import { COURSE_STATUS_COLORS } from '@/lib/colors'
 import { CourseContentTab } from './tabs/CourseContentTab'
 import { CourseStudentsTab } from './tabs/CourseStudentsTab'
 import { CourseSettingsTab } from './tabs/CourseSettingsTab'
@@ -30,12 +31,6 @@ interface CourseData {
 
 interface Props {
   courseId: string
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-  DRAFT: 'bg-amber-100 text-amber-700',
 }
 
 const NAV_ITEMS = [
@@ -89,7 +84,7 @@ export function CourseDetailInline({ courseId }: Props) {
     )
   }
 
-  const statusClass = STATUS_STYLES[course.status] ?? STATUS_STYLES.DRAFT
+  const statusClass = COURSE_STATUS_COLORS[course.status] ?? COURSE_STATUS_COLORS.DRAFT
 
   return (
     <div className="flex flex-col lg:flex-row gap-0 min-h-0 flex-1">

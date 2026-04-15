@@ -2,19 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import type { HeatmapDay } from '../types'
+import { ATTENDANCE_STATUS_COLORS } from '@/lib/colors'
 
 interface Props {
   studentId: string
   month: number
   year: number
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  PRESENT: 'bg-green-500',
-  ABSENT: 'bg-red-500',
-  LATE: 'bg-amber-500',
-  HALF_DAY: 'bg-blue-500',
-  EXCUSED: 'bg-gray-400',
 }
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -66,7 +59,7 @@ export function AttendanceHeatmap({ studentId, month, year }: Props) {
             return <div key={`empty-${i}`} className="h-8" />
           }
           const status = dayMap.get(dateStr)
-          const bg = status ? STATUS_COLORS[status] : 'bg-muted'
+          const bg = status ? ATTENDANCE_STATUS_COLORS[status] : 'bg-muted'
           const dayNum = new Date(dateStr).getDate()
           return (
             <div
@@ -83,7 +76,7 @@ export function AttendanceHeatmap({ studentId, month, year }: Props) {
         })}
       </div>
       <div className="flex gap-3 text-xs flex-wrap">
-        {Object.entries(STATUS_COLORS).map(([s, c]) => (
+        {Object.entries(ATTENDANCE_STATUS_COLORS).map(([s, c]) => (
           <div key={s} className="flex items-center gap-1">
             <div className={`w-3 h-3 rounded ${c}`} />
             <span className="capitalize">{s.toLowerCase()}</span>

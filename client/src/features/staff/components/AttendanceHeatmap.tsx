@@ -1,13 +1,6 @@
 'use client'
 
-const STATUS_COLORS: Record<string, string> = {
-  PRESENT: 'bg-green-500',
-  ABSENT: 'bg-red-500',
-  HALF_DAY: 'bg-amber-500',
-  ON_LEAVE: 'bg-blue-500',
-  HOLIDAY: 'bg-purple-500',
-  LATE: 'bg-orange-500',
-}
+import { STAFF_ATTENDANCE_COLORS } from '@/lib/colors'
 
 interface AttendanceRecord {
   date: string
@@ -42,7 +35,7 @@ export function AttendanceHeatmap({ year, month, records }: Props) {
           const day = i + 1
           const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
           const rec = recordMap.get(dateStr)
-          const bg = rec ? STATUS_COLORS[rec.status] ?? 'bg-muted' : 'bg-muted/50'
+          const bg = rec ? STAFF_ATTENDANCE_COLORS[rec.status] ?? 'bg-muted' : 'bg-muted/50'
           const title = rec
             ? `${rec.status}${rec.checkInTime ? ` | In: ${rec.checkInTime}` : ''}`
             : 'No record'
@@ -61,7 +54,7 @@ export function AttendanceHeatmap({ year, month, records }: Props) {
       </div>
 
       <div className="flex flex-wrap gap-3 text-xs">
-        {Object.entries(STATUS_COLORS).map(([label, color]) => (
+        {Object.entries(STAFF_ATTENDANCE_COLORS).map(([label, color]) => (
           <div key={label} className="flex items-center gap-1">
             <span className={`h-3 w-3 rounded-sm ${color}`} />
             {label.replace('_', ' ')}

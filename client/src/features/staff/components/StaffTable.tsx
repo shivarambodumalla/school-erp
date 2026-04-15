@@ -1,15 +1,8 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { generateColor, getInitials } from '@/lib/colors'
+import { generateColor, getInitials, STAFF_STATUS_COLORS } from '@/lib/colors'
 import type { StaffListItem } from '../types'
-
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  INACTIVE: 'bg-gray-100 text-gray-600',
-  ON_LEAVE: 'bg-yellow-100 text-yellow-700',
-  TERMINATED: 'bg-red-100 text-red-700',
-}
 
 export function StaffTable({ staff, onRowClick }: {
   staff: StaffListItem[]; onRowClick: (id: string) => void
@@ -50,7 +43,7 @@ export function StaffTable({ staff, onRowClick }: {
               </td>
               <td className="px-4 py-3">
                 <Badge variant="secondary"
-                  className={STATUS_COLORS[s.status] ?? ''}>
+                  className={STAFF_STATUS_COLORS[s.status] ?? ''}>
                   {s.status}
                 </Badge>
               </td>
@@ -82,7 +75,7 @@ export function StaffCards({ staff, onCardClick }: {
           </div>
           <div className="mt-3 flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{s.department?.name ?? '-'}</span>
-            <Badge variant="secondary" className={STATUS_COLORS[s.status] ?? ''}>
+            <Badge variant="secondary" className={STAFF_STATUS_COLORS[s.status] ?? ''}>
               {s.status}
             </Badge>
           </div>

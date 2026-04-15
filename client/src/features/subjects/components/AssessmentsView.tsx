@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useInstitutionId } from '@/hooks/useInstitutionId'
+import { SUBMISSION_STATUS_COLORS } from '@/lib/colors'
 import {
   Loader2,
   FileText,
@@ -445,13 +446,6 @@ function StudentAssessmentCard({
   const hoursUntilDue = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60)
   const isUrgent = hoursUntilDue > 0 && hoursUntilDue < 24
 
-  const statusColors: Record<string, string> = {
-    PENDING: 'bg-blue-100 text-blue-700',
-    SUBMITTED: 'bg-green-100 text-green-700',
-    GRADED: 'bg-violet-100 text-violet-700',
-    OVERDUE: 'bg-red-100 text-red-700',
-  }
-
   const actionLabel = (() => {
     switch (assessment.status) {
       case 'PENDING': return 'Start'
@@ -468,7 +462,7 @@ function StudentAssessmentCard({
         <TypeBadge type={assessment.type} />
         <span
           className={`inline-flex items-center px-2 py-0.5 rounded-full
-            text-xs font-medium ${statusColors[assessment.status] ?? 'bg-gray-100 text-gray-700'}`}
+            text-xs font-medium ${SUBMISSION_STATUS_COLORS[assessment.status] ?? 'bg-gray-100 text-gray-700'}`}
         >
           {assessment.status}
         </span>

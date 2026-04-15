@@ -44,7 +44,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
             // Create parent User account
             const email = body.email ?? guardian.email
             if (email) {
-                const hashed = await bcrypt.hash('Welcome@123', 10)
+                const { generateTempPassword } = await import('@/lib/generate-password')
+                const hashed = await bcrypt.hash(generateTempPassword(), 10)
                 const user = await prisma.user.create({
                     data: {
                         institutionId: institutionId,

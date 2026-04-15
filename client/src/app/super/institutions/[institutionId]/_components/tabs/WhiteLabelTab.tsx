@@ -15,8 +15,8 @@ import { ContrastChecker } from './whitelabel/ContrastChecker'
 import { ThemePreview } from './whitelabel/ThemePreview'
 
 // Onflows brand defaults — used when "Reset" is clicked
-const BRAND_PRIMARY = '#C56447'
-const BRAND_SECONDARY = '#64748b'
+const BRAND_PRIMARY = '#3730A3'
+const BRAND_SECONDARY = '#059669'
 
 interface Institution {
   id: string

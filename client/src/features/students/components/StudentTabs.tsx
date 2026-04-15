@@ -8,6 +8,7 @@ import { StudentHealthTab } from './tabs/StudentHealthTab'
 import { StudentDocumentsTab } from './tabs/StudentDocumentsTab'
 import { StudentActivityTab } from './tabs/StudentActivityTab'
 import { StudentAdmissionTab } from './tabs/StudentAdmissionTab'
+import { StudentKudosTab } from './tabs/StudentKudosTab'
 import type { StudentProfile } from '../types'
 
 const BASE_TABS = [
@@ -15,6 +16,7 @@ const BASE_TABS = [
     { id: 'academics', label: 'Academics' },
     { id: 'attendance', label: 'Attendance' },
     { id: 'fees', label: 'Fees' },
+    { id: 'kudos', label: 'Kudos' },
     { id: 'guardians', label: 'Guardians' },
     { id: 'health', label: 'Health' },
     { id: 'documents', label: 'Documents' },
@@ -61,6 +63,12 @@ export function StudentTabs({ student, portalType, onStudentUpdated }: Props) {
                     <StudentOverviewTab studentId={student.id} onSwitchTab={setActive} />
                 )}
                 {active === 'academics' && <StudentAcademicsTab studentId={student.id} />}
+                {active === 'kudos' && (
+                    <StudentKudosTab
+                        studentId={student.id}
+                        studentName={`${student.firstName} ${student.lastName}`}
+                    />
+                )}
                 {active === 'attendance' && <PlaceholderTab message="Attendance module available in Week 3" />}
                 {active === 'fees' && <PlaceholderTab message="Fee module available in Week 5" />}
                 {active === 'guardians' && (

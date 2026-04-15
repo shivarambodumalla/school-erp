@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, AlertTriangle, Users, LayoutGrid, BookOpen, Calendar } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { generateColor } from '@/lib/colors'
+import { generateColor, CLASS_STATUS_COLORS } from '@/lib/colors'
 
 interface ClassPageHeaderProps {
   classData: {
@@ -24,11 +24,6 @@ interface ClassPageHeaderProps {
   }[]
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  DRAFT: 'bg-amber-100 text-amber-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-}
-
 function gradeColor(name: string, level: number): string {
   return generateColor(name || String(level))
 }
@@ -39,7 +34,7 @@ export function ClassPageHeader({ classData, academicYears }: ClassPageHeaderPro
 
   const { classTemplate, academicYear, status, _count } = classData
   const hasMultipleYears = academicYears.length > 1
-  const statusStyle = STATUS_STYLES[status]
+  const statusStyle = CLASS_STATUS_COLORS[status]
   const isArchived = status === 'ARCHIVED'
 
   return (

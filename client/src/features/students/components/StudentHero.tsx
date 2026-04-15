@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDistanceToNow } from 'date-fns'
-import { generateColor, getInitials } from '@/lib/colors'
+import { generateColor, getInitials, STUDENT_STATUS_COLORS } from '@/lib/colors'
 import { StudentHeroActions } from './StudentHeroActions'
 import type { StudentProfile } from '../types'
 
@@ -9,12 +9,6 @@ interface Props {
     student: StudentProfile
     editMode: boolean
     onEditToggle: () => void
-}
-
-const STATUS_STYLES: Record<string, string> = {
-    ACTIVE: 'bg-green-100 text-green-700',
-    INACTIVE: 'bg-red-100 text-red-700',
-    TRANSFERRED: 'bg-amber-100 text-amber-700',
 }
 
 const BOARDING_LABELS: Record<string, string> = {
@@ -59,7 +53,7 @@ export function StudentHero({ student, editMode, onEditToggle }: Props) {
                     {s.bloodGroup ? ` · ${s.bloodGroup}` : ''}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[s.status] ?? 'bg-gray-100'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STUDENT_STATUS_COLORS[s.status] ?? 'bg-gray-100'}`}>
                         {s.status}
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">

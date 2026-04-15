@@ -7,6 +7,7 @@ import {
   FileText, Calendar, User, Phone, Mail, MapPin,
   School, CheckCircle2, Clock, ArrowRight,
 } from 'lucide-react'
+import { ADMISSION_STATUS_COLORS } from '@/lib/colors'
 
 interface AdmissionDetail {
   id: string
@@ -45,13 +46,6 @@ interface AdmissionDetail {
 
 interface Props {
   admissionId: string
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  APPLIED: 'bg-blue-100 text-blue-700',
-  ADMITTED: 'bg-emerald-100 text-emerald-700',
-  ENROLLED: 'bg-violet-100 text-violet-700',
-  REJECTED: 'bg-red-100 text-red-700',
 }
 
 export function StudentAdmissionTab({ admissionId }: Props) {
@@ -127,7 +121,7 @@ export function StudentAdmissionTab({ admissionId }: Props) {
       <div className="rounded-xl border bg-card p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold">Application Form</h3>
-          <Badge variant="secondary" className={STATUS_STYLES[admission.status] ?? ''}>
+          <Badge variant="secondary" className={ADMISSION_STATUS_COLORS[admission.status] ?? ''}>
             {admission.status}
           </Badge>
         </div>

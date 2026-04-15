@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Users, BookOpen, ChevronDown } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CLASS_STATUS_COLORS } from '@/lib/colors'
 
 interface ClassYearSummary {
   id: string
@@ -24,12 +25,6 @@ interface ClassPageLeftPanelProps {
   classYear: ClassYearSummary
   allClasses: ClassSwitcherItem[]
   classYearId: string
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-  DRAFT: 'bg-amber-100 text-amber-700',
 }
 
 const NAV_ITEMS = [
@@ -66,7 +61,7 @@ export function ClassPageLeftPanel({
   const basePath = `/management/institution/classes/${classYearId}`
   const activeNav = getActiveNav(pathname, basePath)
   const { classTemplate, academicYear, status, _count } = classYear
-  const statusClass = STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT
+  const statusClass = CLASS_STATUS_COLORS[status] ?? CLASS_STATUS_COLORS.DRAFT
 
   const handleNavClick = (suffix: string) => {
     router.push(`${basePath}${suffix}`)

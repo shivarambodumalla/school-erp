@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   BookOpen, Users, Settings, FileText,
 } from 'lucide-react'
+import { COURSE_STATUS_COLORS } from '@/lib/colors'
 
 interface CourseInfo {
   id: string
@@ -24,12 +25,6 @@ const NAV_ITEMS = [
   { key: 'settings', label: 'Settings', icon: Settings, suffix: '/settings' },
 ] as const
 
-const STATUS_STYLES: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-600',
-  DRAFT: 'bg-amber-100 text-amber-700',
-}
-
 function getActiveNav(pathname: string, basePath: string): string {
   const rel = pathname.replace(basePath, '')
   if (rel.startsWith('/students')) return 'students'
@@ -42,7 +37,7 @@ export function CourseLeftNav({ course }: Props) {
   const router = useRouter()
   const basePath = `/management/courses/${course.id}`
   const active = getActiveNav(pathname, basePath)
-  const statusClass = STATUS_STYLES[course.status] ?? STATUS_STYLES.DRAFT
+  const statusClass = COURSE_STATUS_COLORS[course.status] ?? COURSE_STATUS_COLORS.DRAFT
 
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r bg-background">

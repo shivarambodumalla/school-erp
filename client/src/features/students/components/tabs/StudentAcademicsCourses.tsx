@@ -1,6 +1,7 @@
 'use client'
 
 import { BookOpen } from 'lucide-react'
+import { COURSE_PROGRESS_COLORS } from '@/lib/colors'
 
 interface Course {
   title: string
@@ -11,12 +12,6 @@ interface Course {
 
 interface Props {
   courses: Course[]
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  COMPLETED: 'bg-green-100 text-green-700',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700',
-  NOT_STARTED: 'bg-muted text-muted-foreground',
 }
 
 function courseStatus(c: Course) {
@@ -44,7 +39,7 @@ export function StudentAcademicsCourses({ courses }: Props) {
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-medium truncate">{c.title}</p>
                   <span className={`text-[10px] font-medium px-1.5 py-0.5
-                    rounded shrink-0 ${STATUS_COLORS[status]}`}>
+                    rounded shrink-0 ${COURSE_PROGRESS_COLORS[status]}`}>
                     {status.replace('_', ' ')}
                   </span>
                 </div>
